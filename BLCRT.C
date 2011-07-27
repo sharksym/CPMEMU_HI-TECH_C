@@ -526,13 +526,16 @@ struct bl_lmem_t {
 	uint8_t cache_data[256];
 };
 #endif
-struct bl_lmem_t *bl_lmem_alloc(size_t page_no)
+struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	struct bl_lmem_t *lmem;
-	uint16_t n;
+	uint8_t page_no, n;
 
-	if ((page_no > 64) ||
-		(page_no > free_seg_no)) {	/* not enough segment */
+	size += 0x3FFF;			/* 16KB - 1 */
+	size >>= 14;			/* N page */
+	page_no = (uint8_t)size;
+
+	if (!page_no || (page_no > free_seg_no)) {
 		return NULL;
 	}
 
@@ -675,6 +678,11 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 	MapperPutPage1_DI(dest->page_tbl[page_no]);
 	for ( ; size; size--, offset++) {
 		*((uint8_t *)offset) = *src++;
+		if ((offset == 0x7FFF) && (size > 1)) {	/* End of mapped area? */
+			offset = 0x3FFF;
+			page_no++;	/* for next mem page */
+			MapperPutPage1_DI(dest->page_tbl[page_no]);
+		}
 	}
 /*	MapperPutPage1(page1_seg_old);*/
 }
