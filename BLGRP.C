@@ -668,9 +668,13 @@ void bl_grp_clear_sprite(void)
 	uint16_t vram_addr = bl_grp->sprite_attr_active_addr;
 	uint8_t n;
 
-	spr_attr[0] = 212 + bl_grp->scroll_v;
+	n = 212 + 16 + bl_grp->scroll_v;
+	if (n != 217)
+		n--;
+
+	spr_attr[0] = n;
 	spr_attr[1] = 0;
-	spr_attr[2] = 0xFF;
+	spr_attr[2] = 0;
 	spr_attr[3] = 0;
 
 	for (n = 0; n < 32; n++, vram_addr += 4) {
@@ -681,7 +685,11 @@ void bl_grp_clear_sprite(void)
 
 void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no)
 {
-	spr_attr[0] = y + bl_grp->scroll_v - 1;
+	y += bl_grp->scroll_v;
+	if (y != 217)
+		y--;
+
+	spr_attr[0] = y;
 	spr_attr[1] = x;
 	spr_attr[2] = (bl_grp->sprite_mode < GRP_SPR_16) ? no : no << 2;
 	spr_attr[3] = c;
