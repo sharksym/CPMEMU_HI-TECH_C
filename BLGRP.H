@@ -78,6 +78,8 @@ void bl_grp_erase_page(uint8_t page, uint8_t c);
 
 void bl_grp_set_sprite_view_page(uint8_t page);
 void bl_grp_set_sprite_active_page(uint8_t page);
+void bl_grp_set_sprite_gen_view_page(uint8_t page);
+void bl_grp_set_sprite_gen_active_page(uint8_t page);
 
 void bl_grp_set_scroll_mode(uint8_t mode);
 void bl_grp_set_scroll_hor(uint16_t h);

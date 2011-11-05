@@ -29,6 +29,8 @@ struct bl_grp_var_t {
 
 	uint8_t sprite_view_page;
 	uint8_t sprite_active_page;
+	uint8_t sprite_gen_view_page;
+	uint8_t sprite_gen_active_page;
 
 	uint8_t scroll_mode;
 	uint16_t scroll_h;
@@ -46,7 +48,8 @@ struct bl_grp_var_t {
 	uint16_t sprite_color_active_addr;
 	uint16_t sprite_attr_view_addr;
 	uint16_t sprite_attr_active_addr;
-	uint16_t sprite_gen_addr;
+	uint16_t sprite_gen_view_addr;
+	uint16_t sprite_gen_active_addr;
 
 	uint16_t row_byte;
 	uint8_t bpp_shift;

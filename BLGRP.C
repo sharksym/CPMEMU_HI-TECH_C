@@ -69,6 +69,20 @@ uint16_t table_sprite_attr_page[][8] = {
 	{ 0xFA00, 0xEE00, 0xEA00, 0xE600, 0xE200, 0xDE00, 0xDA00, 0xD600 }	/* G7 */
 };
 
+uint16_t table_sprite_gen_page[][4] = {
+/*	  page 0, page 1, page 2, page 3 */
+	{ 0x0000, 0x0000, 0x0000, 0x0000 },	/* T1 */
+	{ 0x0000, 0x0000, 0x0000, 0x0000 },	/* T2 */
+	{ 0x3800, 0x3000, 0x2800, 0x2000 },	/* MC */
+	{ 0x3800, 0x3000, 0x2800, 0x2000 },	/* G1 */
+	{ 0x3800, 0x3000, 0x2800, 0x2000 },	/* G2 */
+	{ 0x3800, 0x3000, 0x2800, 0x2000 },	/* G3 */
+	{ 0x7800, 0x7000, 0x6800, 0x6000 },	/* G4 */
+	{ 0x7800, 0x7000, 0x6800, 0x6000 },	/* G5 */
+	{ 0xF000, 0xE800, 0xE000, 0xD800 },	/* G6 */
+	{ 0xF000, 0xE800, 0xE000, 0xD800 }	/* G7 */
+};
+
 uint8_t init_8_27[] = {
 	0x08, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,		/*  8 ~ 15 */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x3B, 0x05, 0x00,		/* 16 ~ 23 */
@@ -238,10 +252,15 @@ void bl_grp_set_sprite_attr_active_addr(uint16_t addr)
 	bl_grp->sprite_color_active_addr = addr - 0x200;
 }
 
-void bl_grp_set_sprite_gen_addr(uint16_t addr)
+void bl_grp_set_sprite_gen_view_addr(uint16_t addr)
 {
-	bl_grp->sprite_gen_addr = addr;
+	bl_grp->sprite_gen_view_addr = addr;
 	bl_grp_update_reg_bit( 6, 0x1F, (uint8_t)(addr >> 11));
+}
+
+void bl_grp_set_sprite_gen_active_addr(uint16_t addr)
+{
+	bl_grp->sprite_gen_active_addr = addr;
 }
 
 void bl_grp_set_screen_mode(uint8_t mode)
@@ -256,7 +275,8 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_set_pattern_gen_addr(table_addr[mode][2]);
 	bl_grp_set_sprite_view_page(0);
 	bl_grp_set_sprite_active_page(0);
-	bl_grp_set_sprite_gen_addr(table_addr[mode][4]);
+	bl_grp_set_sprite_gen_view_page(0);
+	bl_grp_set_sprite_gen_active_page(0);
 
 	bl_grp_update_palette(bl_grp->palette);
 
@@ -460,16 +480,30 @@ void bl_grp_erase_page(uint8_t page, uint8_t c)
 
 void bl_grp_set_sprite_view_page(uint8_t page)
 {
-/*	page &= 0x03;*/
+/*	page &= 0x07;*/
 	bl_grp->sprite_view_page = page;
 	bl_grp_set_sprite_attr_view_addr(table_sprite_attr_page[bl_grp->screen_mode][page]);
 }
 
 void bl_grp_set_sprite_active_page(uint8_t page)
 {
-/*	page &= 0x03;*/
+/*	page &= 0x07;*/
 	bl_grp->sprite_active_page = page;
 	bl_grp_set_sprite_attr_active_addr(table_sprite_attr_page[bl_grp->screen_mode][page]);
+}
+
+void bl_grp_set_sprite_gen_view_page(uint8_t page)
+{
+/*	page &= 0x03;*/
+	bl_grp->sprite_gen_view_page = page;
+	bl_grp_set_sprite_gen_view_addr(table_sprite_gen_page[bl_grp->screen_mode][page]);
+}
+
+void bl_grp_set_sprite_gen_active_page(uint8_t page)
+{
+/*	page &= 0x03;*/
+	bl_grp->sprite_gen_active_page = page;
+	bl_grp_set_sprite_gen_active_addr(table_sprite_gen_page[bl_grp->screen_mode][page]);
 }
 
 void bl_grp_set_scroll_mode(uint8_t mode)
@@ -649,7 +683,7 @@ uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 
 uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no)
 {
-	return (bl_grp->sprite_gen_addr + (no << 3));
+	return (bl_grp->sprite_gen_active_addr + (no << 3));
 }
 
 uint16_t bl_grp_get_vramaddr_spr_col(uint16_t no)
