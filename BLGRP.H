@@ -72,14 +72,14 @@ uint8_t bl_grp_get_color_border(void);
 
 void bl_grp_set_width(uint8_t width);
 
-void bl_grp_set_view_page(uint8_t page);
-void bl_grp_set_active_page(uint8_t page);
-void bl_grp_erase_page(uint8_t page, uint8_t c);
+void bl_grp_set_view(uint8_t page);
+void bl_grp_set_active(uint8_t page);
+void bl_grp_erase(uint8_t page, uint8_t c);
 
-void bl_grp_set_sprite_view_page(uint8_t page);
-void bl_grp_set_sprite_active_page(uint8_t page);
-void bl_grp_set_sprite_gen_view_page(uint8_t page);
-void bl_grp_set_sprite_gen_active_page(uint8_t page);
+void bl_grp_set_sprite_view(uint8_t page);
+void bl_grp_set_sprite_active(uint8_t page);
+void bl_grp_set_sprite_gen_view(uint8_t page);
+void bl_grp_set_sprite_gen_active(uint8_t page);
 
 void bl_grp_set_scroll_mode(uint8_t mode);
 void bl_grp_set_scroll_hor(uint16_t h);
