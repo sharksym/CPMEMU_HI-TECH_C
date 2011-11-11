@@ -125,6 +125,7 @@ int8_t bl_grp_init(void)
 	bl_grp->width = *((uint8_t *)(0xF3B0));		/* LINLEN */
 /*	bl_grp->palette0_on = 0;*/
 	bl_grp->line_212 = 1;
+	bl_grp->display_mode = GRP_DISP_240P;
 
 	bl_grp->color_text_fg = *((uint8_t *)(0xF3E9));	/* FORCOL */
 	bl_grp->color_text_bg = *((uint8_t *)(0xF3EA));	/* BAKCOL */
@@ -376,9 +377,9 @@ void bl_grp_set_line_212(uint8_t on)
 
 void bl_grp_set_display_mode(uint8_t mode)
 {
-/*	mode &= 0x0C;*/
+/*	mode &= 0x0E;*/
 	bl_grp->display_mode = mode;
-	bl_grp_update_reg_bit(9, 0x0C, mode);
+	bl_grp_update_reg_bit(9, 0x0E, mode);
 }
 
 uint8_t bl_grp_get_palette0_on(void)

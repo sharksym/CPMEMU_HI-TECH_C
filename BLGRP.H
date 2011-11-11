@@ -22,8 +22,11 @@
 #define GRP_SPR_16EX	0x03		/* 16x16 expanded */
 
 #define GRP_DISP_240P	0x00		/* 240p normal */
-#define GRP_DISP_240P2	0x04		/* 240p two field */
+#define GRP_DISP_240P2	0x04		/* 240p two field toggle */
 #define GRP_DISP_480I	0x0C		/* 480i two field */
+#define GRP_DISP_288P	0x02		/* 288p normal */
+#define GRP_DISP_288P2	0x06		/* 288p two field toggle */
+#define GRP_DISP_576I	0x0E		/* 576i two field */
 
 #define GRP_SCROLL_P1	0x00		/* hor 1page */
 #define GRP_SCROLL_P2	0x01		/* hor 2page */
