@@ -22,6 +22,7 @@ void bl_copy_to_vram_32(uint8_t *src);
 void bl_copy_to_vram_16(uint8_t *src);
 void bl_copy_to_vram_8(uint8_t *src);
 void bl_copy_to_vram_4(uint8_t *src);
+void bl_copy_to_vram_3(uint8_t *src);
 void bl_copy_to_vram_nn(uint8_t *src);
 void bl_erase_vram(uint16_t val);
 
