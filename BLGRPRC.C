@@ -152,5 +152,29 @@ void bl_grp_load_ge5_pat_pal(char *filename)
 	fclose(fp);
 }
 
+void bl_grp_get_ge5_pat_pal(char *filename, uint16_t *palette)
+{
+	FILE *fp;
+	uint16_t width, height, pat_bytes;
+	uint16_t n;
+
+	fp = fopen(filename, "rb");
+	if (fp == NULL)
+		return;
+
+	fread(&width, 2, 1, fp);
+	fread(&height, 2, 1, fp);
+
+	pat_bytes = width * height / 2;
+
+	fseek(fp, pat_bytes, SEEK_CUR);	/* palette data */
+	fread(palette, 32, 1, fp);
+
+	for (n = 0; n < 16; n++) {
+		palette[n] |= n << 12;
+	}
+
+	fclose(fp);
+}
 
 ;
