@@ -435,9 +435,9 @@ int main_loader(int argc, char *argv[])
 }
 
 struct bl_irq_t {
-	uint8_t stat;
-	uint16_t addr;
-	uint8_t bank;
+	uint8_t *stat;
+	uint16_t *addr;
+	uint8_t *bank;
 };
 
 static struct bl_irq_t *pIRQ = NULL;
@@ -458,13 +458,13 @@ int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
 	pIRQ += irq;
 
-	if (pIRQ->stat & 0x80) {
+	if (*(pIRQ->stat) & 0x80) {
 		return -1;			/* ISR already exist! */
 	}
 
-	pIRQ->addr = handler;			/* 1 */
-	pIRQ->bank = bank << 1;			/* 2 */
-	pIRQ->stat = 0x80;			/* 3 */
+	*(pIRQ->addr) = handler;			/* 1 */
+	*(pIRQ->bank) = bank << 1;			/* 2 */
+	*(pIRQ->stat) = 0x80;			/* 3 */
 
 	return 0;				/* OK */
 }
@@ -474,8 +474,8 @@ int16_t bl_free_irq(uint8_t irq)
 	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
 	pIRQ += irq;
 
-	if (pIRQ->stat & 0x80) {
-		pIRQ->stat = 0x00;
+	if (*(pIRQ->stat) & 0x80) {
+		*(pIRQ->stat) = 0x00;
 		return 0;
 	}
 
@@ -487,7 +487,7 @@ void bl_enable_irq(uint8_t irq)
 	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
 	pIRQ += irq;
 
-	pIRQ->stat |= 0x01;
+	*(pIRQ->stat) |= 0x01;
 }
 
 void bl_disable_irq(uint8_t irq)
@@ -495,7 +495,7 @@ void bl_disable_irq(uint8_t irq)
 	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
 	pIRQ += irq;
 
-	pIRQ->stat &= ~0x01;
+	*(pIRQ->stat) &= ~0x01;
 }
 
 void bl_tsr_on(void)
