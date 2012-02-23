@@ -96,7 +96,7 @@ void bl_grp_reset_palette(void);
 void bl_grp_set_font_size(uint8_t w, uint8_t h);
 void bl_grp_set_font_color(uint8_t fg, uint8_t bg);
 
-void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c);
+void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op);
 uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y);
 
 uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no);

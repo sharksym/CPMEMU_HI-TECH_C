@@ -592,7 +592,8 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 	bl_grp->font_bgc = bg;
 }
 
-void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c)
+#if 0	/* access vram directly */
+void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
 	vram_addr = y * bl_grp->row_byte;
 	vram_addr += x >> (bl_grp->bpp_shift);
@@ -642,6 +643,27 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c)
 		break;
 	}
 }
+#else
+static uint8_t pset_cmd[7] = {
+	0x00,	/* R36 DX low */
+	0x00,	/* R37 DX high */
+	0x00,	/* R38 DY low */
+	0x00,	/* R39 DY high */
+	0x00,	/* R44 Color */
+	0x00,	/* R45 Argument */
+	0x50	/* R46 Command PSET */
+};
+void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
+{
+	*(uint16_t *)(&pset_cmd[0]) = x;
+	pset_cmd[2] = (uint8_t)y;
+	pset_cmd[3] = bl_grp->active_page;
+	pset_cmd[4] = c;
+	pset_cmd[6] = 0x50 | op;
+
+	bl_vdp_cmd_pset(pset_cmd);
+}
+#endif
 
 uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 {
