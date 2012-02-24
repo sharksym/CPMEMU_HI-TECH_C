@@ -12,6 +12,7 @@
  *********************************************************************/
 
 /*#define DEBUG_INFO*/
+/*#define LMEM_CACHE*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -563,12 +564,13 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 
 	free_seg_no -= page_no;
 	lmem->page_max = page_no;
-	lmem->cache_page = 0xFF;
-	lmem->cache_addr14 = 0xFFFF;
 	for (n = 0; n < page_no; n++) {
 		lmem->page_tbl[n] = MapperAllocUser();	/* Allocate user segment */
 	}
-
+#ifdef LMEM_CACHE
+	lmem->cache_page = 0xFF;
+	lmem->cache_addr14 = 0xFFFF;
+#endif
 /*	printf("Free seg no = %d\n", free_seg_no);*/
 
 	return lmem;
@@ -611,6 +613,7 @@ void bl_lmem_write(struct bl_lmem_t *ptr, uint32_t addr32, uint8_t data)
 /*	MapperPutPage1(page1_seg_old);*/
 }
 
+#ifdef LMEM_CACHE
 #asm
 ;-----------------------------------------------------------------
 ; copy 256 bytes
@@ -629,6 +632,7 @@ _bl_lmem_fill_cache:
 
 		RET
 #endasm
+#endif
 
 uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 {
@@ -636,7 +640,6 @@ uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 	uint8_t page_no;
 	uint16_t offset;
 	uint8_t data;
-/*	uint16_t n;*/
 
 #asm
 	DI
@@ -645,7 +648,7 @@ uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 	page_no = (uint8_t)(addr32 >> 14);
 	offset = (uint16_t)(addr32 & 0x3FFF);
 
-#if 1
+#ifdef LMEM_CACHE
 	if ((ptr->cache_page == page_no) &&
 		(ptr->cache_addr14 == (offset & 0xFF00))) {
 		data = ptr->cache_data[(uint8_t)offset];
@@ -658,14 +661,7 @@ uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 		MapperPutPage1_DI(ptr->page_tbl[page_no]);
 		data = *((uint8_t *)offset);
 
-#if 1		/* Fill cache */
 		bl_lmem_fill_cache(ptr->cache_data, offset & 0xFF00);
-#else
-		offset &= 0xFF00;
-		for (n = 0; n < 256; n++, offset++) {
-			ptr->cache_data[n] = *((uint8_t *)offset);
-		}
-#endif
 /*		MapperPutPage1(page1_seg_old);*/
 /*		putchar('.');*/
 	}
@@ -675,6 +671,7 @@ uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 	data = *((uint8_t *)offset);
 /*	MapperPutPage1(page1_seg_old);*/
 #endif
+
 	return data;
 }
 
