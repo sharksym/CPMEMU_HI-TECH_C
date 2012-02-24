@@ -11,6 +11,8 @@
  *
  *********************************************************************/
 
+/*#define DEBUG_INFO*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +28,6 @@
 
 /* Bank Call Routine */
 #include <bankcall.h>
-
 
 #define	ENASLT	00024h
 #define	RAMAD1	0f342h
@@ -280,7 +281,9 @@ int main_loader(int argc, char *argv[])
 	memcpy((int8_t *)0x8000, BankCallBin, sizeof(BankCallBin));
 
 	free_seg_no = MapperInit();
-/*	printf("Free seg no = %d\n", free_seg_no);*/
+#ifdef DEBUG_INFO
+	printf("Free seg no = %d\n", free_seg_no);
+#endif
 
 	pOvlName = getenv("PROGRAM");			/* Get Full Path of PROGRAM */
 	OvlLen = strlen(pOvlName);
@@ -335,7 +338,9 @@ int main_loader(int argc, char *argv[])
 			return 0;
 		}
 
-		/*printf("Loading: %s\n", pOvlName);*/
+#ifdef DEBUG_INFO
+		printf("Loading: %s\n", pOvlName);
+#endif
 	}
 
 	/* Initialize Bank Caller */
@@ -363,11 +368,23 @@ int main_loader(int argc, char *argv[])
 		cFileHandle = open(pOvlName, O_RDONLY);	/* re-open */
 		Page2Old = MapperGetPage2();
 
+#ifdef DEBUG_INFO
+		printf("Allocate %s seg:",
+#ifdef BL_TSR
+			"sys"
+#else
+			"usr"
+#endif
+			);
+#endif
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no--) {
 #ifdef BL_TSR
 			tMemSeg.BankTbl[SegCnt] = MapperAllocSys();	/* Allocate system segment */
 #else
 			tMemSeg.BankTbl[SegCnt] = MapperAllocUser();	/* Allocate user segment */
+#endif
+#ifdef DEBUG_INFO
+			printf(" %02X", tMemSeg.BankTbl[SegCnt]);
 #endif
 			MapperPutPage2(tMemSeg.BankTbl[SegCnt]);    	/* Set segment */
 			read(cFileHandle, (uint8_t *)0x8000, 0x4000);
@@ -379,6 +396,9 @@ int main_loader(int argc, char *argv[])
 			*(BankIndex_addr + 0x02 + SegCnt) = tMemSeg.BankTbl[SegCnt];
 		}
 		close(cFileHandle);
+#ifdef DEBUG_INFO
+		puts("");
+#endif
 	}
 
 	/* Set malloc heap to over 0x9400 */
@@ -393,7 +413,9 @@ int main_loader(int argc, char *argv[])
 	/* Clear TSR Mode */
 	bl_tsr_mode = 0;
 
-/*	printf("Free seg no = %d\n", free_seg_no);*/
+#ifdef DEBUG_INFO
+	printf("Free seg no = %d\n", free_seg_no);
+#endif
 
 	/* Execute main() function */
 	ret_val = main(argc, argv);
@@ -410,8 +432,8 @@ int main_loader(int argc, char *argv[])
 		if (cFileHandle == 0xFF) {			/* Error? */
 			bl_tsr_mode = 0;
 		} else {
-			/* Leave system memory, save sement information */
-			write(cFileHandle, &tMemSeg, sizeof(tMemSeg));  /* Store segment data */
+			/* Leave system memory, save segment information */
+			write(cFileHandle, &tMemSeg, sizeof(tMemSeg));
 			close(cFileHandle);
 		}
 	}
@@ -423,13 +445,18 @@ int main_loader(int argc, char *argv[])
 		}
 	}
 #else
+#ifdef DEBUG_INFO
+	puts("Free segment");
+#endif
 	/* Free all segment */
 	for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no++) {
 		MapperFree(tMemSeg.BankTbl[SegCnt]);
 	}
 #endif
 
-/*	printf("Free seg no = %d\n", free_seg_no);*/
+#ifdef DEBUG_INFO
+	printf("Free seg no = %d\n", free_seg_no);
+#endif
 
 	return ret_val;
 }
@@ -515,17 +542,7 @@ uint16_t bl_random(void)
 
 	return rand_tbl[rand_idx];
 }
-#if 0
-struct bl_lmem_t {
-	uint8_t page_max;
-	uint8_t page;
-	uint16_t addr14;		/* 14bit addr */
-	uint8_t cache_page;
-	uint16_t cache_addr14;		/* 14bit addr */
-	uint8_t page_tbl[64];		/* 16KB x 64page = 1024KB */
-	uint8_t cache_data[256];
-};
-#endif
+
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	struct bl_lmem_t *lmem;
