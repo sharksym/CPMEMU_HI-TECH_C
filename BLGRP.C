@@ -889,41 +889,88 @@ static uint8_t line_cmd[11] = {
 	0x00,	/* R45 Argument */
 	0x70	/* R46 Command LINE */
 };
-static uint16_t line_w, line_h;
 void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op)
 {
-	*(uint16_t *)(&line_cmd[0]) = sx;
-	line_cmd[2] = (uint8_t)sy;
-	line_cmd[3] = bl_grp->active_page;
+	uint16_t line_w, line_h;
+	int16_t deltax, deltay;
+	int16_t error, ystep, y, inc, x;
+	uint8_t swap;
 
-	if (sx < dx) {			/* to right */
-		line_cmd[9] = 0x00;
-		line_w = dx - sx;
-	} else {			/* to left */
-		line_cmd[9] = 0x04;
-		line_w = sx - dx;
-	}
+	if (bl_grp->interlace_on) {
+		deltax = dx > sx ? dx - sx : sx - dx;
+		deltay = dy > sy ? dy - sy : sy - dy;
 
-	if (sy < dy) {			/* to down */
-		line_h = dy - sy;
-	} else {			/* to up */
-		line_cmd[9] |= 0x08;
-		line_h = sy - dy;
-	}
+		swap = deltay > deltax ? 1 : 0;
+		if (swap) {
+			y = sx;
+			sx = sy;
+			sy = y;
 
-	if (line_w > line_h) {
-		*(uint16_t *)(&line_cmd[4]) = line_w;
-		*(uint16_t *)(&line_cmd[6]) = line_h;
+			y = dx;
+			dx = dy;
+			dy = y;
+
+			deltax = dx > sx ? dx - sx : sx - dx;
+			deltay = dy > sy ? dy - sy : sy - dy;
+		}
+
+		error = deltax >> 1;
+		y = sy;
+
+		inc = sx < dx ? 1 : -1;
+		ystep = sy < dy ? 1 : -1;
+
+		for (x = sx; x != dx; x += inc) {
+			if (swap)
+				bl_grp_put_pixel(y, x, c, op);
+			else
+				bl_grp_put_pixel(x, y, c, op);
+
+			error -= deltay;
+			if (error < 0) {
+				y += ystep;
+				error += deltax;
+			}
+		}
+
+		if (swap)
+			bl_grp_put_pixel(y, x, c, op);
+		else
+			bl_grp_put_pixel(x, y, c, op);
 	} else {
-		line_cmd[9] |= 0x01;
-		*(uint16_t *)(&line_cmd[4]) = line_h;
-		*(uint16_t *)(&line_cmd[6]) = line_w;
+		*(uint16_t *)(&line_cmd[0]) = sx;
+		line_cmd[2] = (uint8_t)sy;
+		line_cmd[3] = bl_grp->active_page;
+
+		if (sx < dx) {			/* to right */
+			line_cmd[9] = 0x00;
+			line_w = dx - sx;
+		} else {			/* to left */
+			line_cmd[9] = 0x04;
+			line_w = sx - dx;
+		}
+
+		if (sy < dy) {			/* to down */
+			line_h = dy - sy;
+		} else {			/* to up */
+			line_cmd[9] |= 0x08;
+			line_h = sy - dy;
+		}
+
+		if (line_w > line_h) {
+			*(uint16_t *)(&line_cmd[4]) = line_w;
+			*(uint16_t *)(&line_cmd[6]) = line_h;
+		} else {
+			line_cmd[9] |= 0x01;
+			*(uint16_t *)(&line_cmd[4]) = line_h;
+			*(uint16_t *)(&line_cmd[6]) = line_w;
+		}
+
+		line_cmd[8] = c;
+		line_cmd[10] = 0x70 | op;
+
+		bl_vdp_cmd_line(line_cmd);
 	}
-
-	line_cmd[8] = c;
-	line_cmd[10] = 0x70 | op;
-
-	bl_vdp_cmd_line(line_cmd);
 }
 
 static uint16_t box_w, box_h, box_cnt, box_x, box_y;
