@@ -472,6 +472,9 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 {
 	uint16_t n, block;
 
+	if (bl_grp->interlace_on)
+		page &= 0x02;				/* page 0 or 2 */
+
 	if (bl_grp->screen_mode < GRP_SCR_G4) {		/* page size = 16kbytes */
 		block = 1;
 		bl_vdp_vram_h = page;
@@ -482,6 +485,9 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 		block = 4;
 		bl_vdp_vram_h = page << 2;
 	}
+
+	if (bl_grp->interlace_on)
+		block <<= 1;				/* double page */
 
 	for (n = 0; n < block; n++) {
 		bl_erase_vram(c);
