@@ -1036,7 +1036,6 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 	}
 }
 
-static uint16_t box_w, box_h, box_cnt, box_x, box_y;
 void bl_grp_box(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op)
 {
 	bl_grp_line(sx, sy, dx, sy, c, op);
@@ -1047,28 +1046,29 @@ void bl_grp_box(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, u
 
 void bl_grp_boxfill(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op)
 {
-	if (sx < dx) {			/* to right */
-		box_w = dx - sx;
-		box_x = sx;
-	} else {			/* to left */
-		box_w = sx - dx;
-		box_x = dx;
+	uint16_t tmp;
+
+	if (sx > dx) {
+		tmp = dx;
+		dx = sx;
+		sx = tmp;
+	}
+	if (sy > dy) {
+		tmp = dy;
+		dy = sy;
+		sy = tmp;
 	}
 
-	if (sy < dy) {			/* to down */
-		box_h = dy - sy;
-		box_y = sy;
-	} else {			/* to up */
-		box_h = sy - dy;
-		box_y = dy;
-	}
+	tmp = dy - sy;
+	if (bl_grp->interlace_on)
+		tmp >>= 1;
 
-	if (box_w >= box_h) {
-		for (box_cnt = 0; box_cnt <= box_h; box_cnt++, box_y++)
-			bl_grp_line(sx, box_y, dx, box_y, c, op);
+	if (dx - sx > tmp) {
+		for ( ; sy <= dy; sy++)
+			bl_grp_line(sx, sy, dx, sy, c, op);
 	} else {
-		for (box_cnt = 0; box_cnt <= box_w; box_cnt++, box_x++)
-			bl_grp_line(box_x, sy, box_x, dy, c, op);
+		for ( ; sx <= dx; sx++)
+			bl_grp_line(sx, sy, sx, dy, c, op);
 	}
 }
 
