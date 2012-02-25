@@ -14,6 +14,7 @@ struct bl_grp_var_t {
 	uint8_t palette0_on;
 	uint8_t line_212;
 	uint8_t display_mode;
+	uint8_t interlace_on;
 
 	uint8_t color_text_fg;
 	uint8_t color_text_bg;
@@ -64,4 +65,3 @@ struct bl_grp_var_t {
 
 #define BL_GRP_SHARED_MEM	(4096)	/* 4Kbytes shared memory */
 
-void bl_grp_fnt_init_var(struct bl_grp_var_t *bl_grp_var);

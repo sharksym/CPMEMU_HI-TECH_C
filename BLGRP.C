@@ -126,6 +126,7 @@ int8_t bl_grp_init(void)
 /*	bl_grp->palette0_on = 0;*/
 	bl_grp->line_212 = 1;
 	bl_grp->display_mode = GRP_DISP_240P;
+	bl_grp->interlace_on = 0;
 
 	bl_grp->color_text_fg = *((uint8_t *)(0xF3E9));	/* FORCOL */
 	bl_grp->color_text_bg = *((uint8_t *)(0xF3EA));	/* BAKCOL */
@@ -380,6 +381,11 @@ void bl_grp_set_display_mode(uint8_t mode)
 /*	mode &= 0x0E;*/
 	bl_grp->display_mode = mode;
 	bl_grp_update_reg_bit(9, 0x0E, mode);
+
+	if ((bl_grp->display_mode & GRP_DISP_IL_E0) == GRP_DISP_IL_E0)
+		bl_grp->interlace_on = 1;
+	else
+		bl_grp->interlace_on = 0;
 }
 
 uint8_t bl_grp_get_palette0_on(void)
@@ -439,18 +445,22 @@ void bl_grp_set_width(uint8_t width)
 
 void bl_grp_set_view(uint8_t page)
 {
-	if (bl_grp->screen_mode < GRP_SCR_G6)
-		page &= 0x03;
-	else
-		page &= 0x01;
-
-	bl_grp->view_page = page;
+	if (bl_grp->interlace_on) {
+		page &= 0x02;
+		bl_grp->view_page = page;
+		page++;					/* page 1 or 3 */
+	} else {
+		bl_grp->view_page = page;
+	}
 	page <<= 5;
 	bl_grp_update_reg_bit(2, 0x60, page);
 }
 
 void bl_grp_set_active(uint8_t page)
 {
+	if (bl_grp->interlace_on)
+		page &= 0x02;				/* page 0 or 2 */
+
 	bl_grp->active_page = page;
 	if (bl_grp->screen_mode < GRP_SCR_G6)
 		bl_grp->active_page_a16_a14 = page << 1;	/* 32Kbytes */
@@ -462,13 +472,13 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 {
 	uint16_t n, block;
 
-	if (bl_grp->screen_mode < GRP_SCR_G4) {		/* 16kbytes */
+	if (bl_grp->screen_mode < GRP_SCR_G4) {		/* page size = 16kbytes */
 		block = 1;
 		bl_vdp_vram_h = page;
-	} else if (bl_grp->screen_mode < GRP_SCR_G6) {	/* 32kbytes */
+	} else if (bl_grp->screen_mode < GRP_SCR_G6) {	/* page size = 32kbytes */
 		block = 2;
 		bl_vdp_vram_h = page << 1;
-	} else {					/* 64kbytes */
+	} else {					/* page size = 64kbytes */
 		block = 4;
 		bl_vdp_vram_h = page << 2;
 	}
@@ -655,9 +665,16 @@ static uint8_t pset_cmd[7] = {
 };
 void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
-	*(uint16_t *)(&pset_cmd[0]) = x;
-	pset_cmd[2] = (uint8_t)y;
 	pset_cmd[3] = bl_grp->active_page;
+	if (bl_grp->interlace_on) {
+		pset_cmd[2] = (uint8_t)(y >> 1);
+		if ((uint8_t)y & 0x01)			/* for odd page */
+			pset_cmd[3]++;
+	} else {
+		pset_cmd[2] = (uint8_t)y;
+	}
+
+	*(uint16_t *)(&pset_cmd[0]) = x;
 	pset_cmd[4] = c;
 	pset_cmd[6] = 0x50 | op;
 

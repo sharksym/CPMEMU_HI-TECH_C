@@ -27,6 +27,7 @@
 #define GRP_DISP_288P	0x02		/* 288p normal */
 #define GRP_DISP_288P2	0x06		/* 288p two field toggle */
 #define GRP_DISP_576I	0x0E		/* 576i two field */
+#define GRP_DISP_IL_E0	0x0C		/* bit mask for interlaced two field */
 
 #define GRP_SCROLL_P1	0x00		/* hor 1page */
 #define GRP_SCROLL_P2	0x01		/* hor 2page */
