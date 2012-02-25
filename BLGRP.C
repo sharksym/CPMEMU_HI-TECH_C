@@ -602,7 +602,7 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 	bl_grp->font_bgc = bg;
 }
 
-/* access vram directly */
+#if 0	/* access vram directly */
 void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
 	vram_addr = y * bl_grp->row_byte;
@@ -653,7 +653,7 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 		break;
 	}
 }
-*/
+#endif
 static uint8_t pset_cmd[7] = {
 	0x00,	/* R36 DX low */
 	0x00,	/* R37 DX high */
@@ -918,8 +918,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 	uint16_t line_w, line_h;
 	uint8_t sy0, sy1, dy0, dy1;
 	int16_t deltax, deltay;
-	int16_t error, ystep, y, inc, x;
-	uint8_t swap;
+	int16_t error, step, x, y, inc;
 
 	if (bl_grp->interlace_on) {
 		deltax = dx > sx ? dx - sx : sx - dx;
@@ -929,19 +928,14 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 			*(uint16_t *)(&line_cmd[0]) = sx;
 			line_cmd[2] = (uint8_t)(sy >> 1);
 			line_cmd[3] = bl_grp->active_page;
+			if ((uint8_t)sy & 0x01)
+				line_cmd[3]++;
+
 			*(uint16_t *)(&line_cmd[4]) = deltax;
 			*(uint16_t *)(&line_cmd[6]) = 0;
 			line_cmd[8] = c;
+			line_cmd[9] = sx < dx ? 0x00 : 0x04;
 			line_cmd[10] = 0x70 | op;
-
-			if ((uint8_t)sy & 0x01)
-				line_cmd[3]++;
-			if (sx < dx) {			/* to right */
-				line_cmd[9] = 0x00;
-			} else {			/* to left */
-				line_cmd[9] = 0x04;
-			}
-
 			bl_vdp_cmd_line(line_cmd);
 		} else if (!deltax) {			/* ver even & odd line */
 			if (sy > dy) {			/* should be top to down direction */
@@ -973,44 +967,32 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 		} else {
 			/* first draw using put_pixel() */
 			bl_grp_put_pixel(sx, sy, c, op);
-
-			swap = deltay > deltax ? 1 : 0;
-			if (swap) {
-				y = sx;
-				sx = sy;
-				sy = y;
-
-				y = dx;
-				dx = dy;
-				dy = y;
-
-				deltax = dx > sx ? dx - sx : sx - dx;
-				deltay = dy > sy ? dy - sy : sy - dy;
-			}
-
-			error = deltax >> 1;
-			y = sy;
-			inc = sx < dx ? 1 : -1;
-			ystep = sy < dy ? 1 : -1;
-
-			for (x = sx; x != dx; x += inc) {
-				if (swap) {
-					bl_grp_put_pixel_ext(y, x);
-				} else {
+			if (deltay > deltax) {
+				error = deltay >> 1;
+				inc = sy < dy ? 1 : -1;
+				step = sx < dx ? 1 : -1;
+				for (x = sx, y = sy; y != dy; y += inc) {
 					bl_grp_put_pixel_ext(x, y);
+					error -= deltax;
+					if (error < 0) {
+						x += step;
+						error += deltay;
+					}
 				}
-				error -= deltay;
-				if (error < 0) {
-					y += ystep;
-					error += deltax;
-				}
-			}
-
-			if (swap) {
-				bl_grp_put_pixel_ext(y, x);
 			} else {
-				bl_grp_put_pixel_ext(x, y);
+				error = deltax >> 1;
+				inc = sx < dx ? 1 : -1;
+				step = sy < dy ? 1 : -1;
+				for (x = sx, y = sy; x != dx; x += inc) {
+					bl_grp_put_pixel_ext(x, y);
+					error -= deltay;
+					if (error < 0) {
+						y += step;
+						error += deltax;
+					}
+				}
 			}
+			bl_grp_put_pixel_ext(x, y);
 		}
 	} else {
 		*(uint16_t *)(&line_cmd[0]) = sx;
