@@ -1123,6 +1123,51 @@ void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_
 	}
 }
 
+#define bl_grp_cirle4point(cx, cy, x, y)		\
+{							\
+	bl_grp_put_pixel(cx + x, cy + y, c, op);	\
+	if (x != 0)					\
+		bl_grp_put_pixel_ext(cx - x, cy + y);	\
+	if (y != 0)					\
+		bl_grp_put_pixel_ext(cx + x, cy - y);	\
+	if (x != 0 && y != 0)				\
+		bl_grp_put_pixel_ext(cx - x, cy - y);	\
+}
+
+#define bl_grp_cirle4point_ext(cx, cy, x, y)		\
+{							\
+	bl_grp_put_pixel_ext(cx + x, cy + y);		\
+	if (x != 0)					\
+		bl_grp_put_pixel_ext(cx - x, cy + y);	\
+	if (y != 0)					\
+		bl_grp_put_pixel_ext(cx + x, cy - y);	\
+	if (x != 0 && y != 0)				\
+		bl_grp_put_pixel_ext(cx - x, cy - y);	\
+}
+
+void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t op)
+{
+	int16_t error = -radius;
+	int16_t x = radius;
+	int16_t y = 0;
+
+	while (x >= y) {
+		bl_grp_cirle4point(cx, cy, x, y);
+		if (x != y)
+			bl_grp_cirle4point_ext(cx, cy, y, x);
+
+		error += y;
+		++y;
+		error += y;
+
+		if (error >= 0) {
+			error -= x;
+			--x;
+			error -= x;
+		}
+	}
+}
+
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size)
 {
 	vram_addr = y * bl_grp->row_byte;

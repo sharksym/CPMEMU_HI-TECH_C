@@ -122,6 +122,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 void bl_grp_box(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op);
 void bl_grp_boxfill(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op);
 void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c);
+void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t op);
 
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size);
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size);
