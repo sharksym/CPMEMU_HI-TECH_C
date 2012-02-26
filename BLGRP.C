@@ -468,9 +468,23 @@ void bl_grp_set_active(uint8_t page)
 		bl_grp->active_page_a16_a14 = page << 2;	/* 64Kbytes */
 }
 
+static uint8_t hmmv_cmd[11] = {
+	0x00,	/* R36 DX low */
+	0x00,	/* R37 DX high */
+	0x00,	/* R38 DY low */
+	0x00,	/* R39 DY high */
+	0x00,	/* R40 Width low */
+	0x00,	/* R41 Width high */
+	0x00,	/* R42 Height low */
+	0x00,	/* R43 Height high */
+	0x00,	/* R44 Byte Color */
+	0x00,	/* R45 Argument */
+	0xC0	/* R46 Command HMMV */
+};
 void bl_grp_erase(uint8_t page, uint8_t c)
 {
 	uint16_t n, block;
+	uint16_t Width, Height;
 
 	if (bl_grp->interlace_on)
 		page &= 0x02;				/* page 0 or 2 */
@@ -478,21 +492,33 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	if (bl_grp->screen_mode < GRP_SCR_G4) {		/* page size = 16kbytes */
 		block = 1;
 		bl_vdp_vram_h = page;
-	} else if (bl_grp->screen_mode < GRP_SCR_G6) {	/* page size = 32kbytes */
-		block = 2;
-		bl_vdp_vram_h = page << 1;
-	} else {					/* page size = 64kbytes */
-		block = 4;
-		bl_vdp_vram_h = page << 2;
+		for (n = 0; n < block; n++) {
+			bl_erase_vram(c);
+			bl_vdp_vram_h++;
+		}
+		return;
 	}
 
-	if (bl_grp->interlace_on)
-		block <<= 1;				/* double page */
+	/* use HMMV for bitmap mode */
+	if ((bl_grp->screen_mode == GRP_SCR_G5) ||
+		(bl_grp->screen_mode == GRP_SCR_G6))
+		Width = 512;
+	else
+		Width = 256;
 
-	for (n = 0; n < block; n++) {
-		bl_erase_vram(c);
-		bl_vdp_vram_h++;
-	}
+	if (bl_grp->interlace_on)			/* erase double page */
+		Height = 512;
+	else
+		Height = 256;
+
+	*(uint16_t *)(&hmmv_cmd[0]) = 0;
+	hmmv_cmd[2] = 0;
+	hmmv_cmd[3] = bl_grp->active_page;
+	*(uint16_t *)(&hmmv_cmd[4]) = Width;
+	*(uint16_t *)(&hmmv_cmd[6]) = Height;
+	hmmv_cmd[8] = c;
+
+	bl_vdp_cmd_hmmv(hmmv_cmd);
 }
 
 void bl_grp_set_sprite_view(uint8_t page)
