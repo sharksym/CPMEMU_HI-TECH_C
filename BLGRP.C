@@ -484,7 +484,7 @@ static uint8_t hmmv_cmd[11] = {
 void bl_grp_erase(uint8_t page, uint8_t c)
 {
 	uint16_t n, block;
-	uint16_t Width, Height;
+	uint16_t width, height;
 
 	if (bl_grp->interlace_on)
 		page &= 0x02;				/* page 0 or 2 */
@@ -502,20 +502,20 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	/* use HMMV for bitmap mode */
 	if ((bl_grp->screen_mode == GRP_SCR_G5) ||
 		(bl_grp->screen_mode == GRP_SCR_G6))
-		Width = 512;
+		width = 512;
 	else
-		Width = 256;
+		width = 256;
 
 	if (bl_grp->interlace_on)			/* erase double page */
-		Height = 512;
+		height = 512;
 	else
-		Height = 256;
+		height = 256;
 
 	*(uint16_t *)(&hmmv_cmd[0]) = 0;
 	hmmv_cmd[2] = 0;
 	hmmv_cmd[3] = bl_grp->active_page;
-	*(uint16_t *)(&hmmv_cmd[4]) = Width;
-	*(uint16_t *)(&hmmv_cmd[6]) = Height;
+	*(uint16_t *)(&hmmv_cmd[4]) = width;
+	*(uint16_t *)(&hmmv_cmd[6]) = height;
 	hmmv_cmd[8] = c;
 
 	bl_vdp_cmd_hmmv(hmmv_cmd);
@@ -1095,6 +1095,31 @@ void bl_grp_boxfill(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t 
 	} else {
 		for ( ; sx <= dx; sx++)
 			bl_grp_line(sx, sy, sx, dy, c, op);
+	}
+}
+
+void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c)
+{
+	uint16_t width, height;
+
+	width = dx - sx + 1;
+	height = dy - sy + 1;
+
+	*(uint16_t *)(&hmmv_cmd[0]) = sx;
+	hmmv_cmd[3] = bl_grp->active_page;
+	*(uint16_t *)(&hmmv_cmd[4]) = width;
+	hmmv_cmd[8] = c;
+
+	if (bl_grp->interlace_on) {
+		hmmv_cmd[2] = (uint8_t)(sy >> 1);
+		*(uint16_t *)(&hmmv_cmd[6]) = height >> 1;
+		bl_vdp_cmd_hmmv(hmmv_cmd);		/* even page */
+		hmmv_cmd[3]++;
+		bl_vdp_cmd_hmmv(hmmv_cmd);		/* odd page */
+	} else {
+		hmmv_cmd[2] = (uint8_t)(sy);
+		*(uint16_t *)(&hmmv_cmd[6]) = height;
+		bl_vdp_cmd_hmmv(hmmv_cmd);
 	}
 }
 
