@@ -7,7 +7,7 @@
 
 #ifndef	_STDDEF
 typedef	int		ptrdiff_t;	/* result type of pointer difference */
-typedef	unsigned	size_t;	/* type yielded by sizeof */
+typedef	unsigned	size_t;		/* type yielded by sizeof */
 #define	_STDDEF
 #define	offsetof(ty, mem)	((int)&(((ty *)0)->mem))
 
@@ -15,7 +15,7 @@ typedef	unsigned	size_t;	/* type yielded by sizeof */
 #define	NULL	((void *)0)
 #endif	NULL
 
-extern int	errno;			/* system error number */
+extern int		errno;		/* system error number */
 #endif /* _STDDEF */
 
 /*	hitech.h has definitions for uchar, ushort etc */
@@ -32,25 +32,25 @@ extern int	errno;			/* system error number */
 struct	fcb
 {
 	/* 13 Bytes */
-	uchar	dr;				/* drive code */
-	char	name[8];		/* file name */
-	char	ft[3];			/* file type */
-	uchar	ex;				/* file extent */
+	uchar		dr;		/* drive code */
+	char		name[8];	/* file name */
+	char		ft[3];		/* file type */
+	uchar		ex;		/* file extent */
 
 	/* 19 Bytes */
-	char	fil;			/* not used */
-	unsigned int recsiz;	/* record size */
-	long	filesize;
-	unsigned short fcbdate;
-	unsigned short fcbtime;
-	char	dm[8];			/* CP/M disk map */
+	char		fil;		/* not used */
+	unsigned int	recsiz;		/* record size */
+	long		filesize;
+	unsigned short	fcbdate;
+	unsigned short	fcbtime;
+	char		dm[8];		/* CP/M disk map */
 
 	/* 10 Bytes */
-	char	nr;				/* next record to read or write */
-	uchar	ranrec[3];		/* CP/M random record number (24 bit no. ) */
-	long	rwp;			/* read/write pointer in bytes */
-	uchar	use;			/* use flag */
-	uchar	uid;			/* user id belonging to this file */
+	char		nr;			/* next record to read or write */
+	uchar		ranrec[3];	/* CP/M random record number (24 bit no. ) */
+	long		rwp;		/* read/write pointer in bytes */
+	uchar		use;		/* use flag */
+	uchar		uid;		/* user id belonging to this file */
 };
 extern struct	fcb	_fcb[MAXFILE];
 
@@ -70,22 +70,22 @@ unsigned short msx_bdosh(unsigned int,...);
 /* for MSX-DOS2 */
 struct msxfib
 {
-	unsigned char ff;
-	unsigned char name[13];
-	unsigned char attr;
-	unsigned int time;
-	unsigned int date;
-	unsigned int cl;
-	long size;
-	unsigned char drive;
-	unsigned char internal[38];
+	unsigned char	ff;
+	unsigned char	name[13];
+	unsigned char	attr;
+	unsigned int	time;
+	unsigned int	date;
+	unsigned int	cl;
+	long 		size;
+	unsigned char	drive;
+	unsigned char	internal[38];
 };
 
 struct	fileinfo
 {
-	char			name[13];		/* File name with extension */
-	unsigned char	drive;			/* Logical drive A=1, B=2, ...Default=0 */
-	struct fcb		tfcb;
+	char		name[13];	/* File name with extension */
+	unsigned char	drive;		/* Logical drive A=1, B=2, ...Default=0 */
+	struct fcb	tfcb;
 	struct msxfib	tfib;
 };
 
@@ -117,7 +117,7 @@ unsigned setfileattr (char *path, unsigned int attr);
 #define	CPMRBT	003		/* ctrl-C, reboot CPM */
 
 
-#define	MPM		0x100		/* bit to test for MP/M */
+#define	MPM	0x100		/* bit to test for MP/M */
 #define	CCPM	0x400		/* bit to test for CCP/M */
 
 #define	ISMPM()	(bdoshl(CPMVERS)&MPM)	/* macro to test for MPM */
@@ -165,17 +165,17 @@ unsigned setfileattr (char *path, unsigned int attr);
  *	Declarations for Unix style low-level I/O functions.
  */
 
-int	open(char *, int);
-int	close(int);
-int	creat(char *,...);		/* Creat for writing only */
-int	dup(int);
-long	lseek(int, long, int);
-int	read(int, void *, ushort);
-int	unlink(char *);
+int open(char *, int);
+int close(int);
+int creat(char *,...);		/* Creat for writing only */
+int dup(int);
+long lseek(int, long, int);
+int read(int, void *, ushort);
+int unlink(char *);
 #define remove(f) unlink(f)
-int	write(int, void *, ushort);
-int	isatty(int);
-int	chmod(char *, int);
+int write(int, void *, ushort);
+int isatty(int);
+int chmod(char *, int);
 int rename(char *,char *);
 int delete(char *);
 int mkdir(char *);
@@ -191,29 +191,28 @@ int mkdir(char *);
 
 /* Additional Function for MSX only */
 struct DPB {
-	unsigned char drive;
-	unsigned char media;
-	unsigned int sec_size;
-	unsigned char dir_mask;
-	unsigned char dir_shift;
-	unsigned char clu_mask;
-	unsigned char clu_shift;
-	unsigned int fat_start;
-	unsigned char fat_copy;
-	unsigned char dir_entry;
-	unsigned int data_start;
-	unsigned int clu_end;
-	unsigned char fat_size;
-	unsigned int dir_start;
-	void *fat_buf;
+	unsigned char	drive;
+	unsigned char	media;
+	unsigned int	sec_size;
+	unsigned char	dir_mask;
+	unsigned char	dir_shift;
+	unsigned char	clu_mask;
+	unsigned char	clu_shift;
+	unsigned int	fat_start;
+	unsigned char	fat_copy;
+	unsigned char	dir_entry;
+	unsigned int	data_start;
+	unsigned int	clu_end;
+	unsigned char	fat_size;
+	unsigned int	dir_start;
+	void 		*fat_buf;
 };
 
-struct DPB *_dos_getDPB (unsigned char drive);
-void _dos_absread (char *buf, int drv, unsigned sec, int len);
-void _dos_abswrite (char *buf, int drv, unsigned sec, int len);
-unsigned char _PHYDIO_read (char *buf, unsigned char drive, unsigned sector, unsigned char len, unsigned char mediaid);
-unsigned char _PHYDIO_write (char *buf, unsigned char drive, unsigned sector, unsigned char len, unsigned char mediaid);
+struct DPB *_dos_getDPB(unsigned char drive);
+void _dos_absread(char *buf, int drv, unsigned sec, int len);
+void _dos_abswrite(char *buf, int drv, unsigned sec, int len);
+unsigned char _PHYDIO_read(char *buf, unsigned char drive, unsigned sector, unsigned char len, unsigned char mediaid);
+unsigned char _PHYDIO_write(char *buf, unsigned char drive, unsigned sector, unsigned char len, unsigned char mediaid);
 
 
 #endif /* __MSXIO_H */
-
