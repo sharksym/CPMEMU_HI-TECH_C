@@ -513,12 +513,13 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 
 	*(uint16_t *)(&hmmv_cmd[0]) = 0;
 	hmmv_cmd[2] = 0;
-	hmmv_cmd[3] = bl_grp->active_page;
+	hmmv_cmd[3] = page;
 	*(uint16_t *)(&hmmv_cmd[4]) = width;
 	*(uint16_t *)(&hmmv_cmd[6]) = height;
 	hmmv_cmd[8] = c;
 
 	bl_vdp_cmd_hmmv(hmmv_cmd);
+	bl_vdp_cmd_wait();
 }
 
 void bl_grp_set_sprite_view(uint8_t page)
