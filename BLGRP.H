@@ -97,9 +97,6 @@ void bl_grp_reset_palette(void);
 void bl_grp_set_font_size(uint8_t w, uint8_t h);
 void bl_grp_set_font_color(uint8_t fg, uint8_t bg);
 
-void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op);
-uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y);
-
 uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no);
 #define bl_grp_set_sprite_pattern_8x8(no, addr)	\
 {bl_set_vram_addr16(bl_grp_get_vramaddr_spr_gen(no)); bl_copy_to_vram_8(addr);}
@@ -112,6 +109,9 @@ uint16_t bl_grp_get_vramaddr_spr_attr(uint16_t layer);
 
 void bl_grp_clear_sprite(void);
 void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no);
+
+void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op);
+uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y);
 
 #define bl_grp_cmd_wait() bl_vdp_cmd_wait()
 void bl_grp_hcopy_v2v(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy);
