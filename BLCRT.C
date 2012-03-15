@@ -231,6 +231,7 @@ nularg:	defb	0
 
 
 static int8_t bl_tsr_mode = 0;
+static int8_t bl_tsr_file_exist = 0;
 
 static int16_t SegCnt = 0;
 static int16_t free_seg_no = 0;
@@ -306,20 +307,18 @@ int main_loader(int argc, char *argv[])
 	name_pos = strlen(pTsrEnvName);
 	pTsrEnvName[name_pos - 4] = '_';
 	pTsrEnv = getenv(pTsrEnvName);
+	cFileHandle = 0xFF;
 	if (pTsrEnv) {
-		cFileHandle = 0xFF;
 		if ((pTsrEnv[0] == 'O') && (pTsrEnv[1] == 'N'))	/* XXX_TSR = ON? */
 			cFileHandle = open(pTsrName, O_RDONLY);	/* Open TSR File */
 
 		free(pTsrEnv);
-	}
-
-	if (cFileHandle == 0xFF) {				/* Not Found? */
-		bl_tsr_mode = 0;
-	} else {
-		bl_tsr_mode = 1;
-		read(cFileHandle, &tMemSeg, sizeof(tMemSeg));	/* Get segment data */
-		close(cFileHandle);
+		if (cFileHandle != 0xFF) {
+			bl_tsr_mode = 1;
+			bl_tsr_file_exist = 1;
+			read(cFileHandle, &tMemSeg, sizeof(tMemSeg));	/* Get segment data */
+			close(cFileHandle);
+		}
 	}
 #endif
 
@@ -411,9 +410,6 @@ int main_loader(int argc, char *argv[])
 	/* Install ISR */
 	ISRInit();
 
-	/* Clear TSR Mode */
-	bl_tsr_mode = 0;
-
 #ifdef DEBUG_INFO
 	printf("Free seg no = %d\n", free_seg_no);
 #endif
@@ -428,7 +424,7 @@ int main_loader(int argc, char *argv[])
 	free(pOvlName);
 
 #ifdef BL_TSR
-	if (bl_tsr_mode) {
+	if (bl_tsr_mode && !bl_tsr_file_exist) {	/* TSR File not exist? */
 		cFileHandle = creat(pTsrName);		/* Create TSR File */
 		if (cFileHandle == 0xFF) {			/* Error? */
 			bl_tsr_mode = 0;
@@ -528,12 +524,29 @@ void bl_disable_irq(uint8_t irq)
 
 void bl_tsr_on(void)
 {
+	if (!bl_tsr_mode) {
 #ifdef BL_TSR
-	bl_tsr_mode = 1;
-	setenv(pTsrEnvName, "ON");
+		bl_tsr_mode = 1;
+		setenv(pTsrEnvName, "ON");
 #else
-	bl_tsr_mode = 0;
+		bl_tsr_mode = 0;
 #endif
+	}
+}
+
+void bl_tsr_off(void)
+{
+	if (bl_tsr_mode) {
+#ifdef BL_TSR
+		setenv(pTsrEnvName, "");
+#endif
+		bl_tsr_mode = 0;
+	}
+}
+
+int8_t bl_is_tsr_on(void)
+{
+	return bl_tsr_mode;
 }
 
 uint16_t bl_random(void)

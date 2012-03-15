@@ -12,6 +12,8 @@ extern int16_t bl_bank;
 
 /* Set TSR mode */
 void bl_tsr_on(void);
+void bl_tsr_off(void);
+int8_t bl_is_tsr_on(void);
 
 #define BL_RANDOM_MAX	1023
 uint16_t bl_random(void);
