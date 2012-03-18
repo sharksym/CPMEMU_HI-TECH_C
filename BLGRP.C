@@ -122,7 +122,7 @@ int8_t bl_grp_init(void)
 	bl_grp->width_L40 = *((uint8_t *)(0xF3AE));	/* LINL40 */
 	bl_grp->width_L32 = *((uint8_t *)(0xF3AF));	/* LINL32 */
 	bl_grp->width = *((uint8_t *)(0xF3B0));		/* LINLEN */
-/*	bl_grp->palette0_on = 0;*/
+	bl_grp->palette0_on = 0;
 	bl_grp->line_212 = 1;
 	bl_grp->display_mode = GRP_DISP_240P;
 	bl_grp->interlace_on = 0;
@@ -188,8 +188,16 @@ _bl_grp_set_text_mode:
 void bl_grp_deinit(void)
 {
 	if (bl_grp) {
-		bl_free(bl_grp);
+		bl_grp_set_palette0_on(0);		/* disable palette 0 */
+		bl_grp_set_line_212(1);
+		bl_grp_set_scroll_hor(0);
+		bl_grp_set_scroll_ver(0);
+		bl_grp_set_view(0);
+		bl_grp_set_active(0);
+		bl_grp_reset_palette();
+
 		bl_grp_set_text_mode();
+		bl_free(bl_grp);
 	}
 }
 
