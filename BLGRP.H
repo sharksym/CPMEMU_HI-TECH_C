@@ -94,9 +94,6 @@ uint16_t bl_grp_get_palette(uint8_t no);
 #define bl_grp_update_palette(addr) bl_set_palette_array(addr)
 void bl_grp_reset_palette(void);
 
-void bl_grp_set_font_size(uint8_t w, uint8_t h);
-void bl_grp_set_font_color(uint8_t fg, uint8_t bg);
-
 uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no);
 #define bl_grp_set_sprite_pattern_8x8(no, addr)	\
 {bl_set_vram_addr16(bl_grp_get_vramaddr_spr_gen(no)); bl_copy_to_vram_8(addr);}
@@ -127,10 +124,9 @@ void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size);
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size);
 
-void bl_grp_print(uint16_t x, uint16_t y, char *str);
-
 void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy);
 void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy);
 void bl_grp_load_ge5_pic_pal(char *filename);
 void bl_grp_load_ge5_pat_pal(char *filename);
 void bl_grp_get_ge5_pat_pal(char *filename, uint16_t *palette);
+
