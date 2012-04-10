@@ -231,7 +231,9 @@ nularg:	defb	0
 
 
 static int8_t bl_tsr_mode = 0;
+#ifdef BL_TSR
 static int8_t bl_tsr_file_exist = 0;
+#endif
 
 static int16_t SegCnt = 0;
 static int16_t free_seg_no = 0;
