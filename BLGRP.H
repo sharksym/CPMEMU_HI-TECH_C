@@ -34,18 +34,6 @@
 #define GRP_SCROLL_P1M	0x02		/* hor 1page left mask */
 #define GRP_SCROLL_P2M	0x03		/* hor 2page left mask */
 
-#define GRP_OP_IMP	0x00
-#define GRP_OP_AND	0x01
-#define GRP_OP_OR	0x02
-#define GRP_OP_EOR	0x03
-#define GRP_OP_NOT	0x04
-#define GRP_OP_TIMP	0x08
-#define GRP_OP_TAND	0x09
-#define GRP_OP_TOR	0x0A
-#define GRP_OP_TEOR	0x0B
-#define GRP_OP_TNOT	0x0C
-
-
 char bl_grp_init(void);
 void bl_grp_deinit(void);
 uint8_t bl_grp_get_vdp_ver(void);
@@ -106,20 +94,6 @@ uint16_t bl_grp_get_vramaddr_spr_attr(uint16_t layer);
 
 void bl_grp_clear_sprite(void);
 void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no);
-
-void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op);
-uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y);
-
-#define bl_grp_cmd_wait() bl_vdp_cmd_wait()
-void bl_grp_hcopy_v2v(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy);
-void bl_grp_hcopy_v2v_p(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy, uint8_t src);
-void bl_grp_lcopy_v2v(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy, uint8_t op);
-void bl_grp_lcopy_v2v_p(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy, uint8_t src, uint8_t op);
-void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op);
-void bl_grp_box(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op);
-void bl_grp_boxfill(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op);
-void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c);
-void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t op);
 
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size);
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size);

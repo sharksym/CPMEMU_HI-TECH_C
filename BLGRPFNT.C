@@ -9,6 +9,7 @@
 #include <blstd.h>
 #include <blstdvdp.h>
 #include <blgrp.h>
+#include <blgrpcmd.h>
 #include <blgrpfnt.h>
 #include <blgrpdat.h>
 

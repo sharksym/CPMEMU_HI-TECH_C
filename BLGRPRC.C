@@ -9,6 +9,8 @@
 #include <blstd.h>
 #include <blstdvdp.h>
 #include <blgrp.h>
+#include <blgrpcmd.h>
+#include <blgrpfnt.h>
 #include <blgrpdat.h>
 
 static struct bl_grp_var_t *bl_grp = NULL;

@@ -9,6 +9,8 @@
 #include <blstd.h>
 #include <blstdvdp.h>
 #include <blgrp.h>
+#include <blgrpcmd.h>
+#include <blgrpfnt.h>
 #include <blgrpdat.h>
 
 static struct bl_grp_var_t *bl_grp = NULL;
@@ -17,9 +19,6 @@ void bl_grp_cmd_init_var(struct bl_grp_var_t *bl_grp_var)
 {
 	bl_grp = bl_grp_var;
 }
-
-static uint16_t vram_addr;
-static uint8_t vram_data;
 
 static uint8_t pset_cmd[7] = {
 	0x00,	/* R36 DX low */
@@ -75,7 +74,9 @@ static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 
 uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 {
-	vram_addr = y * bl_grp->row_byte;
+	uint16_t vram_addr = y * bl_grp->row_byte;
+	uint8_t vram_data;
+
 	vram_addr += x >> (bl_grp->bpp_shift);
 	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
@@ -463,32 +464,6 @@ void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t
 			error -= x;
 		}
 	}
-}
-
-void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size)
-{
-	vram_addr = y * bl_grp->row_byte;
-/*	vram_addr += x >> (bl_grp->bpp_shift);*/
-
-	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
-	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
-	bl_vdp_vram_l = (uint8_t)vram_addr;
-	bl_vdp_vram_cnt = size;
-	bl_copy_to_vram_nn(src);
-}
-
-void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size)
-{
-	vram_addr = y * bl_grp->row_byte;
-/*	vram_addr += x >> (bl_grp->bpp_shift);*/
-
-	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
-	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
-	bl_vdp_vram_l = (uint8_t)vram_addr;
-	bl_vdp_vram_cnt = size;
-	bl_copy_from_vram_nn(dest);
 }
 
 ;

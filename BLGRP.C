@@ -9,6 +9,8 @@
 #include <blstd.h>
 #include <blstdvdp.h>
 #include <blgrp.h>
+#include <blgrpcmd.h>
+#include <blgrpfnt.h>
 #include <blgrpdat.h>
 
 static struct bl_grp_var_t *bl_grp = NULL;
@@ -679,6 +681,34 @@ void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t 
 
 	bl_set_vram_addr16(bl_grp->sprite_attr_active_addr + (layer << 2));
 	bl_copy_to_vram_4(spr_attr);
+}
+
+void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size)
+{
+	uint16_t vram_addr = y * bl_grp->row_byte;
+
+/*	vram_addr += x >> (bl_grp->bpp_shift);*/
+
+	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+	bl_vdp_vram_l = (uint8_t)vram_addr;
+	bl_vdp_vram_cnt = size;
+	bl_copy_to_vram_nn(src);
+}
+
+void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size)
+{
+	uint16_t vram_addr = y * bl_grp->row_byte;
+
+/*	vram_addr += x >> (bl_grp->bpp_shift);*/
+
+	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+	bl_vdp_vram_l = (uint8_t)vram_addr;
+	bl_vdp_vram_cnt = size;
+	bl_copy_from_vram_nn(dest);
 }
 
 ;
