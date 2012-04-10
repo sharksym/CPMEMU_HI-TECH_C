@@ -177,8 +177,11 @@ int write(int, void *, ushort);
 int isatty(int);
 int chmod(char *, int);
 int rename(char *,char *);
+int move(char *,char *);
 int delete(char *);
 int mkdir(char *);
+void setattr(char *, unsigned char);
+unsigned char getattr(char *);
 
 #define	O_RDONLY	0x00	/* Open for reading only */
 #define	O_WRONLY	0x01	/* Open for writing only */
