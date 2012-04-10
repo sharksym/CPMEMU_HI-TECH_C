@@ -27,7 +27,7 @@
 #define KEY_DOT         0x0208
 #define KEY_COMMA       0x0204
 #define KEY_BRACKET_R   0x0202
-#define KEY_COLONE      0x0201
+#define KEY_COLON       0x0201
 
 #define KEY_J           0x0380
 #define KEY_I           0x0340
