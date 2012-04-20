@@ -278,6 +278,15 @@ int main_loader(int argc, char *argv[])
 	static int8_t name_cnt, name_pos;
 #endif
 
+#ifdef R800ONLY
+	if (get_msx_version() == MSXTR) {
+		set_cpu_mode_tr(CPU_TR_R800_DRAM);
+	} else {
+		puts("ERROR: MSXturboR required.");
+		return 0;
+	}
+#endif
+
 	rand_idx = *((uint16_t *)0xFC9E);		/* random index JIPPY */
 	rand_idx &= 4095;
 
