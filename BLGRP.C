@@ -85,12 +85,6 @@ uint16_t table_sprite_gen_page[][8] = {
 	{ 0xF000, 0xE800, 0xE000, 0xD800, 0xD000, 0xC800, 0xC000, 0xB800 }	/* G7 */
 };
 
-uint8_t init_8_27[] = {
-	0x08, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,		/*  8 ~ 15 */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x3B, 0x05, 0x00,		/* 16 ~ 23 */
-	0x00, 0x00, 0x00, 0x00					/* 24 ~ 27 */
-};
-
 uint16_t init_palette[] = {
 	/* pal_no << 12, g << 8, r << 4, b */
 	0x0000, 0x1000, 0x2611, 0x3733, 0x4117, 0x5327, 0x6151, 0x7617,
@@ -137,19 +131,17 @@ int8_t bl_grp_init(void)
 	bl_grp->font_height = 8;
 
 	/* VDP register shadow */
-	bl_grp->reg_shadow_0_7 = (uint8_t *)0xF3DF;
-	memcpy(bl_grp->reg_shadow_8_27, init_8_27, sizeof(init_8_27));
+	bl_grp->reg_shadow = (uint8_t *)0x8300;
+	memcpy(&bl_grp->reg_shadow[0], (uint8_t *)0xF3DF, 8);	/* 0 ~ 7 */
+	memcpy(&bl_grp->reg_shadow[8], (uint8_t *)0xFFE7, 16);	/* 8 ~ 23 */
+	memcpy(&bl_grp->reg_shadow[25], (uint8_t *)0xFFFA, 3);	/* 25 ~ 27 */
 
 	/* Initialize palette */
 	memcpy(bl_grp->palette, init_palette, sizeof(init_palette));
 
 	/* Initialize VDP registers */
-	for (n = 0; n < 28; n++) {
-		if (n < 8)
-			bl_write_vdp(n, bl_grp->reg_shadow_0_7[n]);
-		else if (n > 24)
-			bl_write_vdp(n, bl_grp->reg_shadow_8_27[n - 8]);
-	}
+	for (n = 0; n < 28; n++)
+		bl_write_vdp(n, bl_grp->reg_shadow[n]);
 
 	bl_grp->vdp_ver = bl_read_vdp(1) & 0x04 ? GRP_VER_9958 : GRP_VER_9938;
 
@@ -212,19 +204,10 @@ void bl_grp_update_reg_bit(uint8_t no, uint8_t mask, uint8_t bits)
 {
 	uint8_t val;
 
-	if (no < 8) {
-		val  = bl_grp->reg_shadow_0_7[no] & (~mask);
-		val |= bits;
-		bl_write_vdp(no, val);
-		bl_grp->reg_shadow_0_7[no] = val;
-	} else if (no < 28) {
-		val  = bl_grp->reg_shadow_8_27[no - 8] & (~mask);
-		val |= bits;
-		bl_write_vdp(no, val);
-		bl_grp->reg_shadow_8_27[no - 8] = val;
-	} else {
-		bl_write_vdp(no, bits);		/* write all 8bits */
-	}
+	val  = bl_grp->reg_shadow[no] & (~mask);
+	val |= bits;
+	bl_write_vdp(no, val);
+	bl_grp->reg_shadow[no] = val;
 }
 
 void bl_grp_set_pattern_name_addr(uint16_t addr)

@@ -37,9 +37,7 @@ struct bl_grp_var_t {
 	uint16_t scroll_h;
 	uint8_t scroll_v;
 
-	uint8_t *reg_shadow_0_7;
-	uint8_t reg_shadow_8_27[27 - 8 + 1];
-
+	uint8_t *reg_shadow;
 	uint16_t palette[17];
 
 	uint16_t pattern_name_addr;
