@@ -73,6 +73,9 @@ void bl_grp_set_sprite_active(uint8_t page);
 void bl_grp_set_sprite_gen_view(uint8_t page);
 void bl_grp_set_sprite_gen_active(uint8_t page);
 
+void bl_grp_set_adjust_hor(int8_t h);
+void bl_grp_set_adjust_ver(int8_t v);
+
 void bl_grp_set_scroll_mode(uint8_t mode);
 void bl_grp_set_scroll_hor(uint16_t h);
 void bl_grp_set_scroll_ver(uint8_t v);

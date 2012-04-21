@@ -33,6 +33,9 @@ struct bl_grp_var_t {
 	uint8_t sprite_gen_view_page;
 	uint8_t sprite_gen_active_page;
 
+	int8_t adjust_h;
+	int8_t adjust_v;
+
 	uint8_t scroll_mode;
 	uint16_t scroll_h;
 	uint8_t scroll_v;
