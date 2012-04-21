@@ -97,8 +97,6 @@ void bl_grp_fnt_init_var(struct bl_grp_var_t *bl_grp_var);
 void bl_grp_rc_init_var(struct bl_grp_var_t *bl_grp_var);
 int8_t bl_grp_init(void)
 {
-	uint8_t n;
-
 	bl_grp = (struct bl_grp_var_t *)bl_malloc(sizeof(struct bl_grp_var_t));
 	if (bl_grp == NULL)			/* not enough memory? */
 		return -1;
@@ -134,15 +132,13 @@ int8_t bl_grp_init(void)
 	bl_grp->reg_shadow = (uint8_t *)0x8300;
 	memcpy(&bl_grp->reg_shadow[0], (uint8_t *)0xF3DF, 8);	/* 0 ~ 7 */
 	memcpy(&bl_grp->reg_shadow[8], (uint8_t *)0xFFE7, 16);	/* 8 ~ 23 */
+	bl_grp->reg_shadow[24] = 0;				/* 24 */
 	memcpy(&bl_grp->reg_shadow[25], (uint8_t *)0xFFFA, 3);	/* 25 ~ 27 */
 
 	/* Initialize palette */
 	memcpy(bl_grp->palette, init_palette, sizeof(init_palette));
 
-	/* Initialize VDP registers */
-	for (n = 0; n < 28; n++)
-		bl_write_vdp(n, bl_grp->reg_shadow[n]);
-
+	/* VDP version */
 	bl_grp->vdp_ver = bl_read_vdp(1) & 0x04 ? GRP_VER_9958 : GRP_VER_9938;
 
 	return bl_grp->vdp_ver;
