@@ -196,6 +196,37 @@ uint8_t bl_grp_get_vdp_ver(void)
 	return bl_grp->vdp_ver;
 }
 
+#if 1	/* ASM version */
+#define bl_grp_update_reg_bit(no, mask, bits)	\
+	update_reg_bit(((uint16_t)no << 8) | (uint8_t)(~mask), bits)
+#asm
+;void _update_reg_bit(uint16_t no_mask, uint8_t bits)
+		GLOBAL _update_reg_bit
+_update_reg_bit:
+		POP HL			; return address
+		POP DE			; D = no, E = mask (inverted)
+		POP BC			; C = bits
+		PUSH BC
+		PUSH DE
+		PUSH HL
+
+		LD H,083H		; VDP shadow register addr high
+		LD L,D			; VDP shadow register addr low
+		LD A,(HL)		; Read old value
+		AND E			; Mask bits
+		OR C			; Set value
+
+		DI
+		OUT (099H),A		; Write value
+		LD (HL),A		; Update shadow register
+		LD A,D
+		OR 080H
+		OUT (099H),A		; Write register no.
+		EI
+
+		RET
+#endasm
+#else	/* C version */
 void bl_grp_update_reg_bit(uint8_t no, uint8_t mask, uint8_t bits)
 {
 	uint8_t val;
@@ -205,6 +236,7 @@ void bl_grp_update_reg_bit(uint8_t no, uint8_t mask, uint8_t bits)
 	bl_write_vdp(no, val);
 	bl_grp->reg_shadow[no] = val;
 }
+#endif
 
 void bl_grp_set_pattern_name_addr(uint16_t addr)
 {
