@@ -2,7 +2,7 @@
  * BLGRP
  */
 
-#include <stdio.h>
+/*#include <stdio.h>*/
 #include <string.h>
 #include <msxio.h>
 #include <msxbdos.h>
@@ -246,6 +246,21 @@ void bl_grp_update_reg_bit(uint8_t no, uint8_t mask, uint8_t bits)
 	bl_grp->reg_shadow[no] = val;
 }
 #endif
+
+void bl_grp_set_irq_vblank(uint8_t on)
+{
+	bl_grp_update_reg_bit( 1, 0x20, on ? 0x20 : 0x00);
+}
+
+void bl_grp_set_irq_hblank(uint8_t on)
+{
+	bl_grp_update_reg_bit( 0, 0x10, on ? 0x10 : 0x00);
+}
+
+void bl_grp_set_irq_hblank_line(uint8_t line)
+{
+	bl_grp_update_reg_bit(19, 0xFF, line);
+}
 
 void bl_grp_set_pattern_name_addr(uint16_t addr)
 {

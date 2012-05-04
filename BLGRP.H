@@ -38,6 +38,10 @@ char bl_grp_init(void);
 void bl_grp_deinit(void);
 uint8_t bl_grp_get_vdp_ver(void);
 
+void bl_grp_set_irq_vblank(uint8_t on);
+void bl_grp_set_irq_hblank(uint8_t on);
+void bl_grp_set_irq_hblank_line(uint8_t line);
+
 void bl_grp_set_screen_mode(uint8_t mode);
 void bl_grp_set_display_on(uint8_t on);
 uint8_t bl_grp_get_screen_mode(void);

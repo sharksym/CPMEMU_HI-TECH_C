@@ -2,7 +2,7 @@
  * BLGRPCMD
  */
 
-#include <stdio.h>
+/*#include <stdio.h>*/
 #include <string.h>
 #include <msxio.h>
 #include <msxbdos.h>
