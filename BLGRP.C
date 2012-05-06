@@ -136,7 +136,7 @@ int8_t bl_grp_init(void)
 	bl_grp->font_height = 8;
 
 	/* VDP register shadow */
-	bl_grp->reg_shadow = (uint8_t *)0x8300;
+	bl_grp->reg_shadow = (uint8_t *)GRP_REG_SHADOW_ADDR;
 	memcpy(&bl_grp->reg_shadow[0], (uint8_t *)0xF3DF, 8);	/* 0 ~ 7 */
 	memcpy(&bl_grp->reg_shadow[8], (uint8_t *)0xFFE7, 16);	/* 8 ~ 23 */
 	bl_grp->reg_shadow[24] = 0;				/* 24 */

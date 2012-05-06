@@ -2,41 +2,44 @@
  * BLGRP.H
  */
 
-#define GRP_VER_9938	0		/* VDP V9938 */
-#define GRP_VER_9958	1		/* VDP V9958 */
+#define GRP_VER_9938		0	/* VDP V9938 */
+#define GRP_VER_9958		1	/* VDP V9958 */
 
-#define GRP_SCR_T1	0		/* SCREEN 0 */
-#define GRP_SCR_T2	1		/* SCREEN 0 80COL */
-#define GRP_SCR_MC	2		/* SCREEN 3 */
-#define GRP_SCR_G1	3		/* SCREEN 1 */
-#define GRP_SCR_G2	4		/* SCREEN 2 */
-#define GRP_SCR_G3	5		/* SCREEN 4 */
-#define GRP_SCR_G4	6		/* SCREEN 5 */
-#define GRP_SCR_G5	7		/* SCREEN 6 */
-#define GRP_SCR_G6	8		/* SCREEN 7 */
-#define GRP_SCR_G7	9		/* SCREEN 8 */
+#define GRP_SCR_T1		0	/* SCREEN 0 */
+#define GRP_SCR_T2		1	/* SCREEN 0 80COL */
+#define GRP_SCR_MC		2	/* SCREEN 3 */
+#define GRP_SCR_G1		3	/* SCREEN 1 */
+#define GRP_SCR_G2		4	/* SCREEN 2 */
+#define GRP_SCR_G3		5	/* SCREEN 4 */
+#define GRP_SCR_G4		6	/* SCREEN 5 */
+#define GRP_SCR_G5		7	/* SCREEN 6 */
+#define GRP_SCR_G6		8	/* SCREEN 7 */
+#define GRP_SCR_G7		9	/* SCREEN 8 */
 
-#define GRP_SPR_8	0x00		/* 8x8   normal */
-#define GRP_SPR_8EX	0x01		/* 8x8   expanded */
-#define GRP_SPR_16	0x02		/* 16x16 normal */
-#define GRP_SPR_16EX	0x03		/* 16x16 expanded */
+#define GRP_SPR_8		0x00	/* 8x8   normal */
+#define GRP_SPR_8EX		0x01	/* 8x8   expanded */
+#define GRP_SPR_16		0x02	/* 16x16 normal */
+#define GRP_SPR_16EX		0x03	/* 16x16 expanded */
 
-#define GRP_DISP_240P	0x00		/* 240p normal */
-#define GRP_DISP_240P2	0x04		/* 240p two field toggle */
-#define GRP_DISP_480I	0x0C		/* 480i two field */
-#define GRP_DISP_288P	0x02		/* 288p normal */
-#define GRP_DISP_288P2	0x06		/* 288p two field toggle */
-#define GRP_DISP_576I	0x0E		/* 576i two field */
-#define GRP_DISP_IL_E0	0x0C		/* bit mask for interlaced two field */
+#define GRP_DISP_240P		0x00	/* 240p normal */
+#define GRP_DISP_240P2		0x04	/* 240p two field toggle */
+#define GRP_DISP_480I		0x0C	/* 480i two field */
+#define GRP_DISP_288P		0x02	/* 288p normal */
+#define GRP_DISP_288P2		0x06	/* 288p two field toggle */
+#define GRP_DISP_576I		0x0E	/* 576i two field */
+#define GRP_DISP_IL_E0		0x0C	/* bit mask for interlaced two field */
 
-#define GRP_SCROLL_P1	0x00		/* hor 1page */
-#define GRP_SCROLL_P2	0x01		/* hor 2page */
-#define GRP_SCROLL_P1M	0x02		/* hor 1page left mask */
-#define GRP_SCROLL_P2M	0x03		/* hor 2page left mask */
+#define GRP_SCROLL_P1		0x00	/* hor 1page */
+#define GRP_SCROLL_P2		0x01	/* hor 2page */
+#define GRP_SCROLL_P1M		0x02	/* hor 1page left mask */
+#define GRP_SCROLL_P2M		0x03	/* hor 2page left mask */
 
 char bl_grp_init(void);
 void bl_grp_deinit(void);
 uint8_t bl_grp_get_vdp_ver(void);
+
+#define GRP_REG_SHADOW_ADDR	0x8300	/* Shadow register in BANKING HELPER */
+#define bl_grp_get_vdp_shadow(no)	*((uint8_t *)(GRP_REG_SHADOW_ADDR + no))
 
 void bl_grp_set_irq_vblank(uint8_t on);
 void bl_grp_set_irq_hblank(uint8_t on);
