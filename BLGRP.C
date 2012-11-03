@@ -132,8 +132,8 @@ int8_t bl_grp_init(void)
 	bl_grp->scroll_h = 0;
 	bl_grp->scroll_v = 0;
 
-	bl_grp->font_width = 8;
-	bl_grp->font_height = 8;
+	bl_grp_set_font_size(8, 8);
+	bl_grp_set_font_color(15, 0);
 
 	/* VDP register shadow */
 	bl_grp->reg_shadow = (uint8_t *)GRP_REG_SHADOW_ADDR;
