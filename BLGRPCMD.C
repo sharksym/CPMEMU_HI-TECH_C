@@ -50,12 +50,16 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 /* This should be called by bl_grp_line(), if interlace mode is on */
 static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 {
-	pset_cmd[2] = (uint8_t)(y >> 1);
 	pset_cmd[3] = bl_grp->active_page;
-	if ((uint8_t)y & 0x01)			/* for odd page */
-		pset_cmd[3]++;
-	*(uint16_t *)(&pset_cmd[0]) = x;
+	if (bl_grp->interlace_on) {
+		pset_cmd[2] = (uint8_t)(y >> 1);
+		if ((uint8_t)y & 0x01)			/* for odd page */
+			pset_cmd[3]++;
+	} else {
+		pset_cmd[2] = (uint8_t)y;
+	}
 
+	*(uint16_t *)(&pset_cmd[0]) = x;
 #asm
 	global  _bl_vdp_cmd_wait,_bl_vdp_cmd_write
 	di
