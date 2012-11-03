@@ -118,6 +118,9 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 static uint16_t vram_faddr, fcode_idx;
 void bl_grp_print_pos(uint16_t x, uint16_t y)
 {
+	if (bl_grp->interlace_on)
+		y >>= 1;
+
 	vram_faddr = y * bl_grp->row_byte;
 	vram_faddr += x >> (bl_grp->bpp_shift);
 	bl_vdp_vram_h = (uint8_t)(vram_faddr >> 14);
@@ -128,37 +131,72 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 
 void bl_grp_print_str(char *str)
 {
-	switch (bl_grp->screen_mode) {
-	case GRP_SCR_G4:
-		while (*str) {
-			fcode_idx = (uint16_t)(*str) << 3;
-			bl_draw_font_g4(font_8x8 + fcode_idx);
-			str++;
+	if (bl_grp->interlace_on) {
+		switch (bl_grp->screen_mode) {
+		case GRP_SCR_G4:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g4i(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		case GRP_SCR_G5:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g5i(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		case GRP_SCR_G6:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g6i(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		case GRP_SCR_G7:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g7i(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		default:
+			break;
 		}
-		break;
-	case GRP_SCR_G5:
-		while (*str) {
-			fcode_idx = (uint16_t)(*str) << 3;
-			bl_draw_font_g5(font_8x8 + fcode_idx);
-			str++;
+	} else {
+		switch (bl_grp->screen_mode) {
+		case GRP_SCR_G4:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g4(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		case GRP_SCR_G5:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g5(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		case GRP_SCR_G6:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g6(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		case GRP_SCR_G7:
+			while (*str) {
+				fcode_idx = (uint16_t)(*str) << 3;
+				bl_draw_font_g7(font_8x8 + fcode_idx);
+				str++;
+			}
+			break;
+		default:
+			break;
 		}
-		break;
-	case GRP_SCR_G6:
-		while (*str) {
-			fcode_idx = (uint16_t)(*str) << 3;
-			bl_draw_font_g6(font_8x8 + fcode_idx);
-			str++;
-		}
-		break;
-	case GRP_SCR_G7:
-		while (*str) {
-			fcode_idx = (uint16_t)(*str) << 3;
-			bl_draw_font_g7(font_8x8 + fcode_idx);
-			str++;
-		}
-		break;
-	default:
-		break;
 	}
 }
 
