@@ -10,6 +10,7 @@
 #define JOYMEGA_DOWN	0x0002
 #define JOYMEGA_UP	0x0001
 
-extern unsigned short joymega_data;
+extern unsigned short joymega_data[2];
 extern void joymega_poll_data(void);
-#define joymega_pressed(button)		(joymega_data & button ? 1 : 0)
+/* port = 1 or 2 */
+#define joymega_pressed(port, button)	(joymega_data[port] & button ? 1 : 0)
