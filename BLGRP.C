@@ -450,14 +450,54 @@ uint8_t bl_grp_get_display_mode(void)
 	return bl_grp->display_mode;
 }
 
+static void bl_grp_fill_g1_color_table(void)
+{
+	uint8_t color_table[32], n, c;
+	uint16_t vram_addr = bl_grp->color_addr;
+
+	c = bl_grp->reg_shadow[7];
+	for (n = 0; n < 32; n++)
+		color_table[n] = c;
+
+	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+/*	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;*/
+	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+	bl_vdp_vram_l = (uint8_t)vram_addr;
+	bl_copy_to_vram_32(color_table);
+}
+
 void bl_grp_set_color_text_fg(uint8_t color)
 {
 	bl_grp->color_text_fg = color & 0x0F;
+
+	switch (bl_grp->screen_mode) {
+	case GRP_SCR_T1:
+	case GRP_SCR_T2:
+	case GRP_SCR_G1:
+		bl_grp_update_reg_bit(7, 0xF0, (bl_grp->color_text_fg) << 4);
+		if (bl_grp->screen_mode == GRP_SCR_G1)
+			bl_grp_fill_g1_color_table();
+		break;
+	default:
+		break;
+	}
 }
 
 void bl_grp_set_color_text_bg(uint8_t color)
 {
 	bl_grp->color_text_bg = color & 0x0F;
+
+	switch (bl_grp->screen_mode) {
+	case GRP_SCR_T1:
+	case GRP_SCR_T2:
+	case GRP_SCR_G1:
+		bl_grp_update_reg_bit(7, 0x0F, bl_grp->color_text_bg);
+		if (bl_grp->screen_mode == GRP_SCR_G1)
+			bl_grp_fill_g1_color_table();
+		break;
+	default:
+		break;
+	}
 }
 
 void bl_grp_set_color_border(uint8_t color)
