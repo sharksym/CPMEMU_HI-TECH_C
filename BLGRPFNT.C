@@ -114,20 +114,33 @@ void bl_grp_load_font(char *filename)
 	fclose(fp);
 }
 
+static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
+{
+	bl_vdp_vram_h = (uint8_t)(addr >> 14);
+/*	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;*/
+	bl_vdp_vram_m = (uint8_t)((addr >> 8)& 0x3F);
+	bl_vdp_vram_l = (uint8_t)addr;
+	bl_vdp_vram_cnt = 2048;
+	bl_copy_to_vram_nn(font_8x8);
+}
+
 void bl_grp_setup_text_font(void)
 {
 	uint16_t vram_addr = bl_grp->pattern_gen_addr;
 
 	switch (bl_grp->screen_mode) {
-	case GRP_SCR_T1:		/* only for Text based mode */
+	case GRP_SCR_T1:		/* only for Pattern based mode */
 	case GRP_SCR_T2:
 	case GRP_SCR_G1:
-		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
-/*		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;*/
-		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
-		bl_vdp_vram_l = (uint8_t)vram_addr;
-		bl_vdp_vram_cnt = 2048;
-		bl_copy_to_vram_nn(font_8x8);
+		bl_grp_copy_font_to_pattern_gen(vram_addr);
+		break;
+	case GRP_SCR_G2:
+	case GRP_SCR_G4:
+		bl_grp_copy_font_to_pattern_gen(vram_addr);
+		vram_addr += 2048;
+		bl_grp_copy_font_to_pattern_gen(vram_addr);
+		vram_addr += 2048;
+		bl_grp_copy_font_to_pattern_gen(vram_addr);
 		break;
 	default:
 		break;
