@@ -423,6 +423,7 @@ void bl_grp_set_line_212(uint8_t on)
 	bl_grp_update_reg_bit(9, 0x80, on);
 }
 
+extern void bl_grp_setup_font_draw_func(void);	/* from BLGRPFNT.C */
 void bl_grp_set_display_mode(uint8_t mode)
 {
 /*	mode &= 0x0E;*/
@@ -433,6 +434,8 @@ void bl_grp_set_display_mode(uint8_t mode)
 		bl_grp->interlace_on = 1;
 	else
 		bl_grp->interlace_on = 0;
+
+	bl_grp_setup_font_draw_func();
 }
 
 uint8_t bl_grp_get_palette0_on(void)

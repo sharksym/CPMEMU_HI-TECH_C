@@ -34,9 +34,43 @@ uint8_t font_8x8_wide[] = {
 0,
 };
 
+void draw_font_null(uint8_t *font)
+{
+}
+
 uint8_t *font_8x8;
 uint16_t font_8x8_len = sizeof(font_8x8_org);
 uint8_t font_8x8_init = 0;
+void (*font_draw_func)(uint8_t *font) = draw_font_null;
+
+void (*font_draw_func_table[2][10])(uint8_t *font) = {
+	/* non-interlace mode */
+	{
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		bl_draw_font_g4,
+		bl_draw_font_g5,
+		bl_draw_font_g6,
+		bl_draw_font_g7
+	},
+	/* interlace mode */
+	{
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		draw_font_null,
+		bl_draw_font_g4i,
+		bl_draw_font_g5i,
+		bl_draw_font_g6i,
+		bl_draw_font_g7i
+	}
+};
 
 void bl_grp_fnt_init_var(struct bl_grp_var_t *bl_grp_var)
 {
@@ -100,6 +134,11 @@ void bl_grp_setup_text_font(void)
 	}
 }
 
+void bl_grp_setup_font_draw_func(void)
+{
+	font_draw_func = font_draw_func_table[bl_grp->interlace_on][bl_grp->screen_mode];
+}
+
 void bl_grp_set_font_style(uint8_t style)
 {
 	switch (style) {
@@ -135,7 +174,7 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 	bl_draw_font_bgc = bl_grp->font_bgc;
 }
 
-static uint16_t vram_faddr, fcode_idx;
+static uint16_t vram_faddr;
 void bl_grp_print_pos(uint16_t x, uint16_t y)
 {
 	if (bl_grp->interlace_on)
@@ -149,76 +188,55 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 	bl_vdp_vram_l = (uint8_t)vram_faddr;
 }
 
+#asm
+;void bl_grp_print_str(char *str)
+	global	_bl_grp_print_str
+
+_bl_grp_print_str:
+	pop bc			; return addr
+	pop de			; char *str
+	push de
+	push bc
+
+_bl_grp_print_str_lp:
+	ld a,(de)
+	and a
+	ret z			; string end?
+
+	push de			; backup str
+
+	ld b,000h
+	rla
+	rl b
+	rla
+	rl b
+	rla
+	rl b
+	ld c,a			; font idx = (uint16_t)(*str) << 3
+
+	ld hl,(_font_8x8)
+	add hl,bc		; hl = font code
+	ld bc,_bl_grp_print_str_ret
+	push bc			; return addr
+	ld bc,(_font_draw_func)
+	push bc			; function addr
+	ret			; call font_draw_func
+_bl_grp_print_str_ret:
+	pop de			; restore str
+	inc de			; str++
+	jp _bl_grp_print_str_lp
+#endasm
+
+/* old
 void bl_grp_print_str(char *str)
 {
-	if (bl_grp->interlace_on) {
-		switch (bl_grp->screen_mode) {
-		case GRP_SCR_G4:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g4i(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		case GRP_SCR_G5:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g5i(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		case GRP_SCR_G6:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g6i(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		case GRP_SCR_G7:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g7i(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		default:
-			break;
-		}
-	} else {
-		switch (bl_grp->screen_mode) {
-		case GRP_SCR_G4:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g4(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		case GRP_SCR_G5:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g5(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		case GRP_SCR_G6:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g6(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		case GRP_SCR_G7:
-			while (*str) {
-				fcode_idx = (uint16_t)(*str) << 3;
-				bl_draw_font_g7(font_8x8 + fcode_idx);
-				str++;
-			}
-			break;
-		default:
-			break;
-		}
+	while (*str) {
+		fcode_idx = (uint16_t)(*str) << 3;
+		font_draw_func(font_8x8 + fcode_idx);
+		str++;
 	}
 }
+*/
 
 void bl_grp_print(uint16_t x, uint16_t y, char *str)
 {
@@ -226,27 +244,38 @@ void bl_grp_print(uint16_t x, uint16_t y, char *str)
 	bl_grp_print_str(str);
 }
 
+#asm
+;void bl_grp_print_chr(char chr)
+	global	_bl_grp_print_chr
+
+_bl_grp_print_chr:
+	pop de			; return addr
+	pop bc			; char chr
+	push bc
+	push de
+
+	xor a			; reset carry
+	rl c
+	rl b
+	rl c
+	rl b
+	rl c
+	rl b			; font idx = (uint16_t)(chr) << 3
+
+	ld hl,(_font_8x8)
+	add hl,bc		; hl = font code
+	ld bc,(_font_draw_func)
+	push bc			; function addr
+	ret			; jump font_draw_func
+#endasm
+
+/* old
 void bl_grp_print_chr(char chr)
 {
 	fcode_idx = (uint16_t)chr << 3;
-
-	switch (bl_grp->screen_mode) {
-	case GRP_SCR_G4:
-		bl_draw_font_g4(font_8x8 + fcode_idx);
-		break;
-	case GRP_SCR_G5:
-		bl_draw_font_g5(font_8x8 + fcode_idx);
-		break;
-	case GRP_SCR_G6:
-		bl_draw_font_g6(font_8x8 + fcode_idx);
-		break;
-	case GRP_SCR_G7:
-		bl_draw_font_g7(font_8x8 + fcode_idx);
-		break;
-	default:
-		break;
-	}
+	font_draw_func(font_8x8 + fcode_idx);
 }
+*/
 
 void bl_grp_print_cursor(void)
 {
