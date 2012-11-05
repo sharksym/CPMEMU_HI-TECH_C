@@ -113,9 +113,7 @@ int8_t bl_grp_init(void)
 	bl_grp_rc_init_var(bl_grp);
 
 	bl_grp->screen_mode = 0xFF;			/* dummy */
-	bl_grp->width_L40 = *((uint8_t *)(0xF3AE));	/* LINL40 */
-	bl_grp->width_L32 = *((uint8_t *)(0xF3AF));	/* LINL32 */
-	bl_grp->width = *((uint8_t *)(0xF3B0));		/* LINLEN */
+	bl_grp->text_width = 40;
 	bl_grp->palette0_on = 0;
 	bl_grp->line_212 = 1;
 	bl_grp->display_mode = GRP_DISP_240P;
@@ -346,6 +344,20 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_set_view(0);
 	bl_grp_set_active(0);
 	bl_grp_erase(0, 0);
+
+	switch (bl_grp->screen_mode) {
+	case GRP_SCR_T1:
+	case GRP_SCR_T2:
+		bl_grp_set_font_size(6, 8);
+		break;
+	case GRP_SCR_G1:
+	case GRP_SCR_G2:
+	case GRP_SCR_G4:
+		bl_grp_set_font_size(8, 8);
+		break;
+	default:
+		break;
+	}
 }
 
 void bl_grp_set_display_on(uint8_t on)

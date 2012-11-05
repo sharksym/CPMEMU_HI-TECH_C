@@ -164,6 +164,30 @@ void bl_grp_set_font_size(uint8_t w, uint8_t h)
 	bl_grp->font_height= h;
 	bl_draw_font_w = bl_grp->font_width;
 	bl_draw_font_h = bl_grp->font_height;
+
+	switch (bl_grp->screen_mode) {
+	case GRP_SCR_T1:
+		bl_grp->text_width = 40;
+		break;
+	case GRP_SCR_T2:
+		bl_grp->text_width = 80;
+		break;
+	case GRP_SCR_G1:
+	case GRP_SCR_G2:
+	case GRP_SCR_G4:
+		bl_grp->text_width = 32;
+		break;
+	case GRP_SCR_G3:
+		bl_grp->text_width = (uint8_t)(64 / bl_grp->font_width);;
+		break;
+	case GRP_SCR_G5:
+	case GRP_SCR_G6:
+		bl_grp->text_width = (uint8_t)(512 / bl_grp->font_width);
+		break;
+	default:
+		bl_grp->text_width = (uint8_t)(256 / bl_grp->font_width);
+		break;
+	}
 }
 
 void bl_grp_set_font_color(uint8_t fg, uint8_t bg)

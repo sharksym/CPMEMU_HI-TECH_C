@@ -19,10 +19,7 @@ struct bl_grp_var_t {
 	uint8_t color_text_fg;
 	uint8_t color_text_bg;
 	uint8_t color_border;
-
-	uint8_t width_L40;		/* for T1, T2 */
-	uint8_t width_L32;		/* for G1 */
-	uint8_t width;			/* current */
+	uint8_t text_width;		/* T1:40, T2:80, G1:32 */
 
 	uint8_t view_page;
 	uint8_t active_page;
