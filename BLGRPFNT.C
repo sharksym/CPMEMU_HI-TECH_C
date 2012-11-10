@@ -49,7 +49,7 @@ void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	{
 		draw_font_null,			/* T1 */
 		draw_font_null,			/* T2 */
-		draw_font_null,			/* MC */
+		bl_draw_font_mc,		/* MC */
 		draw_font_null,			/* G1 */
 		draw_font_null,			/* G2 */
 		draw_font_null,			/* G3 */
@@ -62,7 +62,7 @@ void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	{
 		draw_font_null,			/* T1 */
 		draw_font_null,			/* T2 */
-		draw_font_null,			/* MC */
+		bl_draw_font_mc,		/* MC */
 		draw_font_null,			/* G1 */
 		draw_font_null,			/* G2 */
 		draw_font_null,			/* G3 */
@@ -234,11 +234,19 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 		vram_faddr += y * bl_grp->row_byte + x;
 		bl_vdp_vram_h = 0;
 	} else {
-		if (bl_grp->interlace_on)
-			y >>= 1;
+		if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
+			vram_faddr = bl_grp->pattern_gen_addr;
+			vram_faddr += (y & 0xF8) << 5;		/* (y / 8) * 256 */
+			vram_faddr += y & 0x07;
+			vram_faddr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
+		} else {
+			if (bl_grp->interlace_on)
+				y >>= 1;
 
-		vram_faddr = y * bl_grp->row_byte;
-		vram_faddr += x >> (bl_grp->bpp_shift);
+			vram_faddr = y * bl_grp->row_byte;
+			vram_faddr += x >> (bl_grp->bpp_shift);
+		}
+
 		bl_vdp_vram_h = (uint8_t)(vram_faddr >> 14);
 		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
 	}
