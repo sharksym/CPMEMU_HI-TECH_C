@@ -654,6 +654,101 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	bl_vdp_cmd_wait();
 }
 
+uint16_t clear_fill_size, clear_fill_val;
+static void bl_grp_clear_screen_fill(uint16_t addr, uint16_t size, uint8_t val)
+{
+	bl_set_vram_addr16(addr);
+	bl_write_vram(val);
+
+	clear_fill_size = size;
+	clear_fill_val = val;
+
+#asm
+_bl_grp_clear_screen_fill_:
+	di
+	ld hl,(_clear_fill_size)
+	ex de,hl
+	ld hl,(_clear_fill_val)
+_bl_grp_clear_screen_fill_lp:
+	dec de
+	ld a,d
+	or e
+	jp z,_bl_grp_clear_screen_fill_end
+	ld a,l			; data
+	out (098h),a		; write vram
+	jp _bl_grp_clear_screen_fill_lp
+_bl_grp_clear_screen_fill_end:
+#endasm
+}
+
+void bl_grp_clear_screen(void)
+{
+	uint16_t addr = bl_grp->pattern_name_addr;
+	uint8_t val = ' ';
+	uint8_t page;
+	uint16_t width;
+
+	switch (bl_grp->screen_mode) {
+	case GRP_SCR_T1:
+		bl_grp_clear_screen_fill(addr, 960, val);
+		return;
+	case GRP_SCR_T2:
+		bl_grp_clear_screen_fill(addr, 1920, val);
+		return;
+	case GRP_SCR_MC:
+		addr = bl_grp->pattern_gen_addr;
+		val = bl_grp->font_bgc;
+		val |= (bl_grp->font_bgc) << 4;
+		bl_grp_clear_screen_fill(addr, 2048, val);
+		return;
+	case GRP_SCR_G1:
+	case GRP_SCR_G2:
+	case GRP_SCR_G3:
+		bl_grp_clear_screen_fill(addr, 768, val);
+		return;
+	case GRP_SCR_G4:
+		width = 256;
+		val = bl_grp->font_bgc;
+		val |= (bl_grp->font_bgc) << 4;
+		break;
+	case GRP_SCR_G5:
+		width = 512;
+		val = bl_grp->font_bgc;
+		val |= (bl_grp->font_bgc) << 2;
+		val |= (bl_grp->font_bgc) << 4;
+		val |= (bl_grp->font_bgc) << 6;
+		break;
+	case GRP_SCR_G6:
+		width = 512;
+		val = bl_grp->font_bgc;
+		val |= (bl_grp->font_bgc) << 4;
+		break;
+	case GRP_SCR_G7:
+		width = 256;
+		val = bl_grp->font_bgc;
+		break;
+	default:
+		break;
+	}
+
+	page = bl_grp->active_page;
+	if (bl_grp->interlace_on)
+		page &= 0x02;				/* page 0 or 2 */
+
+	do {
+		*(uint16_t *)(&hmmv_cmd[0]) = 0;
+		hmmv_cmd[2] = 0;
+		hmmv_cmd[3] = page++;
+		*(uint16_t *)(&hmmv_cmd[4]) = width;
+		*(uint16_t *)(&hmmv_cmd[6]) = bl_grp->line_212 ? 212 : 192;
+		hmmv_cmd[8] = val;
+
+		bl_vdp_cmd_hmmv(hmmv_cmd);
+		bl_vdp_cmd_wait();
+	} while (bl_grp->interlace_on && (page & 0x01));
+
+}
+
 void bl_grp_set_sprite_view(uint8_t page)
 {
 /*	page &= 0x07;*/

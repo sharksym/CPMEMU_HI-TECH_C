@@ -74,6 +74,7 @@ void bl_grp_set_width(uint8_t width);
 void bl_grp_set_view(uint8_t page);
 void bl_grp_set_active(uint8_t page);
 void bl_grp_erase(uint8_t page, uint8_t c);
+void bl_grp_clear_screen(void);
 
 void bl_grp_set_sprite_view(uint8_t page);
 void bl_grp_set_sprite_active(uint8_t page);
