@@ -20,7 +20,7 @@ int8_t bl_is_tsr_on(void);
 uint16_t bl_random(void);
 
 /* Shared heap */
-void *bl_calloc(size_t num, size_t size);
+void *bl_calloc(uint16_t num, uint16_t size);
 void bl_free(void *ptr);
-void *bl_malloc(size_t size);
-void *bl_realloc(void *ptr, size_t size);
+void *bl_malloc(uint16_t size);
+void *bl_realloc(void *ptr, uint16_t size);
