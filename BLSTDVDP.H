@@ -2,10 +2,10 @@
 
 uint8_t bl_read_vdp(uint16_t reg);
 void bl_write_vdp_(uint16_t reg_val);
-#define bl_write_vdp(reg, val) bl_write_vdp_(((uint16_t)reg << 8) | val)
+#define bl_write_vdp(reg, val) bl_write_vdp_(((uint16_t)(reg) << 8) | (val))
 void bl_set_palette_(uint16_t palette);
 #define bl_set_palette(pal, r, g, b) \
-bl_set_palette_(((uint16_t)pal << 12) | ((uint16_t)g << 8) | (r << 4) | b)
+bl_set_palette_(((uint16_t)(pal) << 12) | ((uint16_t)(g) << 8) | ((r) << 4) | (b))
 void bl_grp_set_palette_mute(uint8_t on);
 
 extern uint8_t bl_vdp_vram_h, bl_vdp_vram_m, bl_vdp_vram_l;
@@ -29,6 +29,7 @@ void bl_copy_to_vram_nn(uint8_t *src);
 void bl_erase_vram(uint16_t val);
 
 extern uint8_t bl_draw_font_w, bl_draw_font_h, bl_draw_font_fgc, bl_draw_font_bgc;
+void bl_draw_font_mc(uint8_t *font);
 void bl_draw_font_g4(uint8_t *font);
 void bl_draw_font_g4i(uint8_t *font);
 void bl_draw_font_g5(uint8_t *font);
