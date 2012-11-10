@@ -307,6 +307,33 @@ void bl_grp_set_sprite_gen_active_addr(uint16_t addr)
 	bl_grp->sprite_gen_active_addr = addr;
 }
 
+void bl_grp_setup_mc_pattern(void)
+{
+	uint8_t row_data[32], n, m, data_begin;
+	uint16_t addr;
+
+	bl_vdp_vram_h = 0;
+	bl_vdp_vram_m = 0;
+	bl_vdp_vram_l = 0;
+	bl_vdp_vram_cnt = 2048;
+	memset(bl_grp->shared_mem, 0x00, 2048);
+	bl_copy_to_vram_nn(bl_grp->shared_mem);
+
+	addr = bl_grp->pattern_name_addr;
+	data_begin = 0;
+	for (n = 0; n < 6; n++, data_begin += 32) {
+		for (m = 0; m < 32; m++)
+			row_data[m] = data_begin + m;
+
+		bl_vdp_vram_h = (uint8_t)(addr >> 14);
+		for (m = 0; m < 4; m++, addr += 32) {
+			bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
+			bl_vdp_vram_l = (uint8_t)addr;
+			bl_copy_to_vram_32(row_data);
+		}
+	}
+}
+
 void bl_grp_set_screen_mode(uint8_t mode)
 {
 	bl_grp->screen_mode = mode;
@@ -354,6 +381,9 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	case GRP_SCR_G2:
 	case GRP_SCR_G4:
 		bl_grp_set_font_size(8, 8);
+		break;
+	case GRP_SCR_MC:
+		bl_grp_setup_mc_pattern();
 		break;
 	default:
 		break;
