@@ -38,6 +38,7 @@ void draw_font_null(uint8_t *font)
 {
 }
 
+uint8_t font_text_mode;
 uint8_t *font_8x8;
 uint16_t font_8x8_len = sizeof(font_8x8_org);
 uint8_t font_8x8_init = 0;
@@ -46,29 +47,29 @@ void (*font_draw_func)(uint8_t *font) = draw_font_null;
 void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	/* non-interlace mode */
 	{
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		bl_draw_font_g4,
-		bl_draw_font_g5,
-		bl_draw_font_g6,
-		bl_draw_font_g7
+		draw_font_null,			/* T1 */
+		draw_font_null,			/* T2 */
+		draw_font_null,			/* MC */
+		draw_font_null,			/* G1 */
+		draw_font_null,			/* G2 */
+		draw_font_null,			/* G3 */
+		bl_draw_font_g4,		/* G4 */
+		bl_draw_font_g5,		/* G5 */
+		bl_draw_font_g6,		/* G6 */
+		bl_draw_font_g7			/* G7 */
 	},
 	/* interlace mode */
 	{
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		draw_font_null,
-		bl_draw_font_g4i,
-		bl_draw_font_g5i,
-		bl_draw_font_g6i,
-		bl_draw_font_g7i
+		draw_font_null,			/* T1 */
+		draw_font_null,			/* T2 */
+		draw_font_null,			/* MC */
+		draw_font_null,			/* G1 */
+		draw_font_null,			/* G2 */
+		draw_font_null,			/* G3 */
+		bl_draw_font_g4i,		/* G4 */
+		bl_draw_font_g5i,		/* G5 */
+		bl_draw_font_g6i,		/* G6 */
+		bl_draw_font_g7i		/* G7 */
 	}
 };
 
@@ -118,7 +119,7 @@ static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
 {
 	bl_vdp_vram_h = (uint8_t)(addr >> 14);
 /*	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;*/
-	bl_vdp_vram_m = (uint8_t)((addr >> 8)& 0x3F);
+	bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)addr;
 	bl_vdp_vram_cnt = 2048;
 	bl_copy_to_vram_nn(font_8x8);
@@ -150,6 +151,19 @@ void bl_grp_setup_text_font(void)
 void bl_grp_setup_font_draw_func(void)
 {
 	font_draw_func = font_draw_func_table[bl_grp->interlace_on][bl_grp->screen_mode];
+
+	switch (bl_grp->screen_mode) {
+	case GRP_SCR_T1:
+	case GRP_SCR_T2:
+	case GRP_SCR_G1:
+	case GRP_SCR_G2:
+	case GRP_SCR_G4:
+		font_text_mode = 1;
+		break;
+	default:
+		font_text_mode = 0;
+		break;
+	}
 }
 
 void bl_grp_set_font_style(uint8_t style)
@@ -187,12 +201,13 @@ void bl_grp_set_font_size(uint8_t w, uint8_t h)
 		break;
 	case GRP_SCR_G1:
 	case GRP_SCR_G2:
-	case GRP_SCR_G4:
+	case GRP_SCR_G3:
 		bl_grp->text_width = 32;
 		break;
-	case GRP_SCR_G3:
-		bl_grp->text_width = (uint8_t)(64 / bl_grp->font_width);;
+	case GRP_SCR_MC:
+		bl_grp->text_width = (uint8_t)(64 / bl_grp->font_width);
 		break;
+	case GRP_SCR_G4:
 	case GRP_SCR_G5:
 	case GRP_SCR_G6:
 		bl_grp->text_width = (uint8_t)(512 / bl_grp->font_width);
@@ -214,20 +229,28 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 static uint16_t vram_faddr;
 void bl_grp_print_pos(uint16_t x, uint16_t y)
 {
-	if (bl_grp->interlace_on)
-		y >>= 1;
+	if (font_text_mode) {
+		vram_faddr = bl_grp->pattern_name_addr;
+		vram_faddr += y * bl_grp->row_byte + x;
+		bl_vdp_vram_h = 0;
+	} else {
+		if (bl_grp->interlace_on)
+			y >>= 1;
 
-	vram_faddr = y * bl_grp->row_byte;
-	vram_faddr += x >> (bl_grp->bpp_shift);
-	bl_vdp_vram_h = (uint8_t)(vram_faddr >> 14);
-	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_faddr >> 8)& 0x3F);
+		vram_faddr = y * bl_grp->row_byte;
+		vram_faddr += x >> (bl_grp->bpp_shift);
+		bl_vdp_vram_h = (uint8_t)(vram_faddr >> 14);
+		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+	}
+
+	bl_vdp_vram_m = (uint8_t)((vram_faddr >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)vram_faddr;
 }
 
 #asm
 ;void bl_grp_print_str(char *str)
 	global	_bl_grp_print_str
+	global	_bl_write_vram
 
 _bl_grp_print_str:
 	pop bc			; return addr
@@ -235,7 +258,27 @@ _bl_grp_print_str:
 	push de
 	push bc
 
-_bl_grp_print_str_lp:
+	ld a,(_font_text_mode)
+	and a
+	jp z,_bl_grp_print_bitmap
+
+_bl_grp_print_pattern:		; for T0, T1, G1, G2, G4
+	ld a,(de)
+	and a
+	ret z			; string end?
+
+	ld l,a
+	call _bl_write_vram
+
+_bl_grp_print_pattern_lp:
+	inc de
+	ld a,(de)
+	and a
+	ret z			; string end?
+	out (098h),a		; write vram
+	jp _bl_grp_print_pattern_lp
+
+_bl_grp_print_bitmap:		; for bitmap graphic
 	ld a,(de)
 	and a
 	ret z			; string end?
@@ -261,7 +304,7 @@ _bl_grp_print_str_lp:
 _bl_grp_print_str_ret:
 	pop de			; restore str
 	inc de			; str++
-	jp _bl_grp_print_str_lp
+	jp _bl_grp_print_bitmap
 #endasm
 
 /* old
