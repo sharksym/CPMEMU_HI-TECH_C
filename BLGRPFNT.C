@@ -136,7 +136,7 @@ void bl_grp_setup_text_font(void)
 		bl_grp_copy_font_to_pattern_gen(vram_addr);
 		break;
 	case GRP_SCR_G2:
-	case GRP_SCR_G4:
+	case GRP_SCR_G3:
 		bl_grp_copy_font_to_pattern_gen(vram_addr);
 		vram_addr += 2048;
 		bl_grp_copy_font_to_pattern_gen(vram_addr);
@@ -157,7 +157,7 @@ void bl_grp_setup_font_draw_func(void)
 	case GRP_SCR_T2:
 	case GRP_SCR_G1:
 	case GRP_SCR_G2:
-	case GRP_SCR_G4:
+	case GRP_SCR_G3:
 		font_text_mode = 1;
 		break;
 	default:
@@ -207,11 +207,12 @@ void bl_grp_set_font_size(uint8_t w, uint8_t h)
 	case GRP_SCR_MC:
 		bl_grp->text_width = (uint8_t)(64 / bl_grp->font_width);
 		break;
-	case GRP_SCR_G4:
 	case GRP_SCR_G5:
 	case GRP_SCR_G6:
 		bl_grp->text_width = (uint8_t)(512 / bl_grp->font_width);
 		break;
+	case GRP_SCR_G4:
+	case GRP_SCR_G7:
 	default:
 		bl_grp->text_width = (uint8_t)(256 / bl_grp->font_width);
 		break;
@@ -270,7 +271,7 @@ _bl_grp_print_str:
 	and a
 	jp z,_bl_grp_print_bitmap
 
-_bl_grp_print_pattern:		; for T0, T1, G1, G2, G4
+_bl_grp_print_pattern:		; for T0, T1, G1, G2, G3
 	ld a,(de)
 	and a
 	ret z			; string end?
