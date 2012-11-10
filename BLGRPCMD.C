@@ -283,6 +283,41 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 	int16_t deltax, deltay;
 	int16_t error, step, x, y, inc;
 
+	if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
+		deltax = dx > sx ? dx - sx : sx - dx;
+		deltay = dy > sy ? dy - sy : sy - dy;
+		/* first draw using put_pixel() */
+		bl_grp_put_pixel(sx, sy, c, op);
+		if (deltay > deltax) {
+			error = deltay >> 1;
+			inc = sy < dy ? 1 : -1;
+			step = sx < dx ? 1 : -1;
+			for (x = sx, y = sy; y != dy; y += inc) {
+				bl_grp_put_pixel(x, y, c, op);
+				error -= deltax;
+				if (error < 0) {
+					x += step;
+					error += deltay;
+				}
+			}
+		} else {
+			error = deltax >> 1;
+			inc = sx < dx ? 1 : -1;
+			step = sy < dy ? 1 : -1;
+			for (x = sx, y = sy; x != dx; x += inc) {
+				bl_grp_put_pixel(x, y, c, op);
+				error -= deltay;
+				if (error < 0) {
+					y += step;
+					error += deltax;
+				}
+			}
+		}
+		bl_grp_put_pixel(x, y, c, op);
+
+		return;
+	}
+
 	if (bl_grp->interlace_on) {
 		deltax = dx > sx ? dx - sx : sx - dx;
 		deltay = dy > sy ? dy - sy : sy - dy;
