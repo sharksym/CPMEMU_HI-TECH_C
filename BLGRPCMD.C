@@ -31,20 +31,44 @@ static uint8_t pset_cmd[7] = {
 };
 void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
-	pset_cmd[3] = bl_grp->active_page;
-	if (bl_grp->interlace_on) {
-		pset_cmd[2] = (uint8_t)(y >> 1);
-		if ((uint8_t)y & 0x01)			/* for odd page */
-			pset_cmd[3]++;
+	uint16_t vram_addr;
+	uint8_t vram_data;
+
+	if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
+		vram_addr = bl_grp->pattern_gen_addr;
+		vram_addr += (y & 0xF8) << 5;		/* (y / 8) * 256 */
+		vram_addr += y & 0x07;
+		vram_addr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
+		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
+		bl_vdp_vram_l = (uint8_t)vram_addr;
+		vram_data = bl_read_vram();
+
+		if (x & 0x01) {				/* low 4bit */
+			vram_data &= 0xF0;
+			vram_data |= c;
+		} else {				/* high 4bit */
+			vram_data &= 0x0F;
+			vram_data |= c << 4;
+		}
+		bl_write_vram(vram_data);
 	} else {
-		pset_cmd[2] = (uint8_t)y;
+		pset_cmd[3] = bl_grp->active_page;
+		if (bl_grp->interlace_on) {
+			pset_cmd[2] = (uint8_t)(y >> 1);
+			if ((uint8_t)y & 0x01)		/* for odd page */
+				pset_cmd[3]++;
+		} else {
+			pset_cmd[2] = (uint8_t)y;
+		}
+
+		*(uint16_t *)(&pset_cmd[0]) = x;
+		pset_cmd[4] = c;
+		pset_cmd[6] = 0x50 | op;
+
+		bl_vdp_cmd_pset(pset_cmd);
 	}
-
-	*(uint16_t *)(&pset_cmd[0]) = x;
-	pset_cmd[4] = c;
-	pset_cmd[6] = 0x50 | op;
-
-	bl_vdp_cmd_pset(pset_cmd);
 }
 
 /* This should be called by bl_grp_line(), if interlace mode is on */
