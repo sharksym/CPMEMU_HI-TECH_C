@@ -479,12 +479,12 @@ static struct bl_irq_t *pIRQ = NULL;
 
 void bl_enable_bios_timi(void)
 {
-	*BankIRQ_addr |= 0x02;
+	*BankIRQ_addr |= 0x01;
 }
 
 void bl_disable_bios_timi(void)
 {
-	*BankIRQ_addr &= ~0x02;
+	*BankIRQ_addr &= ~0x01;
 }
 
 /*int16_t bl_request_irq_(uint8_t irq, void (*handler)(void), uint8_t bank)*/
