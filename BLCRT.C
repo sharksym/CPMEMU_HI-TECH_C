@@ -258,6 +258,14 @@ struct bl_mem_seg_t {
 
 static struct bl_mem_seg_t tMemSeg;
 
+struct bl_irq_t {
+	uint8_t *stat;
+	uint16_t *addr;
+	uint8_t *bank;
+};
+
+static struct bl_irq_t *pIRQ_start = NULL;
+
 
 /* for BLSTDLIB */
 static uint16_t mem_gap = 0;
@@ -286,6 +294,8 @@ int main_loader(int argc, char *argv[])
 		return 0;
 	}
 #endif
+
+	pIRQ_start = (struct bl_irq_t *)(BankIRQ_addr + 1);
 
 	rand_idx = *((uint16_t *)0xFC9E);		/* random index JIPPY */
 	rand_idx &= 4095;
@@ -469,14 +479,6 @@ int main_loader(int argc, char *argv[])
 	return ret_val;
 }
 
-struct bl_irq_t {
-	uint8_t *stat;
-	uint16_t *addr;
-	uint8_t *bank;
-};
-
-static struct bl_irq_t *pIRQ = NULL;
-
 void bl_enable_bios_timi(void)
 {
 	*BankIRQ_addr |= 0x01;
@@ -500,8 +502,7 @@ void bl_disable_mouse_poll(void)
 /*int16_t bl_request_irq_(uint8_t irq, void (*handler)(void), uint8_t bank)*/
 int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 {
-	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
-	pIRQ += irq;
+	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
 	if (*(pIRQ->stat) & 0x80) {
 		return -1;			/* ISR already exist! */
@@ -516,8 +517,7 @@ int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 
 int16_t bl_free_irq(uint8_t irq)
 {
-	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
-	pIRQ += irq;
+	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
 	if (*(pIRQ->stat) & 0x80) {
 		*(pIRQ->stat) = 0x00;
@@ -529,16 +529,14 @@ int16_t bl_free_irq(uint8_t irq)
 
 void bl_enable_irq(uint8_t irq)
 {
-	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
-	pIRQ += irq;
+	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
 	*(pIRQ->stat) |= 0x01;
 }
 
 void bl_disable_irq(uint8_t irq)
 {
-	pIRQ = (struct bl_irq_t *)(BankIRQ_addr + 1);
-	pIRQ += irq;
+	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
 	*(pIRQ->stat) &= ~0x01;
 }
