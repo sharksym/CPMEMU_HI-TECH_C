@@ -487,6 +487,16 @@ void bl_disable_bios_timi(void)
 	*BankIRQ_addr &= ~0x01;
 }
 
+void bl_enable_mouse_poll(void)
+{
+	*BankIRQ_addr |= 0x02;
+}
+
+void bl_disable_mouse_poll(void)
+{
+	*BankIRQ_addr &= ~0x02;
+}
+
 /*int16_t bl_request_irq_(uint8_t irq, void (*handler)(void), uint8_t bank)*/
 int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 {
