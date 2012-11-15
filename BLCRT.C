@@ -489,9 +489,10 @@ void bl_disable_bios_timi(void)
 	*BankIRQ_addr &= ~0x01;
 }
 
-void bl_enable_mouse_poll(void)
+void bl_enable_mouse_poll(uint8_t port)
 {
 	*BankIRQ_addr |= 0x02;
+	*((uint8_t *)0x82F3) = port;
 }
 
 void bl_disable_mouse_poll(void)
@@ -508,8 +509,8 @@ int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 		return -1;			/* ISR already exist! */
 	}
 
-	*(pIRQ->addr) = handler;			/* 1 */
-	*(pIRQ->bank) = bank << 1;			/* 2 */
+	*(pIRQ->addr) = handler;		/* 1 */
+	*(pIRQ->bank) = bank << 1;		/* 2 */
 	*(pIRQ->stat) = 0x80;			/* 3 */
 
 	return 0;				/* OK */
