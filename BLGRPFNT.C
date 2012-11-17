@@ -164,6 +164,13 @@ void bl_grp_setup_font_draw_func(void)
 		font_text_mode = 0;
 		break;
 	}
+
+#asm
+	; Setup function pointer
+	ld hl,(_font_draw_func)
+	ld (_bl_grp_print_chr_addr + 1),hl
+	ld (_bl_grp_print_bitmap_addr + 1),hl
+#endasm
 }
 
 void bl_grp_set_font_style(uint8_t style)
@@ -291,7 +298,6 @@ _bl_grp_print_bitmap:		; for bitmap graphic
 	ld a,(de)
 	and a
 	ret z			; string end?
-
 	push de			; backup str
 
 	ld b,000h
@@ -301,16 +307,13 @@ _bl_grp_print_bitmap:		; for bitmap graphic
 	rl b
 	rla
 	rl b
+	and 0f8h
 	ld c,a			; font idx = (uint16_t)(*str) << 3
 
 	ld hl,(_font_8x8)
-	add hl,bc		; hl = font code
-	ld bc,_bl_grp_print_str_ret
-	push bc			; return addr
-	ld bc,(_font_draw_func)
-	push bc			; function addr
-	ret			; call font_draw_func
-_bl_grp_print_str_ret:
+	add hl,bc		; hl = font addr
+_bl_grp_print_bitmap_addr:
+	call 00000h		; call (_font_draw_func)
 	pop de			; restore str
 	inc de			; str++
 	jp _bl_grp_print_bitmap
@@ -343,19 +346,21 @@ _bl_grp_print_chr:
 	push bc
 	push de
 
-	xor a			; reset carry
-	rl c
+	ld a,c			; char chr
+	ld b,000h
+	rla
 	rl b
-	rl c
+	rla
 	rl b
-	rl c
-	rl b			; font idx = (uint16_t)(chr) << 3
+	rla
+	rl b
+	and 0f8h
+	ld c,a			; font idx = (uint16_t)(chr) << 3
 
 	ld hl,(_font_8x8)
-	add hl,bc		; hl = font code
-	ld bc,(_font_draw_func)
-	push bc			; function addr
-	ret			; jump font_draw_func
+	add hl,bc		; hl = font addr
+_bl_grp_print_chr_addr:
+	jp 00000h		; jp (_font_draw_func)
 #endasm
 
 /* old
