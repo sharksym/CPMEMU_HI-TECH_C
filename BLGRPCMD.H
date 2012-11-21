@@ -14,6 +14,8 @@
 #define GRP_OP_TNOT	0x0C
 
 #define bl_grp_cmd_wait() bl_vdp_cmd_wait()
+void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op);
+uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y);
 void bl_grp_hcopy_v2v(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy);
 void bl_grp_hcopy_v2v_p(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy, uint8_t src);
 void bl_grp_lcopy_v2v(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t dx, uint16_t dy, uint8_t op);
