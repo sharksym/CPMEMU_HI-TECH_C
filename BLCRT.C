@@ -297,7 +297,7 @@ int main_loader(int argc, char *argv[])
 
 	pIRQ_start = (struct bl_irq_t *)(BankIRQ_addr + 1);
 
-	rand_idx = *((uint16_t *)0xFC9E);		/* random index JIPPY */
+	rand_idx = *((uint16_t *)0xFC9E);		/* random index JIFFY */
 	rand_idx &= 4095;
 
 	/* Move Bank_Call Routine to 08000H */
