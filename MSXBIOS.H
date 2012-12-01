@@ -1,5 +1,12 @@
 /* header file for HI-TECH C msxbios library */
 
+#ifndef uchar
+#define	uchar	unsigned char
+#endif
+#ifndef uint
+#define	uint	unsigned int
+#endif
+
 struct REGS {
 	uchar	f;	/* f-flag */
 	uchar	a;	/* accu */

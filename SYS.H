@@ -2,19 +2,6 @@
  *	System-dependent functions.
  */
 
-#ifndef	_STDDEF
-typedef	int		ptrdiff_t;	/* result type of pointer difference */
-typedef	unsigned	size_t;		/* type yielded by sizeof */
-#define	_STDDEF
-#define	offsetof(ty, mem)	((int)&(((ty *)0)->mem))
-#endif	_STDDEF
-
-#ifndef	NULL
-#define	NULL	((void *)0)
-#endif	NULL
-
-extern int	errno;			/* system error number */
-
 extern int	execl(char *, char *, char *, ...);
 extern int	execv(char *, char **);
 extern int	spawnl(char *, char *, char *, ...);
@@ -27,7 +14,7 @@ extern int	getuid(void);
 extern int	setuid(int);
 */
 
-uchar		getuid(void);
+unsigned char	getuid(void);
 void		setuid(int);
 
 extern int	chdir(char *);
@@ -38,4 +25,4 @@ extern char **	_getargs(char *, char *);
 extern int	_argc_;
 extern int	inp(int);
 extern void	outp(int, int);
-                                                                                                           
+

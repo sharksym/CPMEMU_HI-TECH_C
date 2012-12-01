@@ -1,24 +1,16 @@
-#define DOSVER (*(char *)0xf313)	/* MSX: 0=DOS1 */
+#include <stddef.h>
 
-#if	z80
 #define	BUFSIZ		512
 #define	_NFILE		8
-#else	z80
-#define	BUFSIZ		1024
-#define	_NFILE		20
-#endif	z80
 
 #ifndef FILE
-#define	uchar	unsigned char
-
 extern	struct	_iobuf {
 	char *		_ptr;
 	int		_cnt;
 	char *		_base;
-	uchar		_flag;
+	unsigned char	_flag;
 	char		_file;
 } _iob[_NFILE];
-
 #endif	FILE
 
 #define	_IOREAD		01
@@ -30,10 +22,6 @@ extern	struct	_iobuf {
 #define	_IOERR		040
 #define	_IOSTRG		0100
 #define	_IOBINARY	0200
-
-#ifndef	NULL
-#define	NULL	((void *)0)
-#endif	NULL
 
 #define	FILE		struct _iobuf
 #define	EOF		(-1)
@@ -49,21 +37,19 @@ extern	struct	_iobuf {
  *	it at least knows the length of a file.
  */
 
-#if	UNIX
-#define	getc(p)		(--(p)->_cnt>=0?(unsigned)*(p)->_ptr++:_filbuf(p))
-#define	putc(x,p)	(--(p)->_cnt>=0?((unsigned)(*(p)->_ptr++=x)):_flsbuf((unsigned)(x),p))
-#else	UNIX
 #define	getc(p)		fgetc(p)
 #define	putc(x,p)	fputc(x,p)
-#endif	UNIX
-
 #define	feof(p)		(((p)->_flag&_IOEOF)!=0)
 #define	ferror(p)	(((p)->_flag&_IOERR)!=0)
-#define	fileno(p)	((uchar)p->_file)
+#define	fileno(p)	((unsigned char)p->_file)
 #define	clrerr(p)	p->_flag &= ~_IOERR
 #define	clreof(p)	p->_flag &= ~_IOEOF
 
-#define	L_tmpnam	34		/* max length of temporary names */
+#define	L_tmpnam	34	/* max length of temporary names */
+
+#define SEEK_SET	0x00	/* Beginning of the file */
+#define SEEK_CUR	0x01	/* Current position of the file pointer */
+#define SEEK_END	0x02	/* End of file */
 
 extern int	fclose(FILE *);
 extern int	fflush(FILE *);
@@ -94,5 +80,3 @@ extern long	ftell(FILE *);
 extern char *	fgets(char *, int, FILE *);
 extern char *	_bufallo(void);
 
-
-                                                         

@@ -4,38 +4,17 @@
 /* header file for MSX-DOS I/O routines for Z-80 C */
 
 /* get basic definitions */
-
-#ifndef	_STDDEF
-typedef	int		ptrdiff_t;	/* result type of pointer difference */
-typedef	unsigned	size_t;		/* type yielded by sizeof */
-#define	_STDDEF
-#define	offsetof(ty, mem)	((int)&(((ty *)0)->mem))
-
-#ifndef	NULL
-#define	NULL	((void *)0)
-#endif	NULL
-
-extern int		errno;		/* system error number */
-#endif /* _STDDEF */
-
-/*	hitech.h has definitions for uchar, ushort etc */
-
-#include	<hitech.h>
-#if	z80
 #define	MAXFILE		8		/* max number of files open */
-#else	z80
-#define	MAXFILE		15		/* max number of files open */
-#endif	z80
 #define	SECSIZE		128		/* no. of bytes per sector */
 
 /* for CP/M & MSX-DOS1/2 */
 struct	fcb
 {
 	/* 13 Bytes */
-	uchar		dr;		/* drive code */
+	unsigned char	dr;		/* drive code */
 	char		name[8];	/* file name */
 	char		ft[3];		/* file type */
-	uchar		ex;		/* file extent */
+	unsigned char	ex;		/* file extent */
 
 	/* 19 Bytes */
 	char		fil;		/* not used */
@@ -47,19 +26,19 @@ struct	fcb
 
 	/* 10 Bytes */
 	char		nr;			/* next record to read or write */
-	uchar		ranrec[3];	/* CP/M random record number (24 bit no. ) */
+	unsigned char	ranrec[3];	/* CP/M random record number (24 bit no. ) */
 	long		rwp;		/* read/write pointer in bytes */
-	uchar		use;		/* use flag */
-	uchar		uid;		/* user id belonging to this file */
+	unsigned char	use;		/* use flag */
+	unsigned char	uid;		/* user id belonging to this file */
 };
 extern struct	fcb	_fcb[MAXFILE];
 
 char		bdos(int, ...);
 struct fcb *	getfcb(void);
 short		bdoshl(int, ...);	/* bdos call returning value in hl */
-uchar		getuid(void);
+unsigned char	getuid(void);
 void		setuid(int);
-uchar		setfcb(struct fcb *, char *);
+unsigned char	setfcb(struct fcb *, char *);
 
 /* for MSX-DOS */
 /* bdos call returning value in a */
@@ -170,10 +149,10 @@ int close(int);
 int creat(char *,...);		/* Creat for writing only */
 int dup(int);
 long lseek(int, long, int);
-int read(int, void *, ushort);
+int read(int, void *, unsigned short);
 int unlink(char *);
 #define remove(f) unlink(f)
-int write(int, void *, ushort);
+int write(int, void *, unsigned short);
 int isatty(int);
 int chmod(char *, int);
 int rename(char *,char *);
@@ -187,12 +166,10 @@ unsigned char getattr(char *);
 #define	O_WRONLY	0x01	/* Open for writing only */
 #define	O_RDWR		0x02	/* Open for reading and writing */
 
-#define SEEK_SET	0x00	/* Beginning of the file */
-#define SEEK_CUR	0x01	/* Current position of the file pointer */
-#define SEEK_END	0x02	/* End of file */
-
 
 /* Additional Function for MSX only */
+#define DOSVER (*(char *)0xf313)	/* MSX: 0=DOS1 */
+
 struct DPB {
 	unsigned char	drive;
 	unsigned char	media;
@@ -214,8 +191,9 @@ struct DPB {
 struct DPB *_dos_getDPB(unsigned char drive);
 void _dos_absread(char *buf, int drv, unsigned sec, int len);
 void _dos_abswrite(char *buf, int drv, unsigned sec, int len);
-unsigned char _PHYDIO_read(char *buf, unsigned char drive, unsigned sector, unsigned char len, unsigned char mediaid);
-unsigned char _PHYDIO_write(char *buf, unsigned char drive, unsigned sector, unsigned char len, unsigned char mediaid);
-
+unsigned char _PHYDIO_read(char *buf, unsigned char drive,
+		unsigned sector, unsigned char len, unsigned char mediaid);
+unsigned char _PHYDIO_write(char *buf, unsigned char drive,
+		unsigned sector, unsigned char len, unsigned char mediaid);
 
 #endif /* __MSXIO_H */

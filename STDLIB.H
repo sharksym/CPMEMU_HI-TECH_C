@@ -1,19 +1,6 @@
 /*	Standard utility functions */
 
-#ifndef	_STDDEF
-typedef	int		ptrdiff_t;	/* result type of pointer difference */
-typedef	unsigned	size_t;		/* type yielded by sizeof */
-
-#define	offsetof(ty, mem)	((int)&(((ty *)0)->mem))
-
-#define	_STDDEF
-
-#ifndef	NULL
-#define	NULL	((void *)0)
-#endif	NULL
-
-extern int	errno;			/* system error number */
-#endif	_STDDEF
+#include <stddef.h>
 
 #define	RAND_MAX	32767		/* max value returned by rand() */
 
@@ -36,4 +23,4 @@ extern int	system(char *);
 extern void	qsort(void *, size_t, size_t, int (*)(void *, void *));
 extern int	abs(int);
 extern long	labs(long);
-                                                                                          
+
