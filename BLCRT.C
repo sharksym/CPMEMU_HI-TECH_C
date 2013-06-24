@@ -12,7 +12,6 @@
  *********************************************************************/
 
 /*#define DEBUG_INFO*/
-/*#define LMEM_CACHE*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -390,13 +389,11 @@ int main_loader(int argc, char *argv[])
 		Page2Old = MapperGetPage2();
 
 #ifdef DEBUG_INFO
-		printf("Allocate %s seg:",
 #ifdef BL_TSR
-			"sys"
+		printf("Allocate sys seg:");
 #else
-			"usr"
+		printf("Allocate usr seg:");
 #endif
-			);
 #endif
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no--) {
 #ifdef BL_TSR
@@ -600,10 +597,6 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 	for (n = 0; n < page_no; n++) {
 		lmem->page_tbl[n] = MapperAllocUser();	/* Allocate user segment */
 	}
-#ifdef LMEM_CACHE
-	lmem->cache_page = 0xFF;
-	lmem->cache_addr14 = 0xFFFF;
-#endif
 /*	printf("Free seg no = %d\n", free_seg_no);*/
 
 	return lmem;
@@ -638,34 +631,14 @@ void bl_lmem_write(struct bl_lmem_t *ptr, uint32_t addr32, uint8_t data)
 	offset = (uint16_t)(addr32 & 0x3FFF);
 	offset |= 0x4000;
 
-/*	printf("page %d : offset %X, data [%02X]\n", (uint16_t)page_no, offset, (uint16_t)data);
+/*	printf("page %d : offset %X, data [%02X]\n",
+		(uint16_t)page_no, offset, (uint16_t)data);
 */
 
 	MapperPutPage1_DI(ptr->page_tbl[page_no]);
 	*((uint8_t *)offset) = data;
 /*	MapperPutPage1(page1_seg_old);*/
 }
-
-#ifdef LMEM_CACHE
-#asm
-;-----------------------------------------------------------------
-; copy 256 bytes
-;void bl_lmem_fill_cache(uint8_t *dest, uint8_t *src)
-
-_bl_lmem_fill_cache:
-		POP BC				; Return Addr
-		POP DE				; destination
-		POP HL				; source
-		PUSH HL
-		PUSH DE
-		PUSH BC
-
-		LD BC,256
-		LDIR
-
-		RET
-#endasm
-#endif
 
 uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 {
@@ -681,29 +654,10 @@ uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 	page_no = (uint8_t)(addr32 >> 14);
 	offset = (uint16_t)(addr32 & 0x3FFF);
 
-#ifdef LMEM_CACHE
-	if ((ptr->cache_page == page_no) &&
-		(ptr->cache_addr14 == (offset & 0xFF00))) {
-		data = ptr->cache_data[(uint8_t)offset];
-/*		putchar('*');*/
-	} else {
-		ptr->cache_page = page_no;
-		ptr->cache_addr14 = offset & 0xFF00;
-		offset |= 0x4000;
-
-		MapperPutPage1_DI(ptr->page_tbl[page_no]);
-		data = *((uint8_t *)offset);
-
-		bl_lmem_fill_cache(ptr->cache_data, offset & 0xFF00);
-/*		MapperPutPage1(page1_seg_old);*/
-/*		putchar('.');*/
-	}
-#else
 	offset |= 0x4000;
 	MapperPutPage1_DI(ptr->page_tbl[page_no]);
 	data = *((uint8_t *)offset);
 /*	MapperPutPage1(page1_seg_old);*/
-#endif
 
 	return data;
 }
