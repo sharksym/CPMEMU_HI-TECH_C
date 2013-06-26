@@ -993,21 +993,5 @@ _bl_free:	JP _free
 _bl_malloc:	JP _malloc
 _bl_realloc:	JP _realloc
 
-;-------------------------------------------------------------------------------
-; Execute ROM code (16KBytes)
-;
-;void bl_execute_rom_(uint16_t addr, uint8_t bank)
-		GLOBAL _bl_execute_rom_
-
-_bl_execute_rom_:
-		DI
-
-		LD A,1				; Set Screen 1
-		LD IX,0005FH			; CHGMOD
-		LD IY,(EXPTBL-1)		; slot-adres BIOS-ROM
-		CALL CALSLT
-
-		JP BankExecROM_entry		; Execute ROM
-
 #endasm
 ;
