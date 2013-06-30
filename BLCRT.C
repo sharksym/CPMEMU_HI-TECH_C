@@ -711,7 +711,8 @@ void bl_lmem_free(struct bl_lmem_t *ptr)
 	}
 }
 
-void bl_lmem_write(struct bl_lmem_t *ptr, uint32_t addr32, uint8_t data)
+#if 0	/* replaced by RD_SEG & WR_SEG */
+void bl_lmem_write_old(struct bl_lmem_t *ptr, uint32_t addr32, uint8_t data)
 {
 /*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
 	uint8_t page_no;
@@ -734,7 +735,7 @@ void bl_lmem_write(struct bl_lmem_t *ptr, uint32_t addr32, uint8_t data)
 /*	MapperPutPage1(page1_seg_old);*/
 }
 
-uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
+uint8_t bl_lmem_read_old(struct bl_lmem_t *ptr, uint32_t addr32)
 {
 /*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
 	uint8_t page_no;
@@ -755,6 +756,7 @@ uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32)
 
 	return data;
 }
+#endif
 
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size)
 {
