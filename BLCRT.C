@@ -167,7 +167,7 @@ address	entry name	function
 	global	start, _main_loader, _exit, __Hbss, __Lbss, __argc_, startup, wrelop
 
 	jp	start		;By Tatsu
-                    ;On MS-DOS,return to MS-DOS
+				;On MS-DOS, return to MS-DOS
 start:
 	ld	hl,(6)		;base address of fdos
 	ld	sp,hl		;stack grows downwards
@@ -255,8 +255,9 @@ struct bl_mem_seg_t {
 	uint8_t BankTbl[128];
 };
 
+#ifndef BL_1BANK
 static struct bl_mem_seg_t tMemSeg;
-
+#endif
 struct bl_irq_t {
 	uint8_t *stat;
 	uint16_t *addr;
@@ -342,6 +343,7 @@ int main_loader(int argc, char *argv[])
 	}
 #endif
 
+#ifndef BL_1BANK
 	if (!bl_tsr_mode) {
 		cFileHandle = open(pOvlName, O_RDONLY);		/* Open OVL File */
 		if (cFileHandle == 0xFF) {			/* Not Found? */
@@ -362,6 +364,7 @@ int main_loader(int argc, char *argv[])
 		printf("Loading: %s\n", pOvlName);
 #endif
 	}
+#endif
 
 	/* Initialize Bank Caller */
 	Bank0SegNo = MapperGetPage1();			/* Page1 Segment No. */
@@ -374,6 +377,12 @@ int main_loader(int argc, char *argv[])
 	*(BankIndex_addr + 0x00) = MapperGetPage0();
 	*(BankIndex_addr + 0x01) = MapperGetPage1();
 
+#ifdef BL_1BANK
+	SegCnt = 0;
+	cFileHandle = 0xFF;
+	OvlSize = 0;
+	Page2Old = MapperGetPage2();
+#else
 	if (bl_tsr_mode) {
 		memcpy((BankIndex_addr + 0x02), tMemSeg.BankTbl, sizeof(tMemSeg.BankTbl));
 		Page2Old = MapperGetPage2();
@@ -418,6 +427,7 @@ int main_loader(int argc, char *argv[])
 		puts("");
 #endif
 	}
+#endif
 
 	/* Set malloc heap to over 0x9400 */
 	pDummy = (int8_t *)malloc(1);
@@ -463,10 +473,14 @@ int main_loader(int argc, char *argv[])
 #ifdef DEBUG_INFO
 	puts("Free segment");
 #endif
+
+#ifndef BL_1BANK
 	/* Free all segment */
 	for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no++) {
 		MapperFree(tMemSeg.BankTbl[SegCnt]);
 	}
+#endif
+
 #endif
 
 #ifdef DEBUG_INFO
