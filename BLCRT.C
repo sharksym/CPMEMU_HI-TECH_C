@@ -355,11 +355,6 @@ static int16_t ret_val = 0;
 int main(int argc, char *argv[]);
 long _fsize(int fd);				/* Get File Size */
 
-static uint16_t rand_idx = 0;
-static uint16_t rand_tbl[] = {				/* 4Kbytes */
-#include <BLRAND.H>
-};
-
 int main_loader(int argc, char *argv[])
 {
 #ifdef BL_TSR
@@ -376,9 +371,6 @@ int main_loader(int argc, char *argv[])
 #endif
 
 	pIRQ_start = (struct bl_irq_t *)(BankIRQ_addr + 1);
-
-	rand_idx = *((uint16_t *)0xFC9E);		/* random index JIFFY */
-	rand_idx &= 4095;
 
 	/* Move Bank_Call Routine to 08000H */
 	memcpy((int8_t *)0x8000, BankCallBin, sizeof(BankCallBin));
@@ -660,14 +652,6 @@ int8_t bl_is_tsr_on(void)
 	return bl_tsr_mode;
 }
 
-uint16_t bl_random(void)
-{
-	rand_idx++;
-	rand_idx &= 4095;
-
-	return rand_tbl[rand_idx];
-}
-
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	struct bl_lmem_t *lmem;
@@ -710,53 +694,6 @@ void bl_lmem_free(struct bl_lmem_t *ptr)
 /*		printf("Free seg no = %d\n", free_seg_no);*/
 	}
 }
-
-#if 0	/* replaced by RD_SEG & WR_SEG */
-void bl_lmem_write_old(struct bl_lmem_t *ptr, uint32_t addr32, uint8_t data)
-{
-/*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
-	uint8_t page_no;
-	uint16_t offset;
-
-#asm
-	DI
-#endasm
-
-	page_no = (uint8_t)(addr32 >> 14);
-	offset = (uint16_t)(addr32 & 0x3FFF);
-	offset |= 0x4000;
-
-/*	printf("page %d : offset %X, data [%02X]\n",
-		(uint16_t)page_no, offset, (uint16_t)data);
-*/
-
-	MapperPutPage1_DI(ptr->page_tbl[page_no]);
-	*((uint8_t *)offset) = data;
-/*	MapperPutPage1(page1_seg_old);*/
-}
-
-uint8_t bl_lmem_read_old(struct bl_lmem_t *ptr, uint32_t addr32)
-{
-/*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
-	uint8_t page_no;
-	uint16_t offset;
-	uint8_t data;
-
-#asm
-	DI
-#endasm
-
-	page_no = (uint8_t)(addr32 >> 14);
-	offset = (uint16_t)(addr32 & 0x3FFF);
-
-	offset |= 0x4000;
-	MapperPutPage1_DI(ptr->page_tbl[page_no]);
-	data = *((uint8_t *)offset);
-/*	MapperPutPage1(page1_seg_old);*/
-
-	return data;
-}
-#endif
 
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size)
 {
