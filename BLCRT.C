@@ -91,7 +91,7 @@ nularg:	defb	0
 
 #else	/* BL_DISABLE */
 
-/*#define DEBUG_INFO*/
+/* #define DEBUG_INFO */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -320,24 +320,25 @@ static int16_t free_seg_no = 0;
 static uint8_t cFileHandle = 0;
 
 #ifdef BL_TSR
-static int8_t pTsrName[64];
-static int8_t pTsrEnvName[16];
-static char *pTsrEnv = NULL;
+static char pTsrEnvName[14];			/* ENV name */
+static char *pTsrEnv = NULL;			/* ENV data */
+void put_seg_table(void);
+void get_seg_table(void);
 #endif
 static char *pOvlName = NULL;
 static int16_t OvlLen = 0;
 static long OvlSize = 0;
 
-static uint8_t Page2Old = 0;
-
 /* Memory Segment Information */
 struct bl_mem_seg_t {
 	short BankMax;
-	uint8_t BankTbl[128];
+	uint8_t BankTbl[64];
 };
 
 #ifndef BL_1BANK
 static struct bl_mem_seg_t tMemSeg;
+static unsigned char mem_seg_size = sizeof(tMemSeg);
+static uint8_t Page2Old = 0;
 #endif
 struct bl_irq_t {
 	uint8_t *stat;
@@ -388,31 +389,30 @@ int main_loader(int argc, char *argv[])
 	pOvlName[OvlLen - 1] = 'L';
 
 #ifdef BL_TSR
-	strcpy(pTsrName, pOvlName);
-	pTsrName[OvlLen - 3] = 'T';
-	pTsrName[OvlLen - 2] = 'S';
-	pTsrName[OvlLen - 1] = 'R';
-
-	for (name_cnt = 0; pTsrName[name_cnt] != 0; name_cnt++) {
-		if (pTsrName[name_cnt] == '\\')
+	for (name_pos = 0, name_cnt = 0; pOvlName[name_cnt] != 0; name_cnt++) {
+		if (pOvlName[name_cnt] == '\\')
 			name_pos = name_cnt + 1;
 	}
-	strcpy(pTsrEnvName, &pTsrName[name_pos]);
-	name_pos = strlen(pTsrEnvName);
-	pTsrEnvName[name_pos - 4] = '_';
-	pTsrEnv = getenv(pTsrEnvName);
-	cFileHandle = 0xFF;
-	if (pTsrEnv) {
-		if ((pTsrEnv[0] == 'O') && (pTsrEnv[1] == 'N'))	/* XXX_TSR = ON? */
-			cFileHandle = open(pTsrName, O_RDONLY);	/* Open TSR File */
 
+	strcpy(pTsrEnvName, &pOvlName[name_pos]);
+	name_cnt = strlen(pTsrEnvName);
+	pTsrEnvName[name_cnt - 4] = '_';
+	pTsrEnvName[name_cnt - 3] = 'T';
+	pTsrEnvName[name_cnt - 2] = 'S';
+	pTsrEnvName[name_cnt - 1] = 'R';
+
+	pTsrEnv = getenv(pTsrEnvName);
+	if (pTsrEnv && (pTsrEnv[0] == '*')) {
+#ifdef DEBUG_INFO
+		printf("Load memory info [%s] ...", pTsrEnvName);
+#endif
+		bl_tsr_mode = 1;
+		bl_tsr_file_exist = 1;
+		get_seg_table();		/* tMemSeg from pTsrEnv */
 		free(pTsrEnv);
-		if (cFileHandle != 0xFF) {
-			bl_tsr_mode = 1;
-			bl_tsr_file_exist = 1;
-			read(cFileHandle, &tMemSeg, sizeof(tMemSeg));	/* Get segment data */
-			close(cFileHandle);
-		}
+#ifdef DEBUG_INFO
+		puts("Ok");
+#endif
 	}
 #endif
 
@@ -454,7 +454,6 @@ int main_loader(int argc, char *argv[])
 	SegCnt = 0;
 	cFileHandle = 0xFF;
 	OvlSize = 0;
-	Page2Old = MapperGetPage2();
 #else
 	if (bl_tsr_mode) {
 		memcpy((BankIndex_addr + 0x02), tMemSeg.BankTbl, sizeof(tMemSeg.BankTbl));
@@ -525,14 +524,15 @@ int main_loader(int argc, char *argv[])
 
 #ifdef BL_TSR
 	if (bl_tsr_mode && !bl_tsr_file_exist) {	/* TSR File not exist? */
-		cFileHandle = creat(pTsrName);		/* Create TSR File */
-		if (cFileHandle == 0xFF) {			/* Error? */
-			bl_tsr_mode = 0;
-		} else {
-			/* Leave system memory, save segment information */
-			write(cFileHandle, &tMemSeg, sizeof(tMemSeg));
-			close(cFileHandle);
-		}
+#ifdef DEBUG_INFO
+		printf("Save memroy info [%s] ...", pTsrEnvName);
+#endif
+		*(unsigned char *)0x9000 = mem_seg_size;
+		put_seg_table();			/* tMemSeg to temp heap */
+		setenv(pTsrEnvName, (char *)0x9000);
+#ifdef DEBUG_INFO
+		puts("Ok");
+#endif
 	}
 
 	if (!bl_tsr_mode) {
@@ -627,24 +627,14 @@ void bl_disable_irq(uint8_t irq)
 
 void bl_tsr_on(void)
 {
-	if (!bl_tsr_mode) {
 #ifdef BL_TSR
-		bl_tsr_mode = 1;
-		setenv(pTsrEnvName, "ON");
-#else
-		bl_tsr_mode = 0;
+	bl_tsr_mode = 1;
 #endif
-	}
 }
 
 void bl_tsr_off(void)
 {
-	if (bl_tsr_mode) {
-#ifdef BL_TSR
-		setenv(pTsrEnvName, "");
-#endif
-		bl_tsr_mode = 0;
-	}
+	bl_tsr_mode = 0;
 }
 
 int8_t bl_is_tsr_on(void)
@@ -1045,6 +1035,93 @@ _copy_256_p0_to_p2:
 		LD BC,256
 		LDIR
 
+		POP HL
+		POP DE
+		POP BC
+		RET
+
+;-------------------------------------------------------------------------------
+; Put memory segment information to env-string
+;
+;void put_seg_table(void)
+		GLOBAL _put_seg_table
+_put_seg_table:
+		PUSH BC
+		PUSH DE
+		PUSH HL
+
+		LD HL,_tMemSeg
+		LD DE,09000H
+
+		LD A,'*'			; Head
+		LD (DE),A
+		INC DE
+
+		LD A,(HL)			; BankMax value
+		INC A
+		RLCA				; info *2 bytes
+		LD B,A				; Loop counter
+
+_put_seg_loop:
+		LD A,(HL)
+		AND 00FH			; Low 4bits
+		OR 040H
+		LD (DE),A
+		INC DE
+		LD A,(HL)
+		RRA
+		RRA
+		RRA
+		RRA
+		AND 00FH			; High 4bits
+		OR 040H
+		LD (DE),A
+		INC DE
+		INC HL
+		DJNZ _put_seg_loop
+
+		XOR A
+		LD (DE),A			; Null-end string
+
+		POP HL
+		POP DE
+		POP BC
+		RET
+
+;-------------------------------------------------------------------------------
+; Get memory segment information from env-string
+;
+;void get_seg_table(void)
+		GLOBAL _get_seg_table
+_get_seg_table:
+		PUSH BC
+		PUSH DE
+		PUSH HL
+
+		LD HL,(_pTsrEnv)
+		LD DE,_tMemSeg
+		LD A,(_mem_seg_size)
+		LD B,A
+		INC HL				; Skip head '*'
+_get_seg_loop:
+		LD A,(HL)
+		INC HL
+		AND A
+		JR Z,_get_seg_end		; end?
+		AND 00FH			; Low 4bits
+		LD C,A
+		LD A,(HL)
+		INC HL
+		RLA
+		RLA
+		RLA
+		RLA
+		AND 0F0H			; High 4bits
+		OR C
+		LD (DE),A
+		INC DE
+		DJNZ _get_seg_loop
+_get_seg_end:
 		POP HL
 		POP DE
 		POP BC
