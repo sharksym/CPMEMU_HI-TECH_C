@@ -312,7 +312,7 @@ nularg:	defb	0
 
 static int8_t bl_tsr_mode = 0;
 #ifdef BL_TSR
-static int8_t bl_tsr_file_exist = 0;
+static int8_t bl_tsr_env_exist = 0;
 #endif
 
 static int16_t SegCnt = 0;
@@ -407,7 +407,7 @@ int main_loader(int argc, char *argv[])
 		printf("Load memory info [%s] ...", pTsrEnvName);
 #endif
 		bl_tsr_mode = 1;
-		bl_tsr_file_exist = 1;
+		bl_tsr_env_exist = 1;
 		get_seg_table();		/* tMemSeg from pTsrEnv */
 		free(pTsrEnv);
 #ifdef DEBUG_INFO
@@ -523,7 +523,7 @@ int main_loader(int argc, char *argv[])
 	free(pOvlName);
 
 #ifdef BL_TSR
-	if (bl_tsr_mode && !bl_tsr_file_exist) {	/* TSR File not exist? */
+	if (bl_tsr_mode && !bl_tsr_env_exist) {	/* TSR ENV not exist? */
 #ifdef DEBUG_INFO
 		printf("Save memroy info [%s] ...", pTsrEnvName);
 #endif
@@ -536,10 +536,12 @@ int main_loader(int argc, char *argv[])
 	}
 
 	if (!bl_tsr_mode) {
+		if (bl_tsr_env_exist)
+			setenv(pTsrEnvName, "");	/* Clear ENV */
+
 		/* Free all segment */
-		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++) {
+		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++)
 			MapperFree(tMemSeg.BankTbl[SegCnt]);
-		}
 	}
 #else
 #ifdef DEBUG_INFO
