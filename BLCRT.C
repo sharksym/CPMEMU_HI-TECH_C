@@ -161,6 +161,7 @@ void BankCallInit(void);
 void ISRInit(void);
 void ISRDeinit(void);
 
+void copy_256_p0_to_p2(void);
 
 /*
 
@@ -461,7 +462,7 @@ int main_loader(int argc, char *argv[])
 
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt += 2) {
 			MapperPutPage2(tMemSeg.BankTbl[SegCnt]);	/* Set segment */
-			memcpy((uint8_t *)0x8000, (uint8_t *)0x0000, 0x0100);
+			copy_256_p0_to_p2();
 		}
 		MapperPutPage2(Page2Old);		/* Set original segment */
 	} else {
@@ -487,9 +488,8 @@ int main_loader(int argc, char *argv[])
 #endif
 			MapperPutPage2(tMemSeg.BankTbl[SegCnt]);    	/* Set segment */
 			read(cFileHandle, (uint8_t *)0x8000, 0x4000);
-			if (!(SegCnt & 0x01)) {		/* Page0 area?, Copy 0x0000~0x00FF */
-				memcpy((uint8_t *)0x8000, (uint8_t *)0x0000, 0x0100);
-			}
+			if (!(SegCnt & 0x01))		/* Page0 area?, Copy 0x0000~0x00FF */
+				copy_256_p0_to_p2();
 
 			MapperPutPage2(Page2Old);			/* Set original segment */
 			*(BankIndex_addr + 0x02 + SegCnt) = tMemSeg.BankTbl[SegCnt];
@@ -1025,8 +1025,32 @@ _bl_calloc:	JP _calloc
 _bl_free:	JP _free
 _bl_malloc:	JP _malloc
 _bl_realloc:	JP _realloc
-
 #endasm
+
+
+#ifndef BL_1BANK
+#asm
+;-------------------------------------------------------------------------------
+; Copy DOS system scratch 256bytes to 8000H
+;
+;void copy_256_p0_to_p2(void)
+		GLOBAL _copy_256_p0_to_p2
+_copy_256_p0_to_p2:
+		PUSH BC
+		PUSH DE
+		PUSH HL
+
+		LD HL,00000H
+		LD DE,08000H
+		LD BC,256
+		LDIR
+
+		POP HL
+		POP DE
+		POP BC
+		RET
+#endasm
+#endif
 
 #endif	/* BL_DISABLE */
 
