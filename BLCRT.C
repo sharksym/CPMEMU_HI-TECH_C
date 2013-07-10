@@ -13,6 +13,74 @@
 
 #ifdef BL_DISABLE
 
+#ifdef BL_DOS1
+
+#asm
+
+; For CP/M, MSX-DOS1, MSX-DOS2
+
+	psect	text,global,pure
+	psect	data,global
+	psect	bss,global
+
+	psect	text
+	defs	100h		;Base of CP/M's TPA
+
+	global	start,_main,_exit,__Hbss, __Lbss, __argc_, startup
+	global	_GetBdosVersion, _gcBdosMode
+
+	jp	start		;By Tatsu
+				;On MS-DOS, return to MS-DOS
+start:	ld	hl,(6)		;base address of fdos
+	ld	sp,hl		;stack grows downwards
+	ld	de,__Lbss	;Start of BSS segment
+	or	a		;clear carry
+	ld	hl,__Hbss
+	sbc	hl,de		;size of uninitialized data area
+	ld	c,l
+	ld	b,h
+	dec	bc
+	ld	l,e
+	ld	h,d
+	inc	de
+	ld	(hl),0
+	ldir			;clear memory
+	ld	hl,nularg
+	push	hl
+	ld	hl,80h		;argument buffer
+	ld	c,(hl)
+	inc	hl
+	ld	b,0
+	add	hl,bc
+	ld	(hl),0		;zero terminate it
+	ld	hl,81h
+	push	hl
+	call	startup
+	pop	bc		;unjunk stack
+	pop	bc
+	push	hl
+	ld	hl,(__argc_)
+	push	hl
+
+	; By Yeongman
+	; Check BDOS version
+	call	_GetBdosVersion
+	ld	a,h		; 0:CP/M, 1:MSX-DOS1, 2:MSX-DOS2
+	ld	(_gcBdosMode),a
+
+	call	_main
+	push	hl
+	call	_exit
+	jp	0
+
+	psect	data
+nularg:	defb	0
+	end	start
+
+#endasm
+
+#else	/* BL_DOS1 */
+
 #asm
 
 ;-------------------------------------------------------------------------------
@@ -88,6 +156,8 @@ notdos2_mes:
 nularg:	defb	0
 
 #endasm
+
+#endif
 
 #else	/* BL_DISABLE */
 
