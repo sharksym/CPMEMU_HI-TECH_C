@@ -764,9 +764,9 @@ void bl_grp_clear_screen(void)
 		hmmv_cmd[8] = val;
 
 		bl_vdp_cmd_hmmv(hmmv_cmd);
-		bl_vdp_cmd_wait();
 	} while (bl_grp->interlace_on && (page & 0x01));
 
+	bl_vdp_cmd_wait();
 }
 
 void bl_grp_set_sprite_view(uint8_t page)
