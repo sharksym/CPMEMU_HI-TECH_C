@@ -685,13 +685,25 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	bl_vdp_cmd_wait();
 }
 
-uint16_t clear_fill_size, clear_fill_val;
-static void bl_grp_clear_screen_fill(uint16_t addr, uint16_t size, uint8_t val)
+static uint16_t clear_fill_size, clear_fill_val;
+static uint16_t table_fill_size[] = { 960, 1920, 2048, 768, 768, 768 };
+static void bl_grp_clear_screen_fill(void)
 {
+	uint16_t addr;
+	uint8_t val = ' ';
+
+	if (bl_grp->screen_mode == GRP_SCR_MC) {
+		addr = bl_grp->pattern_gen_addr;
+	} else {
+		addr = bl_grp->pattern_name_addr;
+		val = bl_grp->font_bgc;
+		val |= (bl_grp->font_bgc) << 4;
+	}
+
 	bl_set_vram_addr16(addr);
 	bl_write_vram(val);
 
-	clear_fill_size = size;
+	clear_fill_size = table_fill_size[bl_grp->screen_mode];
 	clear_fill_val = val;
 
 #asm
@@ -701,12 +713,12 @@ _bl_grp_clear_screen_fill_:
 	EX DE,HL
 	LD HL,(_clear_fill_val)
 _bl_grp_clear_screen_fill_lp:
-	DEC DE
 	LD A,D
 	OR E
 	JP Z,_bl_grp_clear_screen_fill_end
 	LD A,L			; data
 	OUT (098H),A		; write vram
+	DEC DE
 	jp _bl_grp_clear_screen_fill_lp
 _bl_grp_clear_screen_fill_end:
 #endasm
@@ -714,28 +726,9 @@ _bl_grp_clear_screen_fill_end:
 
 void bl_grp_clear_screen(void)
 {
-	uint16_t addr = bl_grp->pattern_name_addr;
-	uint8_t val = ' ';
-	uint8_t page;
+	uint8_t val, page;
 
 	switch (bl_grp->screen_mode) {
-	case GRP_SCR_T1:
-		bl_grp_clear_screen_fill(addr, 960, val);
-		return;
-	case GRP_SCR_T2:
-		bl_grp_clear_screen_fill(addr, 1920, val);
-		return;
-	case GRP_SCR_MC:
-		addr = bl_grp->pattern_gen_addr;
-		val = bl_grp->font_bgc;
-		val |= (bl_grp->font_bgc) << 4;
-		bl_grp_clear_screen_fill(addr, 2048, val);
-		return;
-	case GRP_SCR_G1:
-	case GRP_SCR_G2:
-	case GRP_SCR_G3:
-		bl_grp_clear_screen_fill(addr, 768, val);
-		return;
 	case GRP_SCR_G4:
 		val = bl_grp->font_bgc;
 		val |= (bl_grp->font_bgc) << 4;
@@ -753,8 +746,9 @@ void bl_grp_clear_screen(void)
 	case GRP_SCR_G7:
 		val = bl_grp->font_bgc;
 		break;
-	default:
-		break;
+	default:					/* for pattern mode */
+		bl_grp_clear_screen_fill();
+		return;					/* return */
 	}
 
 	page = bl_grp->active_page;
