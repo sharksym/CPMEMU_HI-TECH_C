@@ -407,7 +407,9 @@ struct bl_mem_seg_t {
 
 #ifndef BL_1BANK
 static struct bl_mem_seg_t tMemSeg;
+#ifdef BL_TSR
 static unsigned char mem_seg_size = sizeof(tMemSeg);
+#endif
 static uint8_t Page2Old = 0;
 #endif
 struct bl_irq_t {
@@ -1111,7 +1113,10 @@ _copy_256_p0_to_p2:
 		POP DE
 		POP BC
 		RET
+#endasm
 
+#ifdef BL_TSR
+#asm
 ;-------------------------------------------------------------------------------
 ; Put memory segment information to env-string
 ;
