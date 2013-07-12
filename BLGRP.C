@@ -204,6 +204,33 @@ uint8_t bl_grp_get_vdp_ver(void)
 }
 
 #if 1	/* ASM version */
+extern uint8_t update_bits;
+#define bl_grp_update_reg_bit(no, mask, bits)	\
+{ update_bits = bits; update_reg_bit(((uint16_t)no << 8) | (uint8_t)(~mask)); }
+#asm
+;void _update_reg_bit(uint16_t no_mask, uint8_t bits)
+		GLOBAL _update_reg_bit
+_update_reg_bit:
+		DI
+					; HL = no_mask
+		LD D,083H		; VDP shadow register addr high
+		LD E,H			; VDP shadow register addr low
+		LD A,(DE)		; Read old value
+		AND L			; Mask bits
+
+		DEFB 0F6H		; OR bits
+_update_bits:	DEFB 0
+
+		OUT (099H),A		; Write value
+		LD (DE),A		; Update shadow register
+		LD A,H
+		OR 080H
+		OUT (099H),A		; Write register no.
+
+		EI
+		RET
+#endasm
+#else	/* old */
 #define bl_grp_update_reg_bit(no, mask, bits)	\
 	update_reg_bit(((uint16_t)no << 8) | (uint8_t)(~mask), bits)
 #asm
@@ -233,7 +260,9 @@ _update_reg_bit:
 
 		RET
 #endasm
-#else	/* C version */
+#endif
+
+#if 0	/* C version (slow) */
 void bl_grp_update_reg_bit(uint8_t no, uint8_t mask, uint8_t bits)
 {
 	uint8_t val;
