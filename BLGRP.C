@@ -130,6 +130,9 @@ int8_t bl_grp_init(void)
 	bl_grp->scroll_h = 0;
 	bl_grp->scroll_v = 0;
 
+	bl_grp->width = 256;
+	bl_grp->height = 212;
+
 	bl_grp_set_font_size(8, 8);
 	bl_grp_set_font_color(15, 0);
 
@@ -208,7 +211,7 @@ extern uint8_t update_bits;
 #define bl_grp_update_reg_bit(no, mask, bits)	\
 { update_bits = bits; update_reg_bit(((uint16_t)no << 8) | (uint8_t)(~mask)); }
 #asm
-;void _update_reg_bit(uint16_t no_mask, uint8_t bits)
+;void _update_reg_bit(uint16_t no_mask)
 		GLOBAL _update_reg_bit
 _update_reg_bit:
 		DI
@@ -382,6 +385,7 @@ void bl_grp_set_screen_mode(uint8_t mode)
 
 	bl_grp->row_byte = table_addr[mode][5];
 	bl_grp->bpp_shift = table_addr[mode][6];
+	bl_grp->width = (mode == GRP_SCR_G5) || (mode == GRP_SCR_G6) ? 512 : 256;
 
 	bl_grp_set_sprite_mode(bl_grp->sprite_mode);
 	bl_grp_set_sprite_on(bl_grp->sprite_on);
@@ -401,7 +405,7 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_set_active(0);
 	bl_grp_erase(0, 0);
 
-	switch (bl_grp->screen_mode) {
+	switch (mode) {
 	case GRP_SCR_T1:
 	case GRP_SCR_T2:
 		bl_grp_set_font_size(6, 8);
@@ -486,9 +490,11 @@ void bl_grp_set_line_212(uint8_t on)
 {
 	if (on) {
 		bl_grp->line_212 = 1;
+		bl_grp->height = bl_grp->interlace_on ? 240 : 212;
 		on = 0x80;
 	} else {
 		bl_grp->line_212 = 0;
+		bl_grp->height = bl_grp->interlace_on ? 240 : 192;
 		on = 0x00;
 	}
 	bl_grp_update_reg_bit(9, 0x80, on);
@@ -501,10 +507,13 @@ void bl_grp_set_display_mode(uint8_t mode)
 	bl_grp->display_mode = mode;
 	bl_grp_update_reg_bit(9, 0x0E, mode);
 
-	if ((bl_grp->display_mode & GRP_DISP_IL_E0) == GRP_DISP_IL_E0)
+	if ((bl_grp->display_mode & GRP_DISP_IL_E0) == GRP_DISP_IL_E0) {
 		bl_grp->interlace_on = 1;
-	else
+		bl_grp->height = 240;
+	} else {
 		bl_grp->interlace_on = 0;
+		bl_grp->height = bl_grp->line_212 ? 212 : 192;
+	}
 
 	bl_grp_setup_font_draw_func();
 }
@@ -535,7 +544,7 @@ static void bl_grp_fill_g1_color_table(void)
 
 	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 /*	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;*/
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)vram_addr;
 	bl_copy_to_vram_32(color_table);
 }
@@ -645,10 +654,14 @@ static uint8_t hmmv_cmd[11] = {
 void bl_grp_erase(uint8_t page, uint8_t c)
 {
 	uint16_t n, block;
-	uint16_t width, height;
+	uint16_t lines;
 
-	if (bl_grp->interlace_on)
+	if (bl_grp->interlace_on) {
 		page &= 0x02;				/* page 0 or 2 */
+		lines = 512;				/* erase double page */
+	} else {
+		lines = 256;
+	}
 
 	if (bl_grp->screen_mode < GRP_SCR_G4) {		/* page size = 16kbytes */
 		block = 1;
@@ -661,22 +674,11 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	}
 
 	/* use HMMV for bitmap mode */
-	if ((bl_grp->screen_mode == GRP_SCR_G5) ||
-		(bl_grp->screen_mode == GRP_SCR_G6))
-		width = 512;
-	else
-		width = 256;
-
-	if (bl_grp->interlace_on)			/* erase double page */
-		height = 512;
-	else
-		height = 256;
-
 	*(uint16_t *)(&hmmv_cmd[0]) = 0;
 	hmmv_cmd[2] = 0;
 	hmmv_cmd[3] = page;
-	*(uint16_t *)(&hmmv_cmd[4]) = width;
-	*(uint16_t *)(&hmmv_cmd[6]) = height;
+	*(uint16_t *)(&hmmv_cmd[4]) = bl_grp->width;
+	*(uint16_t *)(&hmmv_cmd[6]) = lines;
 	hmmv_cmd[8] = c;
 
 	bl_vdp_cmd_hmmv(hmmv_cmd);
@@ -694,17 +696,17 @@ static void bl_grp_clear_screen_fill(uint16_t addr, uint16_t size, uint8_t val)
 
 #asm
 _bl_grp_clear_screen_fill_:
-	di
-	ld hl,(_clear_fill_size)
-	ex de,hl
-	ld hl,(_clear_fill_val)
+	DI
+	LD HL,(_clear_fill_size)
+	EX DE,HL
+	LD HL,(_clear_fill_val)
 _bl_grp_clear_screen_fill_lp:
-	dec de
-	ld a,d
-	or e
-	jp z,_bl_grp_clear_screen_fill_end
-	ld a,l			; data
-	out (098h),a		; write vram
+	DEC DE
+	LD A,D
+	OR E
+	JP Z,_bl_grp_clear_screen_fill_end
+	LD A,L			; data
+	OUT (098H),A		; write vram
 	jp _bl_grp_clear_screen_fill_lp
 _bl_grp_clear_screen_fill_end:
 #endasm
@@ -715,7 +717,6 @@ void bl_grp_clear_screen(void)
 	uint16_t addr = bl_grp->pattern_name_addr;
 	uint8_t val = ' ';
 	uint8_t page;
-	uint16_t width;
 
 	switch (bl_grp->screen_mode) {
 	case GRP_SCR_T1:
@@ -736,24 +737,20 @@ void bl_grp_clear_screen(void)
 		bl_grp_clear_screen_fill(addr, 768, val);
 		return;
 	case GRP_SCR_G4:
-		width = 256;
 		val = bl_grp->font_bgc;
 		val |= (bl_grp->font_bgc) << 4;
 		break;
 	case GRP_SCR_G5:
-		width = 512;
 		val = bl_grp->font_bgc;
 		val |= (bl_grp->font_bgc) << 2;
 		val |= (bl_grp->font_bgc) << 4;
 		val |= (bl_grp->font_bgc) << 6;
 		break;
 	case GRP_SCR_G6:
-		width = 512;
 		val = bl_grp->font_bgc;
 		val |= (bl_grp->font_bgc) << 4;
 		break;
 	case GRP_SCR_G7:
-		width = 256;
 		val = bl_grp->font_bgc;
 		break;
 	default:
@@ -768,8 +765,8 @@ void bl_grp_clear_screen(void)
 		*(uint16_t *)(&hmmv_cmd[0]) = 0;
 		hmmv_cmd[2] = 0;
 		hmmv_cmd[3] = page++;
-		*(uint16_t *)(&hmmv_cmd[4]) = width;
-		*(uint16_t *)(&hmmv_cmd[6]) = bl_grp->line_212 ? 212 : 192;
+		*(uint16_t *)(&hmmv_cmd[4]) = bl_grp->width;
+		*(uint16_t *)(&hmmv_cmd[6]) = bl_grp->height;	/* 192, 212, 240 */
 		hmmv_cmd[8] = val;
 
 		bl_vdp_cmd_hmmv(hmmv_cmd);
