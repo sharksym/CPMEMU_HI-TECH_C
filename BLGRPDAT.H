@@ -64,5 +64,5 @@ struct bl_grp_var_t {
 	uint8_t *shared_mem;
 };
 
-#define BL_GRP_SHARED_MEM	(4096)	/* 4Kbytes shared memory */
+#define BL_GRP_SHARED_MEM	(2048)	/* min. 2Kbytes shared memory */
 
