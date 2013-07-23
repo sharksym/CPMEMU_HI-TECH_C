@@ -492,7 +492,7 @@ int main_loader(int argc, char *argv[])
 	if (!bl_tsr_mode) {
 		cFileHandle = open(pOvlName, O_RDONLY);		/* Open OVL File */
 		if (cFileHandle == 0xFF) {			/* Not Found? */
-			printf("\nERROR: [%s] Not found\n", pOvlName);
+			puts("\nERROR: OVL not found");
 			return 0;
 		}
 
