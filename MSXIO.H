@@ -64,8 +64,12 @@ struct	fileinfo
 {
 	char		name[13];	/* File name with extension */
 	unsigned char	drive;		/* Logical drive A=1, B=2, ...Default=0 */
+#ifdef DOS2ONLY
+	struct msxfib	tfib;
+#else
 	struct fcb	tfcb;
 	struct msxfib	tfib;
+#endif
 };
 
 
