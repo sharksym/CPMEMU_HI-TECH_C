@@ -3,7 +3,7 @@
  */
 
 #include <stdio.h>
-#include <string.h>
+/*#include <string.h>*/
 #include <msxio.h>
 #include <msxbdos.h>
 #include <blstd.h>
