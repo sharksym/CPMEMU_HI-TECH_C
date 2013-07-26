@@ -1078,17 +1078,20 @@ _MapperPutPageDI_ret:
 ;-------------------------------------------------------------------------------
 ; Shared Heap Management
 ;
-;void *	bl_calloc(uint16_t, uint16_t)
-;void	bl_free(void *)
-;void *	bl_malloc(uint16_t)
-;void *	bl_realloc(void *, uint16_t)
-		GLOBAL _bl_calloc,_bl_free,_bl_malloc,_bl_realloc
-		GLOBAL _calloc,_free,_malloc,_realloc
+;void *bl_calloc(uint16_t, uint16_t)
+;void bl_free(void *)
+;void *bl_malloc(uint16_t)
+;void *bl_realloc(void *, uint16_t)
+;void *bl_get_memtop(void)
+		GLOBAL _bl_calloc,_bl_free,_bl_malloc,_bl_realloc,_bl_get_memtop
+		GLOBAL _calloc,_free,_malloc,_realloc,memtop
 
 _bl_calloc:	JP _calloc
 _bl_free:	JP _free
 _bl_malloc:	JP _malloc
 _bl_realloc:	JP _realloc
+_bl_get_memtop:	LD HL,(memtop)
+		RET
 #endasm
 
 
