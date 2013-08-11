@@ -395,7 +395,7 @@ static char *pTsrEnv = NULL;			/* ENV data */
 void put_seg_table(void);
 void get_seg_table(void);
 #endif
-static char *pOvlName = NULL;
+static char pOvlName[64] = "";
 static int16_t OvlLen = 0;
 static long OvlSize = 0;
 
@@ -454,7 +454,7 @@ int main_loader(int argc, char *argv[])
 	printf("Free seg no = %d\n", free_seg_no);
 #endif
 
-	pOvlName = getenv("PROGRAM");			/* Get Full Path of PROGRAM */
+	strcpy(pOvlName, getenv("PROGRAM"));	/* Get Full Path of PROGRAM */
 	OvlLen = strlen(pOvlName);
 	pOvlName[OvlLen - 3] = 'O';
 	pOvlName[OvlLen - 2] = 'V';
