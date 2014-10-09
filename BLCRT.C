@@ -716,11 +716,13 @@ int8_t bl_is_tsr_on(void)
 	return bl_tsr_mode;
 }
 
+static uint8_t lmem_sys_seg = 0;
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	struct bl_lmem_t *lmem;
 	uint8_t page_no, n;
 
+/*	printf("alloc size = %lu\n", size); */
 	size += 0x3FFF;			/* 16KB - 1 */
 	size >>= 14;			/* N page */
 	page_no = (uint8_t)size;
@@ -736,10 +738,25 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 
 	free_seg_no -= page_no;
 	lmem->page_max = page_no;
+	lmem->sys_used = lmem_sys_seg;
 	for (n = 0; n < page_no; n++) {
-		lmem->page_tbl[n] = MapperAllocUser();	/* Allocate user segment */
+		if (lmem_sys_seg)
+			lmem->page_tbl[n] = MapperAllocSys();
+		else
+			lmem->page_tbl[n] = MapperAllocUser();
 	}
 /*	printf("Free seg no = %d\n", free_seg_no);*/
+
+	return lmem;
+}
+
+struct bl_lmem_t *bl_lmem_alloc_sys(uint32_t size)
+{
+	struct bl_lmem_t *lmem;
+
+	lmem_sys_seg = 1;		/* for system segment */
+	lmem = bl_lmem_alloc(size);
+	lmem_sys_seg = 0;
 
 	return lmem;
 }
