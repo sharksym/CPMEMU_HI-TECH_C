@@ -484,7 +484,6 @@ int main_loader(int argc, char *argv[])
 		bl_tsr_mode = 1;
 		bl_tsr_env_exist = 1;
 		get_seg_table();		/* tMemSeg from pTsrEnv */
-		free(pTsrEnv);
 #ifdef DEBUG_INFO
 		puts("Ok");
 #endif
@@ -595,7 +594,6 @@ int main_loader(int argc, char *argv[])
 	ISRDeinit();
 
 	free(pDummy);
-	free(pOvlName);
 
 #ifdef BL_TSR
 	if (bl_tsr_mode && !bl_tsr_env_exist) {	/* TSR ENV not exist? */
