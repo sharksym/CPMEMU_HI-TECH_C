@@ -420,6 +420,9 @@ struct bl_irq_t {
 
 static struct bl_irq_t *pIRQ_start = NULL;
 
+/* lmem export, import */
+void put_lmem_seg_table(struct bl_lmem_t *ptr);
+void get_lmem_seg_table(struct bl_lmem_t *ptr);
 
 /* for BLSTDLIB */
 static uint16_t mem_gap = 0;
@@ -774,6 +777,39 @@ void bl_lmem_free(struct bl_lmem_t *ptr)
 
 /*		printf("Free seg no = %d\n", free_seg_no);*/
 	}
+}
+
+void bl_lmem_export(struct bl_lmem_t *ptr, char *name)
+{
+	if (ptr->sys_used) {
+		*(unsigned char *)0x9000 = ptr->page_max;
+		put_lmem_seg_table(ptr);
+		setenv(name, (char *)0x9000);
+	}
+}
+
+struct bl_lmem_t *bl_lmem_import(char *name)
+{
+	struct bl_lmem_t *lmem;
+	char *env;
+
+	lmem = (struct bl_lmem_t *)malloc(sizeof(struct bl_lmem_t));
+	if (lmem == NULL) {		/* not enough heap */
+		return NULL;
+	}
+
+	env = getenv(name);
+	if (env[0] == '*') {
+		strcpy((char *)0x9000, env);
+		get_lmem_seg_table(lmem);
+		lmem->page_max = env[1] - 0x20;
+		lmem->sys_used = 1;
+	} else {			/* env not found */
+		free(lmem);
+		return NULL;
+	}
+
+	return lmem;
 }
 
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size)
@@ -1149,16 +1185,81 @@ _put_seg_table:
 
 		LD HL,_tMemSeg
 		LD DE,09000H
-
-		LD A,'*'			; Head
-		LD (DE),A
-		INC DE
-
 		LD A,(HL)			; BankMax value
 		INC A
 		RLCA				; info *2 bytes
-		LD B,A				; Loop counter
 
+		JP _put_seg_main
+
+;-------------------------------------------------------------------------------
+; Get memory segment information from env-string
+;
+;void get_seg_table(void)
+		GLOBAL _get_seg_table
+_get_seg_table:
+		PUSH BC
+		PUSH DE
+		PUSH HL
+
+		LD HL,(_pTsrEnv)
+		LD DE,_tMemSeg
+		LD A,(_mem_seg_size)
+
+		JP _get_seg_main
+
+#endasm
+#endif	/* BL_TSR */
+
+#endif	/* BL_1BANK */
+
+#asm
+;-------------------------------------------------------------------------------
+; Put lmem segment information to env-string
+;
+;void put_lmem_seg_table(struct bl_lmem_t *ptr)
+		GLOBAL _put_lmem_seg_table
+_put_lmem_seg_table:
+		PUSH BC
+		PUSH DE
+		PUSH HL				; HL = ptr
+
+		LD DE,09000H
+		LD A,(DE)			; segment count
+
+		JP _put_seg_main
+
+;-------------------------------------------------------------------------------
+; Get lmem segment information from env-string
+;
+;void get_lmem_seg_table(struct bl_lmem_t *ptr)
+		GLOBAL _get_lmem_seg_table
+_get_lmem_seg_table:
+		PUSH BC
+		PUSH DE
+		PUSH HL				; HL = ptr
+
+		EX DE,HL			; DE = ptr
+		LD HL,09001H			; Skip Head '*'
+		LD A,(HL)
+		SUB 020H			; segment count
+		DEC HL				; HL = 9000H
+
+		JP _get_seg_main
+
+;-------------------------------------------------------------------------------
+; _put_seg_main
+; HL = segment table address
+; DE = target environment string address
+; A  = segment count
+_put_seg_main:
+		LD B,A				; Loop counter
+		LD A,'*'			; Add Head '*'
+		LD (DE),A
+		INC DE
+		LD A,B
+		ADD A,020H			; count + 0x20
+		LD (DE),A
+		INC DE
 _put_seg_loop:
 		LD A,(HL)
 		AND 00FH			; Low 4bits
@@ -1186,20 +1287,14 @@ _put_seg_loop:
 		RET
 
 ;-------------------------------------------------------------------------------
-; Get memory segment information from env-string
-;
-;void get_seg_table(void)
-		GLOBAL _get_seg_table
-_get_seg_table:
-		PUSH BC
-		PUSH DE
-		PUSH HL
-
-		LD HL,(_pTsrEnv)
-		LD DE,_tMemSeg
-		LD A,(_mem_seg_size)
+; _get_seg_main
+; HL = environment string address
+; DE = target segment table address
+; A  = segment count
+_get_seg_main:
 		LD B,A
-		INC HL				; Skip head '*'
+		INC HL				; Skip Head '*'
+		INC HL				; Skip (count + 0x20)
 _get_seg_loop:
 		LD A,(HL)
 		INC HL
@@ -1224,8 +1319,5 @@ _get_seg_end:
 		POP BC
 		RET
 #endasm
-#endif
-
-#endif	/* BL_DISABLE */
 
 ;

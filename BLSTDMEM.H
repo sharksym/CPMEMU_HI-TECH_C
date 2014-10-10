@@ -8,6 +8,8 @@ struct bl_lmem_t {
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size);
 struct bl_lmem_t *bl_lmem_alloc_sys(uint32_t size);
 void bl_lmem_free(struct bl_lmem_t *ptr);
+void bl_lmem_export(struct bl_lmem_t *ptr, char *name);
+struct bl_lmem_t *bl_lmem_import(char *name);
 void bl_lmem_write(struct bl_lmem_t *ptr, uint32_t addr32, uint8_t data);
 uint8_t bl_lmem_read(struct bl_lmem_t *ptr, uint32_t addr32);
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size);
