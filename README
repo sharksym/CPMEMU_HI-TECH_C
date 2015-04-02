@@ -1,0 +1,25 @@
+        Toolchain for developing MSX-DOS/DOS2 application
+                                 by Yeongman Seo (email: sharksym@hitel.net)
+
+WHAT IS IT?
+
+    This toolchain canbe used for developing MSX-DOS/DOS2 application.
+    http://sharksym.egloos.com/category/HI-TECH%20C
+
+
+TOOLCHAIN:
+
+    HI-TECH Z80 CP/M C compiler V3.09:
+        Copyright by HI-TECH Software.
+
+    CP/M program EXEcutor for Win32:
+        CP/M 2.2 emulator by Keiji Murakami
+        http://hp.vector.co.jp/authors/VA000084/
+
+    MSX-DOS, MSX-DOS2 libraries:
+        R800 instruction, V9958 Graphics, ISR and etc are supported.
+        TSR is possible for MSX-DOS2 only.
+
+    MSX-DOS2 Banking toolkit:
+        Code banking and memory segment allocator are supported.
+        Banking toolkit generate banking-calls and overlay code.
