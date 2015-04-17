@@ -174,30 +174,4 @@ unsigned char getattr(char *);
 /* Additional Function for MSX only */
 #define DOSVER (*(char *)0xf313)	/* MSX: 0=DOS1 */
 
-struct DPB {
-	unsigned char	drive;
-	unsigned char	media;
-	unsigned int	sec_size;
-	unsigned char	dir_mask;
-	unsigned char	dir_shift;
-	unsigned char	clu_mask;
-	unsigned char	clu_shift;
-	unsigned int	fat_start;
-	unsigned char	fat_copy;
-	unsigned char	dir_entry;
-	unsigned int	data_start;
-	unsigned int	clu_end;
-	unsigned char	fat_size;
-	unsigned int	dir_start;
-	void 		*fat_buf;
-};
-
-struct DPB *_dos_getDPB(unsigned char drive);
-void _dos_absread(char *buf, int drv, unsigned sec, int len);
-void _dos_abswrite(char *buf, int drv, unsigned sec, int len);
-unsigned char _PHYDIO_read(char *buf, unsigned char drive,
-		unsigned sector, unsigned char len, unsigned char mediaid);
-unsigned char _PHYDIO_write(char *buf, unsigned char drive,
-		unsigned sector, unsigned char len, unsigned char mediaid);
-
 #endif /* __MSXIO_H */
