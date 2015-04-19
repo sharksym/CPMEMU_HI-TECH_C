@@ -168,7 +168,7 @@ nularg:	defb	0
 #include <string.h>
 #include <conio.h>
 #include <sys.h>
-#include <msxio.h>
+#include <io.h>
 #include <msxbdos.h>
 #include <cpumode.h>
 #include <blstd.h>

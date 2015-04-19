@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 /*#include <string.h>*/
-#include <msxio.h>
+#include <io.h>
 #include <msxbdos.h>
 #include <blstd.h>
 #include <blstdvdp.h>
