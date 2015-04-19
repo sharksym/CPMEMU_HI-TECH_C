@@ -1,5 +1,5 @@
-#ifndef	__MSXBDOS.H
-#define	__MSXBDOS.H
+#ifndef	_MSXBDOS_H_
+#define	_MSXBDOS_H_
 
 #define	BDOS_CPM	0x00
 #define	BDOS_MSXDOS1	0x01
@@ -32,6 +32,4 @@ extern void vdp_di(void);
 extern void vdp_ei(void);
 
 
-#endif /* __MSXBDOS.H */
-
-
+#endif /* __MSXBDOS_H_ */

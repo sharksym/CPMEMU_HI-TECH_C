@@ -1,3 +1,6 @@
+#ifndef _MSXBIOS_H_
+#define _MSXBIOS_H_
+
 /* header file for HI-TECH C msxbios library */
 
 #ifndef uchar
@@ -55,3 +58,4 @@ int	rnd(uint);	/* get random number (range) */
 void	di();		/* disable interrupts */
 void	ei();		/* enable interrupts */
 
+#endif /* _MSXBIOS_H_ */

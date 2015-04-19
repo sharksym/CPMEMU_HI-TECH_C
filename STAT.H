@@ -1,3 +1,6 @@
+#ifndef _STAT_H_
+#define _STAT_H_
+
 struct stat
 {
 	short	st_mode;	/* flags */
@@ -8,9 +11,9 @@ struct stat
 
 /* Flag bits in st_mode */
 
-#define	S_IFMT		0x600	/* type bits */
-#define		S_IFDIR	0x400	/* is a directory */
-#define		S_IFREG	0x200	/* is a regular file */
+#define S_IFMT		0x600	/* type bits */
+#define S_IFDIR		0x400	/* is a directory */
+#define S_IFREG		0x200	/* is a regular file */
 #define	S_IREAD		0400	/* file can be read */
 #define	S_IWRITE	0200	/* file can be written */
 #define	S_IEXEC		0100	/* file can be executed */
@@ -18,6 +21,6 @@ struct stat
 #define	S_SYSTEM	0x2000	/* file is marked system */
 #define	S_ARCHIVE	0x4000	/* file has been written to */
 
-
 extern int	stat(char *, struct stat *);
 
+#endif /* _STAT_H_ */

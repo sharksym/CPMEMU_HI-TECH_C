@@ -1,7 +1,11 @@
+#ifndef _TIME_H_
+#define _TIME_H_
+
 /* time.h voor hitech-c
  * aanpassing 01/06
  */
 
+#include <stddef.h>
 
 #ifndef _TIME
 
@@ -20,16 +24,9 @@ struct tm {
 #define	_TIME
 #endif	_TIME
 
-#ifndef	_STDDEF
-typedef	int		ptrdiff_t;	/* result type of pointer difference */
-typedef	unsigned	size_t;		/* type yielded by sizeof */
-#define	_STDDEF
-#define	offsetof(ty, mem)	((int)&(((ty *)0)->mem))
-#endif	_STDDEF
-
-#define CLK_TCK 50			  /* for 50Hz interrupt frequency */
-#define JIFFY (*(unsigned short *)0xfc9e) /* clock tick counter */
-#define jtimerset(s) (JIFFY=(0-(s * 5)))   /* set timer in 100ms slices */
+#define CLK_TCK 50				/* for 50Hz interrupt frequency */
+#define JIFFY (*(unsigned short *)0xfc9e)	/* clock tick counter */
+#define jtimerset(s) (JIFFY=(0-(s * 5)))	/* set timer in 100ms slices */
 #define jtimeup() (JIFFY==0)
 
 extern int	time_zone;	/* minutes WESTWARD of Greenwich */
@@ -46,4 +43,4 @@ extern time_t timerset(time_t);    /* set a timer in seconds */
 extern int timeup(time_t);	   /* check if timer expired */
 extern size_t strftime(char *s, size_t maxs, char *f, struct tm *t);
 
-
+#endif /* _TIME_H_ */

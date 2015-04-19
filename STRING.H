@@ -1,4 +1,7 @@
-/*	String functions */
+#ifndef _STRING_H_
+#define _STRING_H_
+
+/* String functions */
 
 #include <stddef.h>
 
@@ -31,3 +34,4 @@ extern char *	strnstr(char*, char*, size_t);
 extern char *	strncasestr(char*, char*, size_t);
 #define	strnistr	strncasestr
 
+#endif /* _STRING_H_ */

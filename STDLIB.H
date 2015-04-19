@@ -1,4 +1,7 @@
-/*	Standard utility functions */
+#ifndef _STDLIB_H_
+#define _STDLIB_H_
+
+/* Standard utility functions */
 
 #include <stddef.h>
 
@@ -24,3 +27,4 @@ extern void	qsort(void *, size_t, size_t, int (*)(void *, void *));
 extern int	abs(int);
 extern long	labs(long);
 
+#endif /* _STDLIB_H_ */

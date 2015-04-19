@@ -1,3 +1,6 @@
+#ifndef _STDDEF_H_
+#define _STDDEF_H_
+
 #ifndef	_STDDEF
 typedef	int		ptrdiff_t;	/* result type of pointer difference */
 typedef	unsigned	size_t;		/* type yielded by sizeof */
@@ -9,3 +12,4 @@ typedef	unsigned	size_t;		/* type yielded by sizeof */
 #define	NULL	((void *)0)
 #endif	NULL
 
+#endif /* _STDDEF_H_ */

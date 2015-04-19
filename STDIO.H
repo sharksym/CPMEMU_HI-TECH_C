@@ -1,3 +1,6 @@
+#ifndef _STDIO_H_
+#define _STDIO_H_
+
 #include <stddef.h>
 
 #define	BUFSIZ		512
@@ -32,9 +35,9 @@ extern	struct	_iobuf {
 #define	getchar()	getc(stdin)
 #define	putchar(x)	putc(x,stdout)
 
-/*	getc() and putc() must be functions for CP/M to allow the special
- *	handling of '\r', '\n' and '\032'. The same for MSDOS except that
- *	it at least knows the length of a file.
+/* getc() and putc() must be functions for CP/M to allow the special
+ * handling of '\r', '\n' and '\032'. The same for MSDOS except that
+ * it at least knows the length of a file.
  */
 
 #define	getc(p)		fgetc(p)
@@ -80,3 +83,4 @@ extern long	ftell(FILE *);
 extern char *	fgets(char *, int, FILE *);
 extern char *	_bufallo(void);
 
+#endif /* _STDIO_H_ */
