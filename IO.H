@@ -5,9 +5,13 @@
 
 /* get basic definitions */
 #define	MAXFILE		8		/* max number of files open */
+
+#ifdef DOS2ONLY
+/* FCB controls not required on MSX-DOS2 */
+#else
+/* for CP/M & MSX-DOS */
 #define	SECSIZE		128		/* no. of bytes per sector */
 
-/* for CP/M & MSX-DOS1/2 */
 struct	fcb
 {
 	/* 13 Bytes */
@@ -33,12 +37,14 @@ struct	fcb
 };
 extern struct	fcb	_fcb[MAXFILE];
 
-char		bdos(int, ...);
 struct fcb *	getfcb(void);
-short		bdoshl(int, ...);	/* bdos call returning value in hl */
 unsigned char	getuid(void);
 void		setuid(int);
 unsigned char	setfcb(struct fcb *, char *);
+#endif /* DOS2ONLY */
+
+char		bdos(int, ...);
+short		bdoshl(int, ...);	/* bdos call returning value in hl */
 
 /* for MSX-DOS */
 /* bdos call returning value in a */
@@ -72,20 +78,11 @@ struct	fileinfo
 #endif
 };
 
+int findfirst(char *path, unsigned int attr, struct fileinfo *pfi);
+int findnext(struct fileinfo *pfi);
+unsigned setfileattr(char *path, unsigned int attr);
 
-/*
-int findfirst(char *,unsigned,MSXFIB *);
-int findnext(MSXFIB *);
-unsigned setfileattr(char *,unsigned);
-*/
-
-int findfirst (char *path, unsigned int attr, struct fileinfo *pfi);
-int findnext (struct fileinfo *pfi);
-unsigned setfileattr (char *path, unsigned int attr);
-
-
-/*	 flag values in fcb.use */
-
+/* flag values in fcb.use */
 #define	U_READ	1		/* file open for reading */
 #define	U_WRITE	2		/* file open for writing */
 #define	U_RDWR	3		/* open for read and write */
@@ -94,23 +91,19 @@ unsigned setfileattr (char *path, unsigned int attr);
 #define	U_PUN	6		/* device is punch */
 #define	U_LST	7		/* list device */
 
-/*	 special character values */
-
+/* special character values */
 #define	CPMETX	032		/* ctrl-Z, CP/M end of file for text */
 #define	CPMRBT	003		/* ctrl-C, reboot CPM */
-
 
 #define	MPM	0x100		/* bit to test for MP/M */
 #define	CCPM	0x400		/* bit to test for CCP/M */
 
 #define	ISMPM()	(bdoshl(CPMVERS)&MPM)	/* macro to test for MPM */
 
-/*	 what to do after you hit return */
-
+/* what to do after you hit return */
 #define	EXIT	(*(int (*)())0)	/* where to go to reboot CP/M */
 
-/*	 bdos calls etc. */
-
+/* BDOS calls */
 #define	CPMRCON	1		/* read console */
 #define	CPMWCON	2		/* write console */
 #define	CPMRRDR	3		/* read reader */
@@ -122,9 +115,6 @@ unsigned setfileattr (char *path, unsigned int attr);
 #define	CPMRCOB	10		/* read console buffered */
 #define	CPMICON	11		/* interrogate console ready */
 #define	CPMVERS	12		/* return version number */
-
-/*	BDOS calls */
-
 #define	CPMRDS	13		/* reset disk system */
 #define	CPMLGIN	14		/* log in and select disk */
 #define	CPMOPN	15		/* open file */
@@ -145,9 +135,8 @@ unsigned setfileattr (char *path, unsigned int attr);
 #define	CPMCFS	35		/* compute file size */
 
 /*
- *	Declarations for Unix style low-level I/O functions.
+ * Declarations for Unix style low-level I/O functions.
  */
-
 int open(char *, int);
 int close(int);
 int creat(char *,...);		/* Creat for writing only */
@@ -169,7 +158,6 @@ unsigned char getattr(char *);
 #define	O_RDONLY	0x00	/* Open for reading only */
 #define	O_WRONLY	0x01	/* Open for writing only */
 #define	O_RDWR		0x02	/* Open for reading and writing */
-
 
 /* Additional Function for MSX only */
 #define DOSVER (*(char *)0xf313)	/* MSX: 0=DOS1 */
