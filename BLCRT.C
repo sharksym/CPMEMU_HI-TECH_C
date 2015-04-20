@@ -166,8 +166,6 @@ nularg:	defb	0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <conio.h>
-#include <sys.h>
 #include <io.h>
 #include <msxbdos.h>
 #include <cpumode.h>
@@ -637,25 +635,31 @@ int main_loader(int argc, char *argv[])
 	return ret_val;
 }
 
+#define IRQ_USED		0x80
+#define IRQ_OPT3		0x08
+#define IRQ_OPT2		0x04
+#define IRQ_OPT1		0x02
+#define IRQ_ENABLE		0x01
+
 void bl_enable_bios_timi(void)
 {
-	*BankIRQ_addr |= 0x01;
+	*BankIRQ_addr |= IRQ_ENABLE;
 }
 
 void bl_disable_bios_timi(void)
 {
-	*BankIRQ_addr &= ~0x01;
+	*BankIRQ_addr &= ~IRQ_ENABLE;
 }
 
 void bl_enable_mouse_poll(uint8_t port)
 {
-	*BankIRQ_addr |= 0x02;
+	*BankIRQ_addr |= IRQ_OPT1;
 	*((uint8_t *)0x82F3) = port;
 }
 
 void bl_disable_mouse_poll(void)
 {
-	*BankIRQ_addr &= ~0x02;
+	*BankIRQ_addr &= ~IRQ_OPT1;
 }
 
 /*int16_t bl_request_irq_(uint8_t irq, void (*handler)(void), uint8_t bank)*/
@@ -663,13 +667,13 @@ int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 {
 	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
-	if (*(pIRQ->stat) & 0x80) {
+	if (*(pIRQ->stat) & IRQ_USED) {
 		return -1;			/* ISR already exist! */
 	}
 
 	*(pIRQ->addr) = handler;		/* 1 */
 	*(pIRQ->bank) = bank << 1;		/* 2 */
-	*(pIRQ->stat) = 0x80;			/* 3 */
+	*(pIRQ->stat) = IRQ_USED;		/* 3 */
 
 	return 0;				/* OK */
 }
@@ -678,7 +682,7 @@ int16_t bl_free_irq(uint8_t irq)
 {
 	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
-	if (*(pIRQ->stat) & 0x80) {
+	if (*(pIRQ->stat) & IRQ_USED) {
 		*(pIRQ->stat) = 0x00;
 		return 0;
 	}
@@ -690,14 +694,14 @@ void bl_enable_irq(uint8_t irq)
 {
 	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
-	*(pIRQ->stat) |= 0x01;
+	*(pIRQ->stat) |= IRQ_ENABLE;
 }
 
 void bl_disable_irq(uint8_t irq)
 {
 	struct bl_irq_t *pIRQ = pIRQ_start + irq;
 
-	*(pIRQ->stat) &= ~0x01;
+	*(pIRQ->stat) &= ~IRQ_ENABLE;
 }
 
 void bl_tsr_on(void)
