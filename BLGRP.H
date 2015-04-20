@@ -81,12 +81,12 @@ void bl_grp_set_sprite_active(uint8_t page);
 void bl_grp_set_sprite_gen_view(uint8_t page);
 void bl_grp_set_sprite_gen_active(uint8_t page);
 
-void bl_grp_set_adjust_hor(int8_t h);
-void bl_grp_set_adjust_ver(int8_t v);
+void bl_grp_set_adjust_h(int8_t h);
+void bl_grp_set_adjust_v(int8_t v);
 
 void bl_grp_set_scroll_mode(uint8_t mode);
-void bl_grp_set_scroll_hor(uint16_t h);
-void bl_grp_set_scroll_ver(uint8_t v);
+void bl_grp_set_scroll_h(uint16_t h);
+void bl_grp_set_scroll_v(uint8_t v);
 
 void bl_grp_set_palette(uint8_t no, uint8_t r, uint8_t g, uint8_t b);
 uint16_t bl_grp_get_palette(uint8_t no);

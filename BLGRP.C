@@ -188,10 +188,10 @@ void bl_grp_deinit(void)
 	if (bl_grp) {
 		bl_grp_set_palette0_on(0);		/* disable palette 0 */
 		bl_grp_set_line_212(1);
-		bl_grp_set_adjust_hor(0);
-		bl_grp_set_adjust_ver(0);
-		bl_grp_set_scroll_hor(0);
-		bl_grp_set_scroll_ver(0);
+		bl_grp_set_adjust_h(0);
+		bl_grp_set_adjust_v(0);
+		bl_grp_set_scroll_h(0);
+		bl_grp_set_scroll_v(0);
 		bl_grp_set_view(0);
 		bl_grp_set_active(0);
 		bl_grp_reset_palette();
@@ -394,12 +394,12 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_set_line_212(bl_grp->line_212);
 	bl_grp_set_display_mode(bl_grp->display_mode);
 
-	bl_grp_set_adjust_hor(bl_grp->adjust_h);
-	bl_grp_set_adjust_ver(bl_grp->adjust_v);
+	bl_grp_set_adjust_h(bl_grp->adjust_h);
+	bl_grp_set_adjust_v(bl_grp->adjust_v);
 
 	bl_grp_set_scroll_mode(bl_grp->scroll_mode);
-	bl_grp_set_scroll_hor(bl_grp->scroll_h);
-	bl_grp_set_scroll_ver(bl_grp->scroll_v);
+	bl_grp_set_scroll_h(bl_grp->scroll_h);
+	bl_grp_set_scroll_v(bl_grp->scroll_v);
 
 	bl_grp_set_view(0);
 	bl_grp_set_active(0);
@@ -799,7 +799,7 @@ void bl_grp_set_sprite_gen_active(uint8_t page)
 
 static uint8_t adj_h[16] =
 	{ 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00, 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
-void bl_grp_set_adjust_hor(int8_t h)
+void bl_grp_set_adjust_h(int8_t h)
 {
 	if (h < -7)
 		h = -7;
@@ -813,7 +813,7 @@ void bl_grp_set_adjust_hor(int8_t h)
 
 static uint8_t adj_v[16] =
 	{ 0x70, 0x60, 0x50, 0x40, 0x30, 0x20, 0x10, 0x00, 0xF0, 0xE0, 0xD0, 0xC0, 0xB0, 0xA0, 0x90, 0x80 };
-void bl_grp_set_adjust_ver(int8_t v)
+void bl_grp_set_adjust_v(int8_t v)
 {
 	if (v < -7)
 		v = -7;
@@ -831,7 +831,7 @@ void bl_grp_set_scroll_mode(uint8_t mode)
 	bl_grp_update_reg_bit(25, 0x03, bl_grp->scroll_mode);
 }
 
-void bl_grp_set_scroll_hor(uint16_t h)
+void bl_grp_set_scroll_h(uint16_t h)
 {
 	uint8_t r26, r27;
 
@@ -848,7 +848,7 @@ void bl_grp_set_scroll_hor(uint16_t h)
 	bl_grp_update_reg_bit(27, 0xFF, r27);
 }
 
-void bl_grp_set_scroll_ver(uint8_t v)
+void bl_grp_set_scroll_v(uint8_t v)
 {
 	bl_grp->scroll_v = v;
 	bl_grp_update_reg_bit(23, 0xFF, v);
