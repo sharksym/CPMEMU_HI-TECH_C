@@ -1,0 +1,163 @@
+###
+#   HI-TECH C package path
+#
+#CPMDIR = C:\Emul\CPMEMU_HI-TECH_C
+CPMDIR = ..\..
+
+
+###
+#   Drive mapping for CP/M executor
+#   A: HI-TECH C package path
+#   B: Current path
+
+
+###
+#   Flags
+#
+SHELL = cmd.exe
+CFLAGS := -DANSI -DCPM -DHI_TECH_C -Dz80
+LIBOUT :=
+
+
+###
+#   HI-TECH C compiler
+#
+CPP  := $(CPMDIR)\CPM $(CPMDIR)\CPP
+P1   := $(CPMDIR)\CPM $(CPMDIR)\P1
+CGEN := $(CPMDIR)\CPM $(CPMDIR)\CGEN
+ZAS  := $(CPMDIR)\CPM $(CPMDIR)\ZAS
+LINK := $(CPMDIR)\CPM $(CPMDIR)\LINK
+
+
+###
+#   Startup code
+#
+src-bank00 :=     \
+    BLCRT.C       \
+
+
+###
+#   Banking Library source files
+#
+include $(CPMDIR)\BLSRC.CFG
+BLSRC-CP := $(foreach file, $(src-bl), $(patsubst %.AS,%.ACP, $(patsubst %.C,%.CCP,$(file))))
+
+
+###
+#   Target CFG file
+#
+include $(CFG).CFG
+
+
+###
+#   Definitions
+#
+
+#   Output files path
+OUTDIR := $(target).OUT
+PSECT_CFG :=
+
+#   App mode0: DOS1/DOS2 compatible COM (No banking helper)
+ifeq ($(app-mode),0)
+  CFLAGS += -DBL_DISABLE -DBL_DOS1
+  ifneq ($(psect-data),)
+    PSECT_CFG := ,data=$(psect-data)
+  else
+    PSECT_CFG := ,data
+  endif
+  ifneq ($(psect-bss),)
+    PSECT_CFG := $(PSECT_CFG),bss=$(psect-bss)
+  endif
+endif
+
+#   App mode1: DOS2 COM for one bank (bank00)
+ifeq ($(app-mode),1)
+  CFLAGS += -DDOS2ONLY -DBL_1BANK
+endif
+
+#   App mode2: DOS2 COM/OVL for multi-bank
+ifeq ($(app-mode),2)
+  CFLAGS += -DDOS2ONLY
+endif
+
+#   C library selection
+ifeq ($(app-mode),0)
+  ifeq ($(lib-float),1)
+    LIBC := A:LIBFMSX.LIB
+  else
+    LIBC := A:LIBCMSX.LIB
+  endif
+else
+  ifeq ($(lib-r800),1)
+    ifeq ($(lib-float),1)
+      LIBC := A:LIBFMSXT.LIB
+    else
+      LIBC := A:LIBCMSXT.LIB
+    endif
+  else
+    ifeq ($(lib-float),1)
+      LIBC := A:LIBFMSX2.LIB
+    else
+      LIBC := A:LIBCMSX2.LIB
+    endif
+  endif
+endif
+
+#   cflags from CFG
+CFLAGS += $(cflag)
+
+###
+#   Banking Tools
+#
+#BLMKRULE := $(CPMDIR)\CPM $(CPMDIR)\BLMKRULE
+#BLEXTREF := $(CPMDIR)\CPM $(CPMDIR)\BLEXTREF
+#BLCALLER := $(CPMDIR)\CPM $(CPMDIR)\BLCALLER
+#BLMERGE  := $(CPMDIR)\CPM $(CPMDIR)\BLMERGE
+BLMKRULE := $(CPMDIR)\BLMKRULE.EXE
+BLEXTREF := $(CPMDIR)\BLEXTREF.EXE
+BLCALLER := $(CPMDIR)\BLCALLER.EXE
+BLMERGE  := $(CPMDIR)\BLMERGE.EXE
+
+
+###
+#   Rules
+#
+.PHONY: all
+all: prepare_rules blsrc_cp build_job
+
+clean: cleanup_job
+
+prepare_rules:
+	@echo * Generate Rules *
+	@$(BLMKRULE) $(CFG).CFG $(CFG).MK
+
+build_job:
+	@echo * Build *
+	@make -f$(CFG).MK CFG=$(CFG) CPMC=OBJ CPMD=. build
+
+pre_job:
+	@echo * Pre-Job *
+
+post_job:
+	@echo * Post-Job *
+
+end_job: blsrc_rm
+
+cleanup_job:
+	@echo * Cleanup *
+	@make -f$(CFG).MK CFG=$(CFG) CPMC=OBJ CPMD=. cleanup
+	@del $(CFG).MK > NUL
+
+###
+#   Copy/Remove Banking Library source files
+#
+blsrc_cp: $(BLSRC-CP)
+
+blsrc_rm: $(BLSRC-RM)
+	@del $(src-bl) > NUL
+
+%.CCP:
+	@copy $(CPMDIR)\$(basename $@).C .\ > NUL
+
+%.ACP:
+	@copy $(CPMDIR)\$(basename $@).AS .\ > NUL
