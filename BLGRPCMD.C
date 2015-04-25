@@ -29,30 +29,29 @@ static uint8_t pset_cmd[7] = {
 	0x00,	/* R45 Argument */
 	0x50	/* R46 Command PSET */
 };
+static uint16_t vram_addr_pp;
+static uint8_t vram_data_pp;
 void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
-	uint16_t vram_addr;
-	uint8_t vram_data;
-
 	if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
-		vram_addr = bl_grp->pattern_gen_addr;
-		vram_addr += (y & 0xF8) << 5;		/* (y / 8) * 256 */
-		vram_addr += y & 0x07;
-		vram_addr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
-		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+		vram_addr_pp = bl_grp->pattern_gen_addr;
+		vram_addr_pp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
+		vram_addr_pp += y & 0x07;
+		vram_addr_pp += (x & 0xFE) << 2;	/* (x / 2) * 8 */
+		bl_vdp_vram_h = (uint8_t)(vram_addr_pp >> 14);
 		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
-		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
-		bl_vdp_vram_l = (uint8_t)vram_addr;
-		vram_data = bl_read_vram();
+		bl_vdp_vram_m = (uint8_t)((vram_addr_pp >> 8) & 0x3F);
+		bl_vdp_vram_l = (uint8_t)vram_addr_pp;
+		vram_data_pp = bl_read_vram();
 
 		if (x & 0x01) {				/* low 4bit */
-			vram_data &= 0xF0;
-			vram_data |= c;
+			vram_data_pp &= 0xF0;
+			vram_data_pp |= c;
 		} else {				/* high 4bit */
-			vram_data &= 0x0F;
-			vram_data |= c << 4;
+			vram_data_pp &= 0x0F;
+			vram_data_pp |= c << 4;
 		}
-		bl_write_vram(vram_data);
+		bl_write_vram(vram_data_pp);
 	} else {
 		pset_cmd[3] = bl_grp->active_page;
 		if (bl_grp->interlace_on) {
@@ -100,54 +99,53 @@ static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 #endasm
 }
 
+static uint16_t vram_addr_gp;
+static uint8_t vram_data_gp;
 uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 {
-	uint16_t vram_addr;
-	uint8_t vram_data;
-
 	if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
-		vram_addr = bl_grp->pattern_gen_addr;
-		vram_addr += (y & 0xF8) << 5;		/* (y / 8) * 256 */
-		vram_addr += y & 0x07;
-		vram_addr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
-		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+		vram_addr_gp = bl_grp->pattern_gen_addr;
+		vram_addr_gp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
+		vram_addr_gp += y & 0x07;
+		vram_addr_gp += (x & 0xFE) << 2;	/* (x / 2) * 8 */
+		bl_vdp_vram_h = (uint8_t)(vram_addr_gp >> 14);
 		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
-		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
-		bl_vdp_vram_l = (uint8_t)vram_addr;
-		vram_data = bl_read_vram();
+		bl_vdp_vram_m = (uint8_t)((vram_addr_gp >> 8) & 0x3F);
+		bl_vdp_vram_l = (uint8_t)vram_addr_gp;
+		vram_data_gp = bl_read_vram();
 
 		if (!(x & 0x01))
-			vram_data >>= 4;
+			vram_data_gp >>= 4;
 
-		return (vram_data & 0x0F);
+		return (vram_data_gp & 0x0F);
 	}
 
-	vram_addr = y * bl_grp->row_byte;
-	vram_addr += x >> (bl_grp->bpp_shift);
-	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+	vram_addr_gp = y * bl_grp->row_byte;
+	vram_addr_gp += x >> (bl_grp->bpp_shift);
+	bl_vdp_vram_h = (uint8_t)(vram_addr_gp >> 14);
 	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
-	bl_vdp_vram_l = (uint8_t)vram_addr;
+	bl_vdp_vram_m = (uint8_t)((vram_addr_gp >> 8) & 0x3F);
+	bl_vdp_vram_l = (uint8_t)vram_addr_gp;
 
-	vram_data = bl_read_vram();
+	vram_data_gp = bl_read_vram();
 
 	switch (bl_grp->bpp_shift) {
 	case 1:
 		if (!(x & 0x01))
-			vram_data >>= 4;
+			vram_data_gp >>= 4;
 
-		vram_data &= 0x0F;
+		vram_data_gp &= 0x0F;
 		break;
 	case 2:
 		x &= 0x03;
 		if (x == 0)
-			vram_data >>= 6;
+			vram_data_gp >>= 6;
 		else if (x == 1)
-			vram_data >>= 4;
+			vram_data_gp >>= 4;
 		else if (x == 2)
-			vram_data >>= 2;
+			vram_data_gp >>= 2;
 
-		vram_data &= 0x03;
+		vram_data_gp &= 0x03;
 		break;
 	case 3:	/* not yet... */
 		break;
@@ -156,7 +154,7 @@ uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 		break;
 	}
 
-	return vram_data;
+	return vram_data_gp;
 }
 
 static uint8_t hmmm_cmd[15] = {
