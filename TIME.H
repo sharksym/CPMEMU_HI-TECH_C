@@ -5,8 +5,6 @@
  * aanpassing 01/06
  */
 
-#include <stddef.h>
-
 #ifndef _TIME
 
 typedef	long	time_t;		/* for representing times in seconds */

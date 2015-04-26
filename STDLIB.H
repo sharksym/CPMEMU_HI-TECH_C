@@ -3,8 +3,6 @@
 
 /* Standard utility functions */
 
-#include <stddef.h>
-
 #define	RAND_MAX	32767		/* max value returned by rand() */
 
 extern double	atof(char *);

@@ -1,8 +1,6 @@
 #ifndef _STDIO_H_
 #define _STDIO_H_
 
-#include <stddef.h>
-
 #define	BUFSIZ		512
 #define	_NFILE		8
 

@@ -5,8 +5,6 @@
  * Low-level console I/O functions
  */
 
-#include <stddef.h>
-
 extern char	getch(void);
 extern char	getche(void);
 extern void	putch(int);

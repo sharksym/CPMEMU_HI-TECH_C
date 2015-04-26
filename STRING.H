@@ -3,8 +3,6 @@
 
 /* String functions */
 
-#include <stddef.h>
-
 extern void *	memcpy(void *, void *, size_t);
 extern void *	memmove(void *, void *, size_t);
 extern void *	memset(void *, int, size_t);
