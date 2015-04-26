@@ -163,6 +163,7 @@ nularg:	defb	0
 
 /* #define DEBUG_INFO */
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
