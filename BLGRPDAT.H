@@ -2,7 +2,9 @@
  * BLGRPDAT.H
  */
 
-struct bl_grp_var_t {
+struct bl_grp_var_t {			/* bl_grp_var can't exceed 256bytes */
+	uint8_t reg_shadow[48];		/* should be first variable */
+
 	uint8_t vdp_ver;
 
 	uint8_t screen_mode;
@@ -40,7 +42,6 @@ struct bl_grp_var_t {
 	uint16_t width;
 	uint8_t height;
 
-	uint8_t *reg_shadow;
 	uint16_t palette[17];
 
 	uint16_t pattern_name_addr;
@@ -66,3 +67,4 @@ struct bl_grp_var_t {
 
 #define BL_GRP_SHARED_MEM	(2048)	/* min. 2Kbytes shared memory */
 
+extern struct bl_grp_var_t bl_grp;

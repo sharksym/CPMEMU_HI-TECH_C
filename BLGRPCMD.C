@@ -2,6 +2,7 @@
  * BLGRPCMD
  */
 
+#include <stddef.h>
 /*#include <stdio.h>*/
 #include <string.h>
 #include <io.h>
@@ -12,13 +13,6 @@
 #include <blgrpcmd.h>
 #include <blgrpfnt.h>
 #include <blgrpdat.h>
-
-static struct bl_grp_var_t *bl_grp = NULL;
-
-void bl_grp_cmd_init_var(struct bl_grp_var_t *bl_grp_var)
-{
-	bl_grp = bl_grp_var;
-}
 
 static uint8_t pset_cmd[7] = {
 	0x00,	/* R36 DX low */
@@ -33,13 +27,13 @@ static uint16_t vram_addr_pp;
 static uint8_t vram_data_pp;
 void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
-	if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
-		vram_addr_pp = bl_grp->pattern_gen_addr;
+	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
+		vram_addr_pp = bl_grp.pattern_gen_addr;
 		vram_addr_pp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
 		vram_addr_pp += y & 0x07;
 		vram_addr_pp += (x & 0xFE) << 2;	/* (x / 2) * 8 */
 		bl_vdp_vram_h = (uint8_t)(vram_addr_pp >> 14);
-		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
 		bl_vdp_vram_m = (uint8_t)((vram_addr_pp >> 8) & 0x3F);
 		bl_vdp_vram_l = (uint8_t)vram_addr_pp;
 		vram_data_pp = bl_read_vram();
@@ -53,8 +47,8 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 		}
 		bl_write_vram(vram_data_pp);
 	} else {
-		pset_cmd[3] = bl_grp->active_page;
-		if (bl_grp->interlace_on) {
+		pset_cmd[3] = bl_grp.active_page;
+		if (bl_grp.interlace_on) {
 			pset_cmd[2] = (uint8_t)(y >> 1);
 			if ((uint8_t)y & 0x01)		/* for odd page */
 				pset_cmd[3]++;
@@ -73,8 +67,8 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 /* This should be called by bl_grp_line(), if interlace mode is on */
 static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 {
-	pset_cmd[3] = bl_grp->active_page;
-	if (bl_grp->interlace_on) {
+	pset_cmd[3] = bl_grp.active_page;
+	if (bl_grp.interlace_on) {
 		pset_cmd[2] = (uint8_t)(y >> 1);
 		if ((uint8_t)y & 0x01)			/* for odd page */
 			pset_cmd[3]++;
@@ -103,13 +97,13 @@ static uint16_t vram_addr_gp;
 static uint8_t vram_data_gp;
 uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 {
-	if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
-		vram_addr_gp = bl_grp->pattern_gen_addr;
+	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
+		vram_addr_gp = bl_grp.pattern_gen_addr;
 		vram_addr_gp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
 		vram_addr_gp += y & 0x07;
 		vram_addr_gp += (x & 0xFE) << 2;	/* (x / 2) * 8 */
 		bl_vdp_vram_h = (uint8_t)(vram_addr_gp >> 14);
-		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
 		bl_vdp_vram_m = (uint8_t)((vram_addr_gp >> 8) & 0x3F);
 		bl_vdp_vram_l = (uint8_t)vram_addr_gp;
 		vram_data_gp = bl_read_vram();
@@ -120,16 +114,16 @@ uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 		return (vram_data_gp & 0x0F);
 	}
 
-	vram_addr_gp = y * bl_grp->row_byte;
-	vram_addr_gp += x >> (bl_grp->bpp_shift);
+	vram_addr_gp = y * bl_grp.row_byte;
+	vram_addr_gp += x >> (bl_grp.bpp_shift);
 	bl_vdp_vram_h = (uint8_t)(vram_addr_gp >> 14);
-	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
 	bl_vdp_vram_m = (uint8_t)((vram_addr_gp >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)vram_addr_gp;
 
 	vram_data_gp = bl_read_vram();
 
-	switch (bl_grp->bpp_shift) {
+	switch (bl_grp.bpp_shift) {
 	case 1:
 		if (!(x & 0x01))
 			vram_data_gp >>= 4;
@@ -179,11 +173,11 @@ void bl_grp_hcopy_v2v(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t
 {
 	*(uint16_t *)(&hmmm_cmd[0]) = sx;
 	hmmm_cmd[2] = (uint8_t)sy;
-	hmmm_cmd[3] = bl_grp->active_page;
+	hmmm_cmd[3] = bl_grp.active_page;
 
 	*(uint16_t *)(&hmmm_cmd[4]) = dx;
 	hmmm_cmd[6] = (uint8_t)dy;
-	hmmm_cmd[7] = bl_grp->active_page;
+	hmmm_cmd[7] = bl_grp.active_page;
 
 	*(uint16_t *)(&hmmm_cmd[8]) = w;
 	*(uint16_t *)(&hmmm_cmd[10]) = h;
@@ -199,7 +193,7 @@ void bl_grp_hcopy_v2v_p(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16
 
 	*(uint16_t *)(&hmmm_cmd[4]) = dx;
 	hmmm_cmd[6] = (uint8_t)dy;
-	hmmm_cmd[7] = bl_grp->active_page;
+	hmmm_cmd[7] = bl_grp.active_page;
 
 	*(uint16_t *)(&hmmm_cmd[8]) = w;
 	*(uint16_t *)(&hmmm_cmd[10]) = h;
@@ -229,11 +223,11 @@ void bl_grp_lcopy_v2v(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16_t
 {
 	*(uint16_t *)(&lmmm_cmd[0]) = sx;
 	lmmm_cmd[2] = (uint8_t)sy;
-	lmmm_cmd[3] = bl_grp->active_page;
+	lmmm_cmd[3] = bl_grp.active_page;
 
 	*(uint16_t *)(&lmmm_cmd[4]) = dx;
 	lmmm_cmd[6] = (uint8_t)dy;
-	lmmm_cmd[7] = bl_grp->active_page;
+	lmmm_cmd[7] = bl_grp.active_page;
 
 	*(uint16_t *)(&lmmm_cmd[8]) = w;
 	*(uint16_t *)(&lmmm_cmd[10]) = h;
@@ -251,7 +245,7 @@ void bl_grp_lcopy_v2v_p(uint16_t sx, uint16_t sy, uint16_t w, uint16_t h, uint16
 
 	*(uint16_t *)(&lmmm_cmd[4]) = dx;
 	lmmm_cmd[6] = (uint8_t)dy;
-	lmmm_cmd[7] = bl_grp->active_page;
+	lmmm_cmd[7] = bl_grp.active_page;
 
 	*(uint16_t *)(&lmmm_cmd[8]) = w;
 	*(uint16_t *)(&lmmm_cmd[10]) = h;
@@ -281,7 +275,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 	int16_t deltax, deltay;
 	int16_t error, step, x, y, inc;
 
-	if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
+	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
 		deltax = dx > sx ? dx - sx : sx - dx;
 		deltay = dy > sy ? dy - sy : sy - dy;
 		/* first draw using put_pixel() */
@@ -316,14 +310,14 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 		return;
 	}
 
-	if (bl_grp->interlace_on) {
+	if (bl_grp.interlace_on) {
 		deltax = dx > sx ? dx - sx : sx - dx;
 		deltay = dy > sy ? dy - sy : sy - dy;
 
 		if (!deltay) {				/* hor line */
 			*(uint16_t *)(&line_cmd[0]) = sx;
 			line_cmd[2] = (uint8_t)(sy >> 1);
-			line_cmd[3] = bl_grp->active_page;
+			line_cmd[3] = bl_grp.active_page;
 			if ((uint8_t)sy & 0x01)
 				line_cmd[3]++;
 
@@ -352,7 +346,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 			line_cmd[10] = 0x70 | op;
 
 			line_cmd[2] = sy0;		/* draw even line */
-			line_cmd[3] = bl_grp->active_page;
+			line_cmd[3] = bl_grp.active_page;
 			line_cmd[4] = dy0 - sy0;
 			bl_vdp_cmd_line(line_cmd);
 
@@ -393,7 +387,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 	} else {
 		*(uint16_t *)(&line_cmd[0]) = sx;
 		line_cmd[2] = (uint8_t)sy;
-		line_cmd[3] = bl_grp->active_page;
+		line_cmd[3] = bl_grp.active_page;
 
 		if (sx < dx) {			/* to right */
 			line_cmd[9] = 0x00;
@@ -450,7 +444,7 @@ void bl_grp_boxfill(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t 
 	}
 
 	tmp = dy - sy;
-	if (bl_grp->interlace_on)
+	if (bl_grp.interlace_on)
 		tmp >>= 1;
 
 	if (dx - sx > tmp) {
@@ -483,11 +477,11 @@ void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_
 	height = dy - sy + 1;
 
 	*(uint16_t *)(&hmmv_cmd[0]) = sx;
-	hmmv_cmd[3] = bl_grp->active_page;
+	hmmv_cmd[3] = bl_grp.active_page;
 	*(uint16_t *)(&hmmv_cmd[4]) = width;
 	hmmv_cmd[8] = c;
 
-	if (bl_grp->interlace_on) {
+	if (bl_grp.interlace_on) {
 		hmmv_cmd[2] = (uint8_t)(sy >> 1);
 		*(uint16_t *)(&hmmv_cmd[6]) = height >> 1;
 		bl_vdp_cmd_hmmv(hmmv_cmd);		/* even page */

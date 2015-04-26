@@ -2,6 +2,7 @@
  * BLGRPFNT
  */
 
+#include <stddef.h>
 #include <stdio.h>
 /*#include <string.h>*/
 #include <io.h>
@@ -12,8 +13,6 @@
 #include <blgrpcmd.h>
 #include <blgrpfnt.h>
 #include <blgrpdat.h>
-
-static struct bl_grp_var_t *bl_grp = NULL;
 
 uint8_t font_8x8_org[] = {
 #include "font_e.h"
@@ -73,13 +72,12 @@ void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	}
 };
 
-void bl_grp_fnt_init_var(struct bl_grp_var_t *bl_grp_var)
+void bl_grp_fnt_init(void)
 {
 #if 0
 	uint16_t n;
 	uint8_t *org, *center, *bold, *wide;
 #endif
-	bl_grp = bl_grp_var;
 	font_8x8 = font_8x8_org;
 #if 0
 	if (!font_8x8_init) {
@@ -118,7 +116,7 @@ void bl_grp_load_font(char *filename)
 static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
 {
 	bl_vdp_vram_h = (uint8_t)(addr >> 14);
-/*	bl_vdp_vram_h |= bl_grp->active_page_a16_a14;*/
+/*	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;*/
 	bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)addr;
 	bl_vdp_vram_cnt = 2048;
@@ -127,9 +125,9 @@ static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
 
 void bl_grp_setup_text_font(void)
 {
-	uint16_t vram_addr = bl_grp->pattern_gen_addr;
+	uint16_t vram_addr = bl_grp.pattern_gen_addr;
 
-	switch (bl_grp->screen_mode) {
+	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:		/* only for Pattern based mode */
 	case GRP_SCR_T2:
 	case GRP_SCR_G1:
@@ -150,9 +148,9 @@ void bl_grp_setup_text_font(void)
 
 void bl_grp_setup_font_draw_func(void)
 {
-	font_draw_func = font_draw_func_table[bl_grp->interlace_on][bl_grp->screen_mode];
+	font_draw_func = font_draw_func_table[bl_grp.interlace_on][bl_grp.screen_mode];
 
-	switch (bl_grp->screen_mode) {
+	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:
 	case GRP_SCR_T2:
 	case GRP_SCR_G1:
@@ -194,69 +192,69 @@ void bl_grp_set_font_style(uint8_t style)
 
 void bl_grp_set_font_size(uint8_t w, uint8_t h)
 {
-	bl_grp->font_width = w & 0xFE;		/* even */
-	bl_grp->font_height= h;
-	bl_draw_font_w = bl_grp->font_width;
-	bl_draw_font_h = bl_grp->font_height;
+	bl_grp.font_width = w & 0xFE;		/* even */
+	bl_grp.font_height= h;
+	bl_draw_font_w = bl_grp.font_width;
+	bl_draw_font_h = bl_grp.font_height;
 
-	switch (bl_grp->screen_mode) {
+	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:
-		bl_grp->text_width = 40;
+		bl_grp.text_width = 40;
 		break;
 	case GRP_SCR_T2:
-		bl_grp->text_width = 80;
+		bl_grp.text_width = 80;
 		break;
 	case GRP_SCR_G1:
 	case GRP_SCR_G2:
 	case GRP_SCR_G3:
-		bl_grp->text_width = 32;
+		bl_grp.text_width = 32;
 		break;
 	case GRP_SCR_MC:
-		bl_grp->text_width = (uint8_t)(64 / bl_grp->font_width);
+		bl_grp.text_width = (uint8_t)(64 / bl_grp.font_width);
 		break;
 	case GRP_SCR_G5:
 	case GRP_SCR_G6:
-		bl_grp->text_width = (uint8_t)(512 / bl_grp->font_width);
+		bl_grp.text_width = (uint8_t)(512 / bl_grp.font_width);
 		break;
 	case GRP_SCR_G4:
 	case GRP_SCR_G7:
 	default:
-		bl_grp->text_width = (uint8_t)(256 / bl_grp->font_width);
+		bl_grp.text_width = (uint8_t)(256 / bl_grp.font_width);
 		break;
 	}
 }
 
 void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 {
-	bl_grp->font_fgc = fg;
-	bl_grp->font_bgc = bg;
-	bl_draw_font_fgc = bl_grp->font_fgc;
-	bl_draw_font_bgc = bl_grp->font_bgc;
+	bl_grp.font_fgc = fg;
+	bl_grp.font_bgc = bg;
+	bl_draw_font_fgc = bl_grp.font_fgc;
+	bl_draw_font_bgc = bl_grp.font_bgc;
 }
 
 static uint16_t vram_faddr;
 void bl_grp_print_pos(uint16_t x, uint16_t y)
 {
 	if (font_text_mode) {
-		vram_faddr = bl_grp->pattern_name_addr;
-		vram_faddr += y * bl_grp->row_byte + x;
+		vram_faddr = bl_grp.pattern_name_addr;
+		vram_faddr += y * bl_grp.row_byte + x;
 		bl_vdp_vram_h = 0;
 	} else {
-		if (bl_grp->screen_mode == GRP_SCR_MC) {	/* MC */
-			vram_faddr = bl_grp->pattern_gen_addr;
+		if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
+			vram_faddr = bl_grp.pattern_gen_addr;
 			vram_faddr += (y & 0xF8) << 5;		/* (y / 8) * 256 */
 			vram_faddr += y & 0x07;
 			vram_faddr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
 		} else {
-			if (bl_grp->interlace_on)
+			if (bl_grp.interlace_on)
 				y >>= 1;
 
-			vram_faddr = y * bl_grp->row_byte;
-			vram_faddr += x >> (bl_grp->bpp_shift);
+			vram_faddr = y * bl_grp.row_byte;
+			vram_faddr += x >> (bl_grp.bpp_shift);
 		}
 
 		bl_vdp_vram_h = (uint8_t)(vram_faddr >> 14);
-		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
 	}
 
 	bl_vdp_vram_m = (uint8_t)((vram_faddr >> 8) & 0x3F);
@@ -384,7 +382,7 @@ void bl_grp_print_cursor(void)
 
 void bl_grp_print_backspace(void)
 {
-	uint8_t addr_delta = (bl_grp->font_width) >> (bl_grp->bpp_shift);
+	uint8_t addr_delta = (bl_grp.font_width) >> (bl_grp.bpp_shift);
 	addr_delta <<= 1;
 
 	bl_grp_print_chr(0x20);
@@ -395,7 +393,7 @@ void bl_grp_print_backspace(void)
 
 void bl_grp_print_back(char count)
 {
-	uint8_t addr_delta = (bl_grp->font_width) >> (bl_grp->bpp_shift);
+	uint8_t addr_delta = (bl_grp.font_width) >> (bl_grp.bpp_shift);
 
 	addr_delta = addr_delta * count;
 	vram_faddr -= addr_delta;

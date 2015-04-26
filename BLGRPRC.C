@@ -2,6 +2,7 @@
  * BLGRPRC
  */
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <io.h>
@@ -12,13 +13,6 @@
 #include <blgrpcmd.h>
 #include <blgrpfnt.h>
 #include <blgrpdat.h>
-
-static struct bl_grp_var_t *bl_grp = NULL;
-
-void bl_grp_rc_init_var(struct bl_grp_var_t *bl_grp_var)
-{
-	bl_grp = bl_grp_var;
-}
 
 static uint16_t vram_addr;
 static uint16_t vram_offset;
@@ -44,14 +38,14 @@ void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy)
 			buf_lines = 212 - y;
 			buf_bytes = buf_lines * 128;
 		}
-		fread(bl_grp->shared_mem, buf_bytes, 1, fp);
+		fread(bl_grp.shared_mem, buf_bytes, 1, fp);
 
 		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
-		bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
 		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
 		bl_vdp_vram_l = (uint8_t)vram_addr;
 		bl_vdp_vram_cnt = buf_bytes;
-		bl_copy_to_vram_nn(bl_grp->shared_mem);
+		bl_copy_to_vram_nn(bl_grp.shared_mem);
 	}
 
 	fclose(fp);
@@ -83,16 +77,16 @@ void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy)
 			buf_lines = 212 - y;
 			buf_bytes = buf_lines * pat_row_bytes;
 		}
-		fread(bl_grp->shared_mem, buf_bytes, 1, fp);
+		fread(bl_grp.shared_mem, buf_bytes, 1, fp);
 
 		vram_addr = y * 128 + vram_offset;
 		for (n = 0; n < buf_lines; n++, vram_addr += 128) {
 			bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
-			bl_vdp_vram_h |= bl_grp->active_page_a16_a14;
+			bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
 			bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
 			bl_vdp_vram_l = (uint8_t)vram_addr;
 			bl_vdp_vram_cnt = pat_row_bytes;
-			bl_copy_to_vram_nn(&bl_grp->shared_mem[pat_row_bytes * n]);
+			bl_copy_to_vram_nn(&bl_grp.shared_mem[pat_row_bytes * n]);
 		}
 	}
 
@@ -116,13 +110,13 @@ void bl_grp_load_ge5_pic_pal(char *filename)
 		return;
 
 	fseek(fp, -32, SEEK_END);	/* palette data */
-	fread(bl_grp->palette, 32, 1, fp);
+	fread(bl_grp.palette, 32, 1, fp);
 
 	for (n = 0; n < 16; n++) {
-		bl_grp->palette[n] |= n << 12;
+		bl_grp.palette[n] |= n << 12;
 	}
 
-	bl_grp_update_palette(bl_grp->palette);
+	bl_grp_update_palette(bl_grp.palette);
 
 	fclose(fp);
 }
@@ -143,13 +137,13 @@ void bl_grp_load_ge5_pat_pal(char *filename)
 	pat_bytes = width * height / 2;
 
 	fseek(fp, pat_bytes, SEEK_CUR);	/* palette data */
-	fread(bl_grp->palette, 32, 1, fp);
+	fread(bl_grp.palette, 32, 1, fp);
 
 	for (n = 0; n < 16; n++) {
-		bl_grp->palette[n] |= n << 12;
+		bl_grp.palette[n] |= n << 12;
 	}
 
-	bl_grp_update_palette(bl_grp->palette);
+	bl_grp_update_palette(bl_grp.palette);
 
 	fclose(fp);
 }
