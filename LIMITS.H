@@ -1,5 +1,5 @@
-#ifndef __LIMITS_H_
-#define __LIMITS_H_
+#ifndef _LIMITS_H_
+#define _LIMITS_H_
 
 /* Characteristics of integral types */
 
@@ -19,4 +19,4 @@
 #define	LONG_MIN	-2147483648	/* min value */
 #define	ULONG_MAX	4294967295	/* unsigned long */
 
-#endif __LIMITS_H_
+#endif _LIMITS_H_
