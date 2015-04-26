@@ -67,7 +67,11 @@ ifeq ($(app-mode),0)
   endif
   ifneq ($(psect-bss),)
     PSECT_CFG := $(PSECT_CFG),bss=$(psect-bss)
+  else
+    PSECT_CFG := $(PSECT_CFG),bss
   endif
+else
+    PSECT_CFG := ,data,bss
 endif
 
 #   App mode1: DOS2 COM for one bank (bank00)
