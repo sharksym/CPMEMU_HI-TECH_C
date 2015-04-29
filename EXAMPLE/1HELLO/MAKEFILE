@@ -80,8 +80,12 @@ ifeq ($(app-mode),1)
 endif
 
 #   App mode2: DOS2 COM/OVL for multi-bank
+#   TSR mode: App stays in DOS2 system segment memory
 ifeq ($(app-mode),2)
   CFLAGS += -DDOS2ONLY
+  ifeq ($(tsr-mode),1)
+    CFLAGS += -DBL_TSR
+  endif
 endif
 
 #   C library selection
