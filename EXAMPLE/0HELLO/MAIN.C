@@ -5,7 +5,7 @@
  *
  *  app-mode = 0
  *  bank no. = 0
- *  lib-float = 1
+ *  lib-float = 0
  *  lib-r800 = 0
  */
 
