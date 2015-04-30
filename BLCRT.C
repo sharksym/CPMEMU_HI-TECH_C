@@ -161,7 +161,7 @@ nularg:	defb	0
 
 #else	/* BL_DISABLE */
 
-/* #define DEBUG_INFO */
+/* #define BL_DEBUG */
 
 #include <stddef.h>
 #include <stdio.h>
@@ -431,6 +431,12 @@ static int16_t ret_val = 0;
 int main(int argc, char *argv[]);
 long _fsize(int fd);				/* Get File Size */
 
+#ifdef BL_DEBUG
+#define bl_dbg_puts(A)		puts(A)
+#else
+#define bl_dbg_puts(A)
+#endif
+
 int main_loader(int argc, char *argv[])
 {
 #ifdef BL_TSR
@@ -452,8 +458,8 @@ int main_loader(int argc, char *argv[])
 	memcpy((int8_t *)0x8000, BankCallBin, sizeof(BankCallBin));
 
 	free_seg_no = MapperInit();
-#ifdef DEBUG_INFO
-	printf("Free seg no = %d\n", free_seg_no);
+#ifdef BL_DEBUG
+	printf("[BL] Free seg = %d\n", free_seg_no);
 #endif
 
 	strcpy(pOvlName, getenv("PROGRAM"));	/* Get Full Path of PROGRAM */
@@ -477,15 +483,13 @@ int main_loader(int argc, char *argv[])
 
 	pTsrEnv = getenv(pTsrEnvName);
 	if (pTsrEnv && (pTsrEnv[0] == '*')) {
-#ifdef DEBUG_INFO
-		printf("Load memory info [%s] ...", pTsrEnvName);
+#ifdef BL_DEBUG
+		printf("[BL] Load memory info [%s] ...", pTsrEnvName);
 #endif
 		bl_tsr_mode = 1;
 		bl_tsr_env_exist = 1;
 		get_seg_table();		/* tMemSeg from pTsrEnv */
-#ifdef DEBUG_INFO
-		puts("Ok");
-#endif
+		bl_dbg_puts("Ok");
 	}
 #endif
 
@@ -506,8 +510,8 @@ int main_loader(int argc, char *argv[])
 			return 0;
 		}
 
-#ifdef DEBUG_INFO
-		printf("Loading: %s\n", pOvlName);
+#ifdef BL_DEBUG
+		printf("[BL] Loading: %s\n", pOvlName);
 #endif
 	}
 #endif
@@ -542,11 +546,11 @@ int main_loader(int argc, char *argv[])
 		cFileHandle = open(pOvlName, O_RDONLY);	/* re-open */
 		Page2Old = MapperGetPage2();
 
-#ifdef DEBUG_INFO
+#ifdef BL_DEBUG
 #ifdef BL_TSR
-		printf("Allocate sys seg:");
+		printf("[BL] Allocate sys seg:");
 #else
-		printf("Allocate usr seg:");
+		printf("[BL] Allocate usr seg:");
 #endif
 #endif
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no--) {
@@ -555,7 +559,7 @@ int main_loader(int argc, char *argv[])
 #else
 			tMemSeg.BankTbl[SegCnt] = MapperAllocUser();	/* Allocate user segment */
 #endif
-#ifdef DEBUG_INFO
+#ifdef BL_DEBUG
 			printf(" %02X", tMemSeg.BankTbl[SegCnt]);
 #endif
 			MapperPutPage2(tMemSeg.BankTbl[SegCnt]);    	/* Set segment */
@@ -567,9 +571,7 @@ int main_loader(int argc, char *argv[])
 			*(BankIndex_addr + 0x02 + SegCnt) = tMemSeg.BankTbl[SegCnt];
 		}
 		close(cFileHandle);
-#ifdef DEBUG_INFO
-		puts("");
-#endif
+		bl_dbg_puts("");
 	}
 #endif
 
@@ -582,8 +584,8 @@ int main_loader(int argc, char *argv[])
 	/* Install ISR */
 	ISRInit();
 
-#ifdef DEBUG_INFO
-	printf("Free seg no = %d\n", free_seg_no);
+#ifdef BL_DEBUG
+	printf("[BL] Free seg = %d\n", free_seg_no);
 #endif
 
 	/* Execute main() function */
@@ -596,15 +598,13 @@ int main_loader(int argc, char *argv[])
 
 #ifdef BL_TSR
 	if (bl_tsr_mode && !bl_tsr_env_exist) {	/* TSR ENV not exist? */
-#ifdef DEBUG_INFO
-		printf("Save memroy info [%s] ...", pTsrEnvName);
+#ifdef BL_DEBUG
+		printf("[BL] Save memroy info [%s] ...", pTsrEnvName);
 #endif
 		*(unsigned char *)0x9000 = mem_seg_size;
 		put_seg_table();			/* tMemSeg to temp heap */
 		setenv(pTsrEnvName, (char *)0x9000);
-#ifdef DEBUG_INFO
-		puts("Ok");
-#endif
+		bl_dbg_puts("Ok");
 	}
 
 	if (!bl_tsr_mode) {
@@ -616,8 +616,8 @@ int main_loader(int argc, char *argv[])
 			MapperFree(tMemSeg.BankTbl[SegCnt]);
 	}
 #else
-#ifdef DEBUG_INFO
-	puts("Free segment");
+#ifdef BL_DEBUG
+	puts("[BL] Free segment");
 #endif
 
 #ifndef BL_1BANK
@@ -629,8 +629,8 @@ int main_loader(int argc, char *argv[])
 
 #endif
 
-#ifdef DEBUG_INFO
-	printf("Free seg no = %d\n", free_seg_no);
+#ifdef BL_DEBUG
+	printf("[BL] Free seg = %d\n", free_seg_no);
 #endif
 
 	return ret_val;
@@ -751,7 +751,7 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 		else
 			lmem->page_tbl[n] = MapperAllocUser();
 	}
-/*	printf("Free seg no = %d\n", free_seg_no);*/
+/*	printf("Free seg = %d\n", free_seg_no);*/
 
 	return lmem;
 }
@@ -778,7 +778,7 @@ void bl_lmem_free(struct bl_lmem_t *ptr)
 		}
 		free(ptr);
 
-/*		printf("Free seg no = %d\n", free_seg_no);*/
+/*		printf("Free seg = %d\n", free_seg_no);*/
 	}
 }
 
