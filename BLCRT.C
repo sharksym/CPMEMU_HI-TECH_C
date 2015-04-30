@@ -224,6 +224,7 @@ uint8_t MapperGetPage2(void);
 void MapperPutPage0(uint8_t SegNo);
 void MapperPutPage1(uint8_t SegNo);
 void MapperPutPage2(uint8_t SegNo);
+void MapperPutPage1_DI(uint8_t SegNo);
 
 
 void BankCallInit(void);
@@ -423,11 +424,6 @@ static struct bl_irq_t *pIRQ_start = NULL;
 void put_lmem_seg_table(struct bl_lmem_t *ptr);
 void get_lmem_seg_table(struct bl_lmem_t *ptr);
 
-/* for BLSTDLIB */
-static uint16_t mem_gap = 0;
-static int8_t *pDummy = NULL;
-
-static int16_t ret_val = 0;
 int main(int argc, char *argv[]);
 long _fsize(int fd);				/* Get File Size */
 
@@ -439,6 +435,10 @@ long _fsize(int fd);				/* Get File Size */
 
 int main_loader(int argc, char *argv[])
 {
+	static int16_t ret_val = 0;
+	static uint16_t mem_gap = 0;
+	static int8_t *pDummy = NULL;
+	static uint8_t seg = 0;
 #ifdef BL_TSR
 	static int8_t name_cnt, name_pos;
 #endif
@@ -555,20 +555,22 @@ int main_loader(int argc, char *argv[])
 #endif
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no--) {
 #ifdef BL_TSR
-			tMemSeg.BankTbl[SegCnt] = MapperAllocSys();	/* Allocate system segment */
+			seg = MapperAllocSys();		/* Allocate system segment */
 #else
-			tMemSeg.BankTbl[SegCnt] = MapperAllocUser();	/* Allocate user segment */
+			seg = MapperAllocUser();	/* Allocate user segment */
 #endif
 #ifdef BL_DEBUG
-			printf(" %02X", tMemSeg.BankTbl[SegCnt]);
+			printf(" %02X", seg);
 #endif
-			MapperPutPage2(tMemSeg.BankTbl[SegCnt]);    	/* Set segment */
+			tMemSeg.BankTbl[SegCnt] = seg;
+			*(BankIndex_addr + 0x02 + SegCnt) = seg;
+
+			MapperPutPage2(seg);    	/* Set segment */
 			read(cFileHandle, (uint8_t *)0x8000, 0x4000);
 			if (!(SegCnt & 0x01))		/* Page0 area?, Copy 0x0000~0x00FF */
 				copy_256_p0_to_p2();
 
-			MapperPutPage2(Page2Old);			/* Set original segment */
-			*(BankIndex_addr + 0x02 + SegCnt) = tMemSeg.BankTbl[SegCnt];
+			MapperPutPage2(Page2Old);	/* Set original segment */
 		}
 		close(cFileHandle);
 		bl_dbg_puts("");
@@ -818,8 +820,8 @@ struct bl_lmem_t *bl_lmem_import(char *name)
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size)
 {
 /*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
-	uint8_t page_no;
-	uint16_t offset;
+	static uint8_t page_no;
+	static uint16_t offset;
 
 #asm
 	DI
@@ -844,8 +846,8 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, uint16_t size)
 {
 /*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
-	uint8_t page_no;
-	uint16_t offset;
+	static uint8_t page_no;
+	static uint16_t offset;
 
 #asm
 	DI
@@ -1091,8 +1093,6 @@ _MapperPutPageN:
 		PUSH IX
 
 		LD A,E				; SegNo
-		LD B,000H
-
 		LD DE,_MapperPutPage_ret	; RET addr
 		PUSH DE
 		JP (HL)				; CALL MapperPut
@@ -1106,21 +1106,14 @@ _MapperPutPage_ret:
 
 ;-----------------------------------------------------------------
 ;void MapperPutPage1_DI(uint8_t SegNo)
-
+;L = SegNo
 _MapperPutPage1_DI:
 		DI
-		LD HL,(_MapperPUT_P1)
-		POP BC				; Return Addr
-		POP DE				; E = SegNo
-		PUSH DE
-		PUSH BC
-
 		PUSH IY
 		PUSH IX
 
-		LD A,E				; SegNo
-		LD B,000H
-
+		LD A,L				; SegNo
+		LD HL,(_MapperPUT_P1)
 		LD DE,_MapperPutPageDI_ret	; RET addr
 		PUSH DE
 		JP (HL)				; CALL MapperPut
