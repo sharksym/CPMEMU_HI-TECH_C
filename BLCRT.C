@@ -415,7 +415,7 @@ static uint8_t Page2Old = 0;
 struct bl_irq_t {
 	uint8_t *stat;
 	uint16_t *addr;
-	uint8_t *bank;
+	uint16_t *bank;
 };
 
 static struct bl_irq_t *pIRQ_start = NULL;
@@ -665,6 +665,7 @@ void bl_disable_mouse_poll(void)
 	*BankIRQ_addr &= ~IRQ_OPT1;
 }
 
+static uint16_t *bank_idx = (uint16_t *)0x8400;
 /*int16_t bl_request_irq_(uint8_t irq, void (*handler)(void), uint8_t bank)*/
 int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 {
@@ -675,7 +676,7 @@ int16_t bl_request_irq_(uint8_t irq, uint16_t handler, uint8_t bank)
 	}
 
 	*(pIRQ->addr) = handler;		/* 1 */
-	*(pIRQ->bank) = bank << 1;		/* 2 */
+	*(pIRQ->bank) = bank_idx[bank];		/* 2 */
 	*(pIRQ->stat) = IRQ_USED;		/* 3 */
 
 	return 0;				/* OK */
