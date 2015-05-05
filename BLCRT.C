@@ -590,7 +590,7 @@ int main_loader(int argc, char *argv[])
 #ifdef BL_TSR
 	if (bl_tsr_mode && !bl_tsr_env_exist) {	/* TSR ENV not exist? */
 #ifdef BL_DEBUG
-		printf("[BL] Save memroy info [%s] ...", pTsrEnvName);
+		printf("[BL] Save memory info [%s] ...", pTsrEnvName);
 #endif
 		*(unsigned char *)0x9000 = mem_seg_size;
 		put_seg_table();			/* tMemSeg to temp heap */
@@ -856,6 +856,7 @@ _MapperInit:
 		LD (_MapperGET_P0),HL
 		ADD HL,DE
 		LD (_MapperPUT_P1),HL
+		LD (_MapperPut_P1d),HL
 		ADD HL,DE
 		LD (_MapperGET_P1),HL
 		ADD HL,DE
@@ -897,25 +898,15 @@ _MapperAlloc:
 		PUSH IY
 		PUSH IX
 
-		LD HL,_MapperAlloc_ret
-		PUSH HL				; RET addr
-
-		DEFB 02AH			; LD HL,(_MapperALL_SEG)
+		DEFB 0CDH			; CALL ALL_SEG
 _MapperALL_SEG:	DEFW 00000H
-		JP (HL)
 
-_MapperAlloc_ret:
 		JR NC,_MapperAlloc_ok
 		LD A,0FFH			; FF means error
 
 _MapperAlloc_ok:
-		POP IX
-		POP IY
-
 		LD L,A				; return value (allocated segment number)
-
-		EI
-		RET
+		JR _Mapper_Ret
 
 _MapperFree:
 		POP BC				; Return Addr
@@ -929,16 +920,12 @@ _MapperFree:
 		LD A,E				; SegNo
 		LD B,000H
 
-		LD HL,_MapperFree_ret		; RET addr
-		PUSH HL
-		DEFB 02AH			; LD HL,(_MapperFRE_SEG)
+		DEFB 0CDH			; CALL FRE_SEG
 _MapperFRE_SEG:	DEFW 00000H
-		JP (HL)
 
-_MapperFree_ret:
+_Mapper_Ret:
 		POP IX
 		POP IY
-
 		EI
 		RET
 
@@ -1019,11 +1006,10 @@ _MapperPutPageN:
 		PUSH IX
 
 		LD A,E				; SegNo
-		LD DE,_MapperPutPage_ret	; RET addr
-		PUSH DE
-		JP (HL)				; CALL MapperPut
+		LD (_MapperPut_Pn),HL
+		DEFB 0CDH			; CALL PUT_Pn
+_MapperPut_Pn:	DEFW 00000H
 
-_MapperPutPage_ret:
 		POP IX
 		POP IY
 
@@ -1039,12 +1025,9 @@ _MapperPutPage1_DI:
 		PUSH IX
 
 		LD A,L				; SegNo
-		LD HL,(_MapperPUT_P1)
-		LD DE,_MapperPutPageDI_ret	; RET addr
-		PUSH DE
-		JP (HL)				; CALL MapperPut
+		DEFB 0CDH			; CALL PUT_P1
+_MapperPut_P1d:	DEFW 00000H
 
-_MapperPutPageDI_ret:
 		POP IX
 		POP IY
 
@@ -1078,18 +1061,18 @@ _bl_get_memtop:	LD HL,(memtop)
 ;void copy_256_p0_to_p2(void)
 		GLOBAL _copy_256_p0_to_p2
 _copy_256_p0_to_p2:
-		PUSH BC
-		PUSH DE
-		PUSH HL
+;		PUSH BC
+;		PUSH DE
+;		PUSH HL
 
 		LD HL,00000H
 		LD DE,08000H
 		LD BC,256
 		LDIR
 
-		POP HL
-		POP DE
-		POP BC
+;		POP HL
+;		POP DE
+;		POP BC
 		RET
 #endasm
 
