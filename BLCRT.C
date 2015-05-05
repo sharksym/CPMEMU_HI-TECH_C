@@ -193,22 +193,22 @@ uint8_t SegmentTotal = 0;
 uint8_t SegmentFree = 0;
 uint16_t MapperTableAddr = 0;
 
-uint16_t MapperALL_SEG = 0;
-uint16_t MapperFRE_SEG = 0;
+/* uint16_t MapperALL_SEG = 0; */
+/* uint16_t MapperFRE_SEG = 0; */
 uint16_t MapperRD_SEG = 0;
 uint16_t MapperWR_SEG = 0;
-uint16_t MapperCAL_SEG = 0;
-uint16_t MapperCALLS = 0;
-uint16_t MapperPUT_PH = 0;
-uint16_t MapperGET_PH = 0;
+/* uint16_t MapperCAL_SEG = 0; */
+/* uint16_t MapperCALLS = 0; */
+/* uint16_t MapperPUT_PH = 0; */
+/* uint16_t MapperGET_PH = 0; */
 uint16_t MapperPUT_P0 = 0;
 uint16_t MapperGET_P0 = 0;
 uint16_t MapperPUT_P1 = 0;
 uint16_t MapperGET_P1 = 0;
 uint16_t MapperPUT_P2 = 0;
 uint16_t MapperGET_P2 = 0;
-uint16_t MapperPUT_P3 = 0;
-uint16_t MapperGET_P3 = 0;
+/* uint16_t MapperPUT_P3 = 0; */
+/* uint16_t MapperGET_P3 = 0; */
 
 uint8_t MapperInit(void);
 uint8_t MapperAllocUser(void);
@@ -843,13 +843,13 @@ _MapperInit:
 		ADD HL,DE
 		LD (_MapperWR_SEG),HL
 		ADD HL,DE
-		LD (_MapperCAL_SEG),HL
+;		LD (_MapperCAL_SEG),HL
 		ADD HL,DE
-		LD (_MapperCALLS),HL
+;		LD (_MapperCALLS),HL
 		ADD HL,DE
-		LD (_MapperPUT_PH),HL
+;		LD (_MapperPUT_PH),HL
 		ADD HL,DE
-		LD (_MapperGET_PH),HL
+;		LD (_MapperGET_PH),HL
 		ADD HL,DE
 		LD (_MapperPUT_P0),HL
 		ADD HL,DE
@@ -862,10 +862,10 @@ _MapperInit:
 		LD (_MapperPUT_P2),HL
 		ADD HL,DE
 		LD (_MapperGET_P2),HL
-		ADD HL,DE
-		LD (_MapperPUT_P3),HL
-		ADD HL,DE
-		LD (_MapperGET_P3),HL
+;		ADD HL,DE
+;		LD (_MapperPUT_P3),HL
+;		ADD HL,DE
+;		LD (_MapperGET_P3),HL
 
 		POP IX
 		POP IY
@@ -900,7 +900,8 @@ _MapperAlloc:
 		LD HL,_MapperAlloc_ret
 		PUSH HL				; RET addr
 
-		LD HL,(_MapperALL_SEG)
+		DEFB 02AH			; LD HL,(_MapperALL_SEG)
+_MapperALL_SEG:	DEFW 00000H
 		JP (HL)
 
 _MapperAlloc_ret:
@@ -930,7 +931,8 @@ _MapperFree:
 
 		LD HL,_MapperFree_ret		; RET addr
 		PUSH HL
-		LD HL,(_MapperFRE_SEG)
+		DEFB 02AH			; LD HL,(_MapperFRE_SEG)
+_MapperFRE_SEG:	DEFW 00000H
 		JP (HL)
 
 _MapperFree_ret:
