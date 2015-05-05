@@ -210,9 +210,6 @@ uint16_t MapperGET_P2 = 0;
 uint16_t MapperPUT_P3 = 0;
 uint16_t MapperGET_P3 = 0;
 
-uint16_t Bank0SegNo = 0;
-
-
 uint8_t MapperInit(void);
 uint8_t MapperAllocUser(void);
 uint8_t MapperAllocSys(void);
@@ -517,15 +514,7 @@ int main_loader(int argc, char *argv[])
 #endif
 
 	/* Initialize Bank Caller */
-	Bank0SegNo = MapperGetPage1();			/* Page1 Segment No. */
-	Bank0SegNo <<= 8;
-	Bank0SegNo &= 0xFF00;
-	Bank0SegNo |= MapperGetPage0();			/* Page0 Segment No. */
 	BankCallInit();
-
-	/* Set Bank0 Table */
-	*(BankIndex_addr + 0x00) = MapperGetPage0();
-	*(BankIndex_addr + 0x01) = MapperGetPage1();
 
 #ifdef BL_1BANK
 	SegCnt = 0;
@@ -750,7 +739,7 @@ struct bl_lmem_t *bl_lmem_import(char *name)
 
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size)
 {
-/*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
+	/* uint8_t page1_seg_old = *(BankIndex_addr + 1); */
 	static uint8_t page_no;
 	static uint16_t offset;
 
@@ -771,12 +760,12 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 			MapperPutPage1_DI(dest->page_tbl[page_no]);
 		}
 	}
-/*	MapperPutPage1(page1_seg_old);*/
+	/* MapperPutPage1(page1_seg_old); */
 }
 
 void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, uint16_t size)
 {
-/*	uint8_t page1_seg_old = (uint8_t)(Bank0SegNo >> 8);*/
+	/* uint8_t page1_seg_old = *(BankIndex_addr + 1); */
 	static uint8_t page_no;
 	static uint16_t offset;
 
@@ -797,7 +786,7 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 			MapperPutPage1_DI(src->page_tbl[page_no]);
 		}
 	}
-/*	MapperPutPage1(page1_seg_old);*/
+	/* MapperPutPage1(page1_seg_old); */
 }
 
 #asm
@@ -808,8 +797,12 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 		GLOBAL _BankCallInit
 
 _BankCallInit:
+		CALL _MapperGetPage0
+		LD E,L				; Page0 segment
+		CALL _MapperGetPage1
+		LD D,L				; Page1 segment
+		LD (BankIndex_entry),DE		; Set Bank0 table
 		LD HL,(_MapperPUT_P0)
-		LD DE,(_Bank0SegNo)
 		JP BankInit_entry
 
 ;-------------------------------------------------------------------------------
