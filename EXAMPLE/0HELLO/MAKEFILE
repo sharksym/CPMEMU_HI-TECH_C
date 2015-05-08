@@ -80,9 +80,13 @@ ifeq ($(app-mode),1)
 endif
 
 #   App mode2: DOS2 COM/OVL for multi-bank
+#   lib-r800: App can run on MSXturboR only
 #   TSR mode: App stays in DOS2 system segment memory
 ifeq ($(app-mode),2)
   CFLAGS += -DDOS2ONLY
+  ifeq ($(lib-r800),1)
+    CFLAGS += -DR800ONLY
+  endif
   ifeq ($(tsr-mode),1)
     CFLAGS += -DBL_TSR
   endif
