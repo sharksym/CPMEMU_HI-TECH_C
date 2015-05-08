@@ -415,8 +415,6 @@ struct bl_irq_t {
 	uint16_t *bank;
 };
 
-static struct bl_irq_t *pIRQ_start = NULL;
-
 /* lmem export, import */
 void put_lmem_seg_table(struct bl_lmem_t *ptr);
 void get_lmem_seg_table(struct bl_lmem_t *ptr);
@@ -435,7 +433,9 @@ int main_loader(int argc, char *argv[])
 	static int16_t ret_val = 0;
 	static uint16_t mem_gap = 0;
 	static int8_t *pDummy = NULL;
+#ifndef BL_1BANK
 	static uint8_t seg = 0;
+#endif
 #ifdef BL_TSR
 	static int8_t name_cnt, name_pos;
 #endif
@@ -448,8 +448,6 @@ int main_loader(int argc, char *argv[])
 		return 0;
 	}
 #endif
-
-	pIRQ_start = (struct bl_irq_t *)(BankIRQ_addr + 1);
 
 	/* Move Bank_Call Routine to 08000H */
 	memcpy((int8_t *)0x8000, BankCallBin, sizeof(BankCallBin));
@@ -522,7 +520,7 @@ int main_loader(int argc, char *argv[])
 	OvlSize = 0;
 #else
 	if (bl_tsr_mode) {
-		memcpy((BankIndex_addr + 0x02), tMemSeg.BankTbl, sizeof(tMemSeg.BankTbl));
+		memcpy(Bank_idx_addr + 0x02, tMemSeg.BankTbl, sizeof(tMemSeg.BankTbl));
 		Page2Old = MapperGetPage2();
 
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt += 2) {
@@ -552,7 +550,7 @@ int main_loader(int argc, char *argv[])
 			printf(" %02X", seg);
 #endif
 			tMemSeg.BankTbl[SegCnt] = seg;
-			*(BankIndex_addr + 0x02 + SegCnt) = seg;
+			*(Bank_idx_addr + 0x02 + SegCnt) = seg;
 
 			MapperPutPage2(seg);    	/* Set segment */
 			read(cFileHandle, (uint8_t *)0x8000, 0x4000);
