@@ -382,6 +382,15 @@ static int8_t bl_tsr_mode = 0;
 static int8_t bl_tsr_env_exist = 0;
 #endif
 
+#ifdef __Hhimem
+#asm
+_himem_end:	defw	__Hhimem
+#endasm
+extern unsigned short himem_end;
+#else
+#define himem_end	0x9400
+#endif	/* __Hhimem */
+
 static int16_t SegCnt = 0;
 static int16_t free_seg_no = 0;
 static uint8_t cFileHandle = 0;
@@ -439,7 +448,6 @@ int main_loader(int argc, char *argv[])
 #ifdef BL_TSR
 	static int8_t name_cnt, name_pos;
 #endif
-
 #ifdef R800ONLY
 	if (get_msx_version() == MSXTR) {
 		set_cpu_mode_tr(CPU_TR_R800_DRAM);
@@ -566,7 +574,7 @@ int main_loader(int argc, char *argv[])
 
 	/* Set malloc heap to over 0x9400 */
 	pDummy = (int8_t *)malloc(1);
-	mem_gap = 0x9400 - (uint16_t)pDummy;
+	mem_gap = himem_end - (uint16_t)pDummy;
 	free(pDummy);
 	pDummy = (int8_t *)malloc(mem_gap);
 
