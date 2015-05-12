@@ -82,6 +82,7 @@ endif
 #   App mode2: DOS2 COM/OVL for multi-bank
 #   lib-r800: App can run on MSXturboR only
 #   TSR mode: App stays in DOS2 system segment memory
+#   himem: Reserved memory over 9400H for sharing page2 area
 ifeq ($(app-mode),2)
   CFLAGS += -DDOS2ONLY
   ifeq ($(lib-r800),1)
@@ -90,6 +91,13 @@ ifeq ($(app-mode),2)
   ifeq ($(tsr-mode),1)
     CFLAGS += -DBL_TSR
   endif
+  ifneq ($(himem-size),)
+    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H+$(himem-size)
+  else
+    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H
+  endif
+else
+    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H
 endif
 
 #   C library selection
