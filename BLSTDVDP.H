@@ -32,10 +32,12 @@ extern uint8_t bl_draw_font_w, bl_draw_font_h, bl_draw_font_fgc, bl_draw_font_bg
 void bl_draw_font_mc(uint8_t *font);
 void bl_draw_font_g4(uint8_t *font);
 void bl_draw_font_g4i(uint8_t *font);
+void bl_draw_font_g4c(void);
 void bl_draw_font_g5(uint8_t *font);
 void bl_draw_font_g5i(uint8_t *font);
 void bl_draw_font_g6(uint8_t *font);
 void bl_draw_font_g6i(uint8_t *font);
+void bl_draw_font_g6c(void);
 void bl_draw_font_g7(uint8_t *font);
 void bl_draw_font_g7i(uint8_t *font);
 
