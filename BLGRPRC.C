@@ -18,14 +18,14 @@ static uint16_t vram_addr;
 static uint16_t vram_offset;
 void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy)
 {
-	FILE *fp;
+	uint8_t fh;
 	uint16_t y, buf_lines, buf_bytes;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL)
+	fh = open(filename, O_RDONLY);
+	if (fh == 0xFF)
 		return;
 
-	fseek(fp, 7, SEEK_SET);		/* skip bsave-header */
+	lseek(fh, 7, SEEK_SET);		/* skip bsave-header */
 
 	vram_offset = (dx / 2) + (dy * 128);
 	buf_lines = BL_GRP_SHARED_MEM / 128;
@@ -38,7 +38,7 @@ void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy)
 			buf_lines = 212 - y;
 			buf_bytes = buf_lines * 128;
 		}
-		fread(bl_grp.shared_mem, buf_bytes, 1, fp);
+		read(fh, bl_grp.shared_mem, buf_bytes);
 
 		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
@@ -48,22 +48,22 @@ void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy)
 		bl_copy_to_vram_nn(bl_grp.shared_mem);
 	}
 
-	fclose(fp);
+	close(fh);
 }
 
 void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy)
 {
-	FILE *fp;
+	uint8_t fh;
 	uint16_t width, height;
 	uint16_t y, buf_lines, buf_bytes;
 	uint16_t pat_row_bytes, n;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL)
+	fh = open(filename, O_RDONLY);
+	if (fh == 0xFF)
 		return;
 
-	fread(&width, 2, 1, fp);
-	fread(&height, 2, 1, fp);
+	read(fh, &width, 2);
+	read(fh, &height, 2);
 
 	vram_offset = (dx / 2) + (dy * 128);
 	pat_row_bytes = width / 2;
@@ -77,7 +77,7 @@ void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy)
 			buf_lines = 212 - y;
 			buf_bytes = buf_lines * pat_row_bytes;
 		}
-		fread(bl_grp.shared_mem, buf_bytes, 1, fp);
+		read(fh, bl_grp.shared_mem, buf_bytes);
 
 		vram_addr = y * 128 + vram_offset;
 		for (n = 0; n < buf_lines; n++, vram_addr += 128) {
@@ -90,7 +90,7 @@ void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy)
 		}
 	}
 
-	fclose(fp);
+	close(fh);
 }
 #if 0
 static uint16_t rc_palette[] = {
@@ -102,15 +102,15 @@ static uint16_t rc_palette[] = {
 #endif
 void bl_grp_load_ge5_pic_pal(char *filename)
 {
-	FILE *fp;
+	uint8_t fh;
 	uint16_t n;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL)
+	fh = open(filename, O_RDONLY);
+	if (fh == 0xFF)
 		return;
 
-	fseek(fp, -32, SEEK_END);	/* palette data */
-	fread(bl_grp.palette, 32, 1, fp);
+	lseek(fh, -32, SEEK_END);	/* palette data */
+	read(fh, bl_grp.palette, 32);
 
 	for (n = 0; n < 16; n++) {
 		bl_grp.palette[n] |= n << 12;
@@ -118,26 +118,26 @@ void bl_grp_load_ge5_pic_pal(char *filename)
 
 	bl_grp_update_palette(bl_grp.palette);
 
-	fclose(fp);
+	close(fh);
 }
 
 void bl_grp_load_ge5_pat_pal(char *filename)
 {
-	FILE *fp;
+	uint8_t fh;
 	uint16_t width, height, pat_bytes;
 	uint16_t n;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL)
+	fh = open(filename, O_RDONLY);
+	if (fh == 0xFF)
 		return;
 
-	fread(&width, 2, 1, fp);
-	fread(&height, 2, 1, fp);
+	read(fh, &width, 2);
+	read(fh, &height, 2);
 
 	pat_bytes = width * height / 2;
 
-	fseek(fp, pat_bytes, SEEK_CUR);	/* palette data */
-	fread(bl_grp.palette, 32, 1, fp);
+	lseek(fh, pat_bytes, SEEK_CUR);	/* palette data */
+	read(fh, bl_grp.palette, 32);
 
 	for (n = 0; n < 16; n++) {
 		bl_grp.palette[n] |= n << 12;
@@ -145,32 +145,32 @@ void bl_grp_load_ge5_pat_pal(char *filename)
 
 	bl_grp_update_palette(bl_grp.palette);
 
-	fclose(fp);
+	close(fh);
 }
 
 void bl_grp_get_ge5_pat_pal(char *filename, uint16_t *palette)
 {
-	FILE *fp;
+	uint8_t fh;
 	uint16_t width, height, pat_bytes;
 	uint16_t n;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL)
+	fh = open(filename, O_RDONLY);
+	if (fh == 0xFF)
 		return;
 
-	fread(&width, 2, 1, fp);
-	fread(&height, 2, 1, fp);
+	read(fh, &width, 2);
+	read(fh, &height, 2);
 
 	pat_bytes = width * height / 2;
 
-	fseek(fp, pat_bytes, SEEK_CUR);	/* palette data */
-	fread(palette, 32, 1, fp);
+	lseek(fh, pat_bytes, SEEK_CUR);	/* palette data */
+	read(fh, palette, 32);
 
 	for (n = 0; n < 16; n++) {
 		palette[n] |= n << 12;
 	}
 
-	fclose(fp);
+	close(fh);
 }
 
 ;
