@@ -38,9 +38,8 @@ void draw_font_null(uint8_t *font)
 }
 
 uint8_t font_text_mode;
-uint8_t *font_8x8;
-uint16_t font_8x8_len = sizeof(font_8x8_org);
 uint8_t font_8x8_init = 0;
+extern uint8_t *font_8x8;
 void (*font_draw_func)(uint8_t *font) = draw_font_null;
 
 void (*font_draw_func_table[2][10])(uint8_t *font) = {
@@ -86,7 +85,7 @@ void bl_grp_fnt_init(void)
 		center = font_8x8_center;
 		bold = font_8x8_bold;
 		wide = font_8x8_wide;
-		for (n = 0; n < font_8x8_len; n++) {
+		for (n = 0; n < sizeof(font_8x8_org); n++) {
 			*center >>= 1;
 			*bold = *center | (*center >> 1);
 			*wide = (*center & 0xF0) | ((*center & 0x1E) >> 1);
@@ -102,15 +101,15 @@ void bl_grp_fnt_init(void)
 
 void bl_grp_load_font(char *filename)
 {
-	FILE *fp;
+	uint8_t fh;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL)
+	fh = open(filename, O_RDONLY);
+	if (fh == 0xFF)
 		return;
 
-	fread(font_8x8_org, 2048, 1, fp);
+	read(fh, font_8x8_org, 2048);
 
-	fclose(fp);
+	close(fh);
 }
 
 static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
@@ -226,10 +225,12 @@ void bl_grp_set_font_size(uint8_t w, uint8_t h)
 
 void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 {
-	bl_grp.font_fgc = fg;
-	bl_grp.font_bgc = bg;
-	bl_draw_font_fgc = bl_grp.font_fgc;
-	bl_draw_font_bgc = bl_grp.font_bgc;
+	bl_draw_font_fgc = bl_grp.font_fgc = fg;
+	bl_draw_font_bgc = bl_grp.font_bgc = bg;
+
+	/* pre-calculation for G4,G6 */
+	bl_draw_font_g4c();
+	bl_draw_font_g6c();
 }
 
 static uint16_t vram_faddr;
@@ -261,10 +262,12 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 	bl_vdp_vram_l = (uint8_t)vram_faddr;
 }
 
+#if 1
 #asm
 ;void bl_grp_print_str(char *str)
 	global	_bl_grp_print_str
 	global	_bl_write_vram
+	global	_font_8x8
 
 _bl_grp_print_str:
 	pop bc			; return addr
@@ -298,26 +301,24 @@ _bl_grp_print_bitmap:		; for bitmap graphic
 	ret z			; string end?
 	push de			; backup str
 
-	ld b,000h
-	rla
-	rl b
-	rla
-	rl b
-	rla
-	rl b
-	and 0f8h
-	ld c,a			; font idx = (uint16_t)(*str) << 3
+	ld h,0
+	ld l,a
+	add hl,hl
+	add hl,hl
+	add hl,hl		; font idx = (uint16_t)(*str) * 8
 
-	ld hl,(_font_8x8)
+	defb 001h		; ld bc,NN
+_font_8x8:			; uint8_t *font_8x8;
+	defw 0
 	add hl,bc		; hl = font addr
+
 _bl_grp_print_bitmap_addr:
 	call 00000h		; call (_font_draw_func)
 	pop de			; restore str
 	inc de			; str++
 	jp _bl_grp_print_bitmap
 #endasm
-
-/* old
+#else
 void bl_grp_print_str(char *str)
 {
 	while (*str) {
@@ -326,7 +327,7 @@ void bl_grp_print_str(char *str)
 		str++;
 	}
 }
-*/
+#endif
 
 void bl_grp_print(uint16_t x, uint16_t y, char *str)
 {
