@@ -15,7 +15,8 @@ CPMDIR = ..\..
 #   Flags
 #
 SHELL = cmd.exe
-CFLAGS := -DANSI -DCPM -DHI_TECH_C -Dz80
+#CFLAGS := -DANSI -DCPM -DHI_TECH_C -Dz80
+CFLAGS := -DANSI -DCPM
 LIBOUT :=
 
 
