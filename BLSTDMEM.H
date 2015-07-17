@@ -5,6 +5,8 @@ struct bl_lmem_t {
 	uint8_t page_max;
 	uint8_t sys_used;		/* system segment flag */
 };
+
+uint32_t bl_lmem_get_free(void);
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size);
 struct bl_lmem_t *bl_lmem_alloc_sys(uint32_t size);
 void bl_lmem_free(struct bl_lmem_t *ptr);

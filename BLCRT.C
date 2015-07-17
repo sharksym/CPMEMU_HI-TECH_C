@@ -587,6 +587,7 @@ int main_loader(int argc, char *argv[])
 
 	/* Execute main() function */
 	ret_val = main(argc, argv);
+	bl_dbg_puts("[BL] End of main()");
 
 	/* Restore Original ISR */
 	ISRDeinit();
@@ -650,13 +651,22 @@ int8_t bl_is_tsr_on(void)
 	return bl_tsr_mode;
 }
 
+uint32_t bl_lmem_get_free(void)
+{
+	uint32_t size_byte = 0x4000;
+
+	size_byte *= free_seg_no;
+
+	return size_byte;
+}
+
 static uint8_t lmem_sys_seg = 0;
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	struct bl_lmem_t *lmem;
 	uint8_t page_no, n;
 
-/*	printf("alloc size = %lu\n", size); */
+	/* printf("lmem alloc size = %lu bytes\n", size); */
 	size += 0x3FFF;			/* 16KB - 1 */
 	size >>= 14;			/* N page */
 	page_no = (uint8_t)size;
@@ -678,8 +688,9 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 			lmem->page_tbl[n] = MapperAllocSys();
 		else
 			lmem->page_tbl[n] = MapperAllocUser();
+		/* printf("seg no %02X\n", lmem->page_tbl[n]); */
 	}
-/*	printf("Free seg = %d\n", free_seg_no);*/
+	/* printf("Free seg = %d\n", free_seg_no); */
 
 	return lmem;
 }
