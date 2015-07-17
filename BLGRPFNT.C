@@ -14,6 +14,27 @@
 #include <blgrpfnt.h>
 #include <blgrpdat.h>
 
+#ifdef NO_BLGRPFNT
+void bl_grp_fnt_init(void)
+{
+}
+
+void bl_grp_set_font_size(uint8_t w, uint8_t h)
+{
+	w = h;
+}
+
+void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
+{
+	fg = bg;
+}
+
+void bl_grp_setup_font_draw_func(void)
+{
+}
+
+#else
+
 uint8_t font_8x8_org[] = {
 #include "font_e.h"
 };
@@ -38,6 +59,7 @@ void draw_font_null(uint8_t *font)
 }
 
 uint8_t font_text_mode;
+uint8_t font_width_byte;
 uint8_t font_8x8_init = 0;
 extern uint8_t *font_8x8;
 void (*font_draw_func)(uint8_t *font) = draw_font_null;
@@ -195,6 +217,7 @@ void bl_grp_set_font_size(uint8_t w, uint8_t h)
 	bl_grp.font_height= h;
 	bl_draw_font_w = bl_grp.font_width;
 	bl_draw_font_h = bl_grp.font_height;
+	font_width_byte = (bl_grp.font_width) >> (bl_grp.bpp_shift);
 
 	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:
@@ -262,7 +285,6 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 	bl_vdp_vram_l = (uint8_t)vram_faddr;
 }
 
-#if 1
 #asm
 ;void bl_grp_print_str(char *str)
 	global	_bl_grp_print_str
@@ -318,7 +340,8 @@ _bl_grp_print_bitmap_addr:
 	inc de			; str++
 	jp _bl_grp_print_bitmap
 #endasm
-#else
+
+/* C version
 void bl_grp_print_str(char *str)
 {
 	while (*str) {
@@ -327,7 +350,7 @@ void bl_grp_print_str(char *str)
 		str++;
 	}
 }
-#endif
+*/
 
 void bl_grp_print(uint16_t x, uint16_t y, char *str)
 {
@@ -362,7 +385,7 @@ _bl_grp_print_chr_addr:
 	jp 00000h		; jp (_font_draw_func)
 #endasm
 
-/* old
+/* C version
 void bl_grp_print_chr(char chr)
 {
 	fcode_idx = (uint16_t)chr << 3;
@@ -383,8 +406,7 @@ void bl_grp_print_cursor(void)
 
 void bl_grp_print_backspace(void)
 {
-	uint8_t addr_delta = (bl_grp.font_width) >> (bl_grp.bpp_shift);
-	addr_delta <<= 1;
+	uint8_t addr_delta = font_width_byte << 1;
 
 	bl_grp_print_chr(0x20);
 
@@ -394,11 +416,10 @@ void bl_grp_print_backspace(void)
 
 void bl_grp_print_back(char count)
 {
-	uint8_t addr_delta = (bl_grp.font_width) >> (bl_grp.bpp_shift);
+	uint8_t addr_delta = font_width_byte * count;
 
-	addr_delta = addr_delta * count;
 	vram_faddr -= addr_delta;
 	bl_vdp_vram_l -= addr_delta;
 }
-
+#endif
 ;
