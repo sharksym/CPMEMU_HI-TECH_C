@@ -56,9 +56,10 @@ include $(CFG).CFG
 
 #   Output files path
 OUTDIR := $(target).OUT
-PSECT_CFG :=
+RELEASEDIR := RELEASE
 
 #   App mode0: DOS1/DOS2 compatible COM (No banking helper)
+PSECT_CFG :=
 ifeq ($(app-mode),0)
   CFLAGS += -DBL_DISABLE -DBL_DOS1
   ifneq ($(psect-data),)
@@ -148,7 +149,9 @@ BLREFINE := $(CPMDIR)\BLREFINE.EXE
 .PHONY: all
 all: prepare_rules blsrc_cp build_job
 
-clean: cleanup_job
+clean: prepare_rules cleanup_job
+
+release: all release_job clean
 
 prepare_rules:
 	@echo * Generate Rules *
@@ -157,6 +160,11 @@ prepare_rules:
 build_job:
 	@echo * Build *
 	@make -f$(CFG).MK CFG=$(CFG) CPMC=OBJ CPMD=. build
+
+release_job:
+	@echo * Prepare for Release *
+	@if exist $(RELEASEDIR) ( @echo off ) else ( @mkdir $(RELEASEDIR) )
+	@copy /y $(OUTDIR)\*.* $(RELEASEDIR)\
 
 pre_job:
 	@echo * Pre-Job *
