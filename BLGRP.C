@@ -14,6 +14,24 @@
 #include <blgrpfnt.h>
 #include <blgrpdat.h>
 
+#define WORK_SCRMOD	*((uint8_t *)(0xFCAF))
+#define WORK_FORCOL	*((uint8_t *)(0xF3E9))
+#define WORK_BAKCOL	*((uint8_t *)(0xF3EA))
+#define WORK_BDRCOL	*((uint8_t *)(0xF3EB))
+
+static uint8_t scrmode[] = {
+	0,	/* T1 */
+	0,	/* T2 */
+	3,	/* MC */
+	1,	/* G1 */
+	2,	/* G2 */
+	4,	/* G3 */
+	5,	/* G4 */
+	6,	/* G5 */
+	7,	/* G6 */
+	8	/* G7 */
+};
+
 uint8_t mode_0_1[][2] = {
 	{ 0x00, 0x10 },	/* T1 */
 	{ 0x04, 0x10 },	/* T2 */
@@ -109,9 +127,9 @@ int8_t bl_grp_init(void)
 	bl_grp.display_mode = GRP_DISP_240P;
 	bl_grp.interlace_on = 0;
 
-	bl_grp.color_text_fg = *((uint8_t *)(0xF3E9));	/* FORCOL */
-	bl_grp.color_text_bg = *((uint8_t *)(0xF3EA));	/* BAKCOL */
-	bl_grp.color_border = *((uint8_t *)(0xF3EB));	/* BDRCOL */
+	bl_grp.color_text_fg = WORK_FORCOL;
+	bl_grp.color_text_bg = WORK_BAKCOL;
+	bl_grp.color_border = WORK_BDRCOL;
 
 	bl_grp.adjust_h = 0;
 	bl_grp.adjust_v = 0;
@@ -408,6 +426,8 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	default:
 		break;
 	}
+
+	WORK_SCRMOD = scrmode[mode];		/* for compatibility */
 }
 
 void bl_grp_set_display_on(uint8_t on)
