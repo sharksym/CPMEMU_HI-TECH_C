@@ -6,6 +6,11 @@
 /* get basic definitions */
 #define	MAXFILE		8		/* max number of files open */
 
+char bdos(int, ...);
+short bdoshl(int, ...);				/* bdos call returning value in hl */
+unsigned char msx_bdos(unsigned int,...);	/* bdos call returning value in a */
+unsigned short msx_bdosh(unsigned int,...);	/* bdos call returning value in hl */
+
 #ifdef DOS2ONLY
 /* FCB controls not required on MSX-DOS2 */
 #else
@@ -29,7 +34,7 @@ struct	fcb
 	char		dm[8];		/* CP/M disk map */
 
 	/* 10 Bytes */
-	char		nr;			/* next record to read or write */
+	char		nr;		/* next record to read or write */
 	unsigned char	ranrec[3];	/* CP/M random record number (24 bit no. ) */
 	long		rwp;		/* read/write pointer in bytes */
 	unsigned char	use;		/* use flag */
@@ -41,46 +46,6 @@ struct fcb *	getfcb(void);
 unsigned char	getuid(void);
 void		setuid(int);
 unsigned char	setfcb(struct fcb *, char *);
-#endif /* DOS2ONLY */
-
-char		bdos(int, ...);
-short		bdoshl(int, ...);	/* bdos call returning value in hl */
-
-/* for MSX-DOS */
-/* bdos call returning value in a */
-unsigned char msx_bdos(unsigned int,...);
-/* bdos call returning value in hl */
-unsigned short msx_bdosh(unsigned int,...);
-
-/* for MSX-DOS2 */
-struct msxfib
-{
-	unsigned char	ff;
-	unsigned char	name[13];
-	unsigned char	attr;
-	unsigned int	time;
-	unsigned int	date;
-	unsigned int	cl;
-	long 		size;
-	unsigned char	drive;
-	unsigned char	internal[38];
-};
-
-struct	fileinfo
-{
-	char		name[13];	/* File name with extension */
-	unsigned char	drive;		/* Logical drive A=1, B=2, ...Default=0 */
-#ifdef DOS2ONLY
-	struct msxfib	tfib;
-#else
-	struct fcb	tfcb;
-	struct msxfib	tfib;
-#endif
-};
-
-int findfirst(char *path, unsigned int attr, struct fileinfo *pfi);
-int findnext(struct fileinfo *pfi);
-unsigned setfileattr(char *path, unsigned int attr);
 
 /* flag values in fcb.use */
 #define	U_READ	1		/* file open for reading */
@@ -133,6 +98,45 @@ unsigned setfileattr(char *path, unsigned int attr);
 #define	CPMRRAN	33		/* read random record */
 #define	CPMWRAN	34		/* write random record */
 #define	CPMCFS	35		/* compute file size */
+
+#endif /* DOS2ONLY */
+
+/* MSX-DOS2 fileinfor block 64bytes
+struct msxfib
+{
+	unsigned char	ff;
+	unsigned char	name[13];
+	unsigned char	attr;
+	unsigned int	time;
+	unsigned int	date;
+	unsigned int	cl;
+	long 		size;
+	unsigned char	drive;
+	unsigned char	internal[38];
+};
+*/
+
+/* first 64bytes of struct fileinfo is equal with DOS2 file infoblock */
+struct	fileinfo
+{
+	unsigned char	ff;		/* Always 0xFF */
+	unsigned char	name[13];	/* File name with extension */
+	unsigned char	attr;
+	unsigned int	time;
+	unsigned int	date;
+	unsigned int	cl;
+	long 		size;
+	unsigned char	drive;		/* Logical drive A=1, B=2, ...Default=0 */
+	unsigned char	internal[38];	/* Should not be touched! */
+#ifdef DOS2ONLY
+#else
+	struct fcb	tfcb;
+#endif
+};
+
+int findfirst(char *path, unsigned int attr, struct fileinfo *pfi);
+int findnext(struct fileinfo *pfi);
+unsigned setfileattr(char *path, unsigned int attr);
 
 /*
  * Declarations for Unix style low-level I/O functions.
