@@ -16,6 +16,10 @@
 #define GRP_SCR_G6		8	/* SCREEN 7 */
 #define GRP_SCR_G7		9	/* SCREEN 8 */
 
+#define GRP_YAE0_YJK0		0x00	/* SCREEN 8 */
+#define GRP_YAE0_YJK1		0x08	/* SCREEN 12 */
+#define GRP_YAE1_YJK1		0x18	/* SCREEN 11 */
+
 #define GRP_SPR_8		0x00	/* 8x8   normal */
 #define GRP_SPR_8EX		0x01	/* 8x8   expanded */
 #define GRP_SPR_16		0x02	/* 16x16 normal */
@@ -46,8 +50,10 @@ void bl_grp_set_irq_hblank(uint8_t on);
 void bl_grp_set_irq_hblank_line(uint8_t line);
 
 void bl_grp_set_screen_mode(uint8_t mode);
+void bl_grp_set_yae_yjk_mode(uint8_t mode);
 void bl_grp_set_display_on(uint8_t on);
 uint8_t bl_grp_get_screen_mode(void);
+uint8_t bl_grp_get_yae_yjk_mode(void);
 uint8_t bl_grp_get_display_on(void);
 
 void bl_grp_set_sprite_mode(uint8_t mode);

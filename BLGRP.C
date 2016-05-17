@@ -121,6 +121,7 @@ int8_t bl_grp_init(void)
 	bl_grp_fnt_init();
 
 	bl_grp.screen_mode = 0xFF;			/* dummy */
+	bl_grp.yae_yjk_mode = GRP_YAE0_YJK0;
 	bl_grp.text_width = 40;
 	bl_grp.palette0_on = 0;
 	bl_grp.line_212 = 1;
@@ -200,6 +201,7 @@ void bl_grp_deinit(void)
 	bl_grp_set_scroll_v(0);
 	bl_grp_set_view(0);
 	bl_grp_set_active(0);
+	bl_grp_set_yae_yjk_mode(GRP_YAE0_YJK0);
 	bl_grp_reset_palette();
 
 	bl_grp_set_text_mode();
@@ -386,6 +388,7 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_set_sprite_gen_view(0);
 	bl_grp_set_sprite_gen_active(0);
 
+	bl_grp_set_yae_yjk_mode(bl_grp.yae_yjk_mode);
 	bl_grp_update_palette(bl_grp.palette);
 
 	bl_grp.row_byte = table_addr[mode][5];
@@ -430,6 +433,14 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	WORK_SCRMOD = scrmode[mode];		/* for compatibility */
 }
 
+void bl_grp_set_yae_yjk_mode(uint8_t mode)
+{
+	mode &= 0x18;
+	bl_grp.yae_yjk_mode = mode;
+
+	bl_grp_update_reg_bit(25, 0x18, mode);
+}
+
 void bl_grp_set_display_on(uint8_t on)
 {
 	if (on) {
@@ -445,6 +456,11 @@ void bl_grp_set_display_on(uint8_t on)
 uint8_t bl_grp_get_screen_mode(void)
 {
 	return bl_grp.screen_mode;
+}
+
+uint8_t bl_grp_get_yae_yjk_mode(void)
+{
+	return bl_grp.yae_yjk_mode;
 }
 
 uint8_t bl_grp_get_display_on(void)

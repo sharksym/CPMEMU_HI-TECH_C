@@ -8,6 +8,7 @@ struct bl_grp_var_t {			/* bl_grp_var can't exceed 256bytes */
 	uint8_t vdp_ver;
 
 	uint8_t screen_mode;
+	uint8_t yae_yjk_mode;
 	uint8_t display_on;
 
 	uint8_t sprite_mode;
