@@ -18,12 +18,12 @@ void bl_mouse_get_data(struct bl_mouse_t *mouse);
 
 /* IRQ requests */
 #define IRQ_EXT0	0
-#define IRQ_EXT1	1
-#define IRQ_EXT2	2
-#define IRQ_EXT3	3
-#define IRQ_VDP_HBLK	4
+#define IRQ_VDP_HBLK	1
+#define IRQ_EXT1	2
+#define IRQ_SND_CYCL	3
+#define IRQ_VDP_SPRT	4
 #define IRQ_VDP_VBLK	5
-#define IRQ_VDP_SPRT	6
+#define IRQ_EXT2	6
 
 int16_t bl_request_irq(uint8_t irq, void *handler);
 int16_t bl_free_irq(uint8_t irq);
