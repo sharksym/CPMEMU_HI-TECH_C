@@ -16,6 +16,9 @@ typedef unsigned long uint32_t;
 /* bl_bank is defined at each bank (Number is set 0,1,2,3... ) */
 extern int16_t bl_bank;
 
+/* Get OVL info */
+void bl_get_ovl_info(char *name, short *bank_max);
+
 /* Set TSR mode */
 void bl_tsr_on(void);
 void bl_tsr_off(void);

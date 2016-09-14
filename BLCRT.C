@@ -638,6 +638,12 @@ int main_loader(int argc, char *argv[])
 	return ret_val;
 }
 
+void bl_get_ovl_info(char *name, short *bank_max)
+{
+	strcpy(name, pOvlName);
+	*bank_max = tMemSeg.BankMax;
+}
+
 void bl_tsr_on(void)
 {
 #ifdef BL_TSR
