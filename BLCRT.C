@@ -506,6 +506,10 @@ int main_loader(int argc, char *argv[])
 
 		OvlSize = _fsize(cFileHandle);
 		tMemSeg.BankMax = (short)(OvlSize >> 15);
+#ifdef BL_BMAX
+		if (tMemSeg.BankMax > BL_BMAX)			/* Partial loading? */
+			tMemSeg.BankMax = BL_BMAX;
+#endif
 		close(cFileHandle);
 
 		if (tMemSeg.BankMax * 2 > free_seg_no) {
