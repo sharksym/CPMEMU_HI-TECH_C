@@ -26,7 +26,7 @@
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 
-	global	start,_main,_exit,__Hbss, __Lbss, __argc_, startup
+	global	start, _main, _exit, __Hbss, __Lbss, __argc_, startup
 	global	_GetBdosVersion, _gcBdosMode
 
 	jp	start		;By Tatsu
@@ -312,7 +312,7 @@ address	entry name	function
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 
-	global	start, _main_loader, _exit, __Hbss, __Lbss, __argc_, startup, wrelop
+	global	start, _exit, __Hbss, __Lbss, __argc_, startup, wrelop
 
 	jp	start		;By Tatsu
 				;On MS-DOS, return to MS-DOS
