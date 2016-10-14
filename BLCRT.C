@@ -430,6 +430,7 @@ void get_lmem_seg_table(struct bl_lmem_t *ptr);
 
 int main(int argc, char *argv[]);
 long _fsize(int fd);				/* Get File Size */
+void brk(void *addr);
 
 #ifdef BL_DEBUG
 #define bl_dbg_puts(A)		puts(A)
@@ -440,8 +441,6 @@ long _fsize(int fd);				/* Get File Size */
 int main_loader(int argc, char *argv[])
 {
 	static int16_t ret_val = 0;
-	static uint16_t mem_gap = 0;
-	static int8_t *pDummy = NULL;
 #ifndef BL_1BANK
 	static uint8_t seg = 0;
 #endif
@@ -575,12 +574,8 @@ int main_loader(int argc, char *argv[])
 		bl_dbg_puts("");
 	}
 #endif
-
-	/* Set malloc heap to over 0x9400 */
-	pDummy = (int8_t *)malloc(1);
-	mem_gap = himem_end - (uint16_t)pDummy;
-	free(pDummy);
-	pDummy = (int8_t *)malloc(mem_gap);
+	/* Set DATA end to himem_end(over 0x9400) */
+	brk((void *)himem_end);
 
 	/* Install ISR */
 	ISRInit();
@@ -595,8 +590,6 @@ int main_loader(int argc, char *argv[])
 
 	/* Restore Original ISR */
 	ISRDeinit();
-
-	free(pDummy);
 
 #ifdef BL_TSR
 	if (bl_tsr_mode && !bl_tsr_env_exist) {	/* TSR ENV not exist? */
