@@ -356,7 +356,7 @@ start:
 	push	hl
 	ld	hl,(__argc_)
 	push	hl
-	call	_main_loader
+	call	_bl_main
 	push	hl
 	call	_exit
 	jp	0
@@ -438,7 +438,7 @@ void brk(void *addr);
 #define bl_dbg_puts(A)
 #endif
 
-int main_loader(int argc, char *argv[])
+int bl_main(int argc, char *argv[])
 {
 	static int16_t ret_val = 0;
 #ifndef BL_1BANK
