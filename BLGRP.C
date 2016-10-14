@@ -676,7 +676,7 @@ static uint8_t hmmv_cmd[11] = {
 };
 void bl_grp_erase(uint8_t page, uint8_t c)
 {
-	uint16_t n, block;
+	static uint16_t n, block;
 	uint16_t lines;
 
 	if (bl_grp.interlace_on) {
@@ -939,7 +939,7 @@ uint16_t bl_grp_get_vramaddr_spr_attr(uint16_t layer)
 static uint8_t spr_attr[4];
 void bl_grp_clear_sprite(void)
 {
-	uint16_t vram_addr = bl_grp.sprite_attr_active_addr;
+	static uint16_t vram_addr;
 	uint8_t n;
 
 	n = 212 + 16 + bl_grp.scroll_v;
@@ -951,6 +951,7 @@ void bl_grp_clear_sprite(void)
 	spr_attr[2] = 0;
 	spr_attr[3] = 0;
 
+	vram_addr = bl_grp.sprite_attr_active_addr;
 	for (n = 0; n < 32; n++, vram_addr += 4) {
 		bl_set_vram_addr16(vram_addr);
 		bl_copy_to_vram_4(spr_attr);
@@ -974,8 +975,9 @@ void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t 
 
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size)
 {
-	uint16_t vram_addr = y * bl_grp.row_byte;
+	static uint16_t vram_addr;
 
+	vram_addr = y * bl_grp.row_byte;
 /*	vram_addr += x >> (bl_grp.bpp_shift);*/
 
 	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
@@ -988,8 +990,9 @@ void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size)
 
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size)
 {
-	uint16_t vram_addr = y * bl_grp.row_byte;
+	static uint16_t vram_addr;
 
+	vram_addr = y * bl_grp.row_byte;
 /*	vram_addr += x >> (bl_grp.bpp_shift);*/
 
 	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
