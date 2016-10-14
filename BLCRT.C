@@ -671,10 +671,7 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 	uint8_t page_no, n;
 
 	/* printf("lmem alloc size = %lu bytes\n", size); */
-	size += 0x3FFF;			/* 16KB - 1 */
-	size >>= 14;			/* N page */
-	page_no = (uint8_t)size;
-
+	page_no = (uint8_t)((size + 0x3FFF) >> 14);	/* N page */
 	if (!page_no || (page_no > free_seg_no)) {
 		return NULL;
 	}
@@ -767,10 +764,8 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 #asm
 	DI
 #endasm
-
 	page_no = (uint8_t)(addr32 >> 14);
-	offset = (uint16_t)(addr32 & 0x3FFF);
-	offset |= 0x4000;
+	offset = ((uint16_t)addr32 & 0x3FFF) | 0x4000;
 
 	MapperPutPage1_DI(dest->page_tbl[page_no]);
 	while (size--) {
@@ -793,10 +788,8 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 #asm
 	DI
 #endasm
-
 	page_no = (uint8_t)(addr32 >> 14);
-	offset = (uint16_t)(addr32 & 0x3FFF);
-	offset |= 0x4000;
+	offset = (((uint16_t)addr32) & 0x3FFF) | 0x4000;
 
 	MapperPutPage1_DI(src->page_tbl[page_no]);
 	while (size--) {
