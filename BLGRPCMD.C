@@ -23,10 +23,11 @@ static uint8_t pset_cmd[7] = {
 	0x00,	/* R45 Argument */
 	0x50	/* R46 Command PSET */
 };
-static uint16_t vram_addr_pp;
-static uint8_t vram_data_pp;
 void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
+	static uint16_t vram_addr_pp;
+	static uint8_t vram_data_pp;
+
 	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
 		vram_addr_pp = bl_grp.pattern_gen_addr;
 		vram_addr_pp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
@@ -93,10 +94,11 @@ static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 #endasm
 }
 
-static uint16_t vram_addr_gp;
-static uint8_t vram_data_gp;
 uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 {
+	static uint16_t vram_addr_gp;
+	static uint8_t vram_data_gp;
+
 	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
 		vram_addr_gp = bl_grp.pattern_gen_addr;
 		vram_addr_gp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
@@ -272,8 +274,8 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 {
 	uint16_t line_w, line_h;
 	uint8_t sy0, sy1, dy0, dy1;
-	int16_t deltax, deltay;
-	int16_t error, step, x, y, inc;
+	static int16_t deltax, deltay;
+	static int16_t error, step, x, y, inc;
 
 	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
 		deltax = dx > sx ? dx - sx : sx - dx;
@@ -430,7 +432,7 @@ void bl_grp_box(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, u
 
 void bl_grp_boxfill(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op)
 {
-	uint16_t tmp;
+	static uint16_t tmp;
 
 	if (sx > dx) {
 		tmp = dx;
@@ -471,7 +473,7 @@ static uint8_t hmmv_cmd[11] = {
 };
 void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c)
 {
-	uint16_t width, height;
+	static uint16_t width, height;
 
 	width = dx - sx + 1;
 	height = dy - sy + 1;
@@ -518,9 +520,11 @@ void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_
 
 void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t op)
 {
-	int16_t error = -radius;
-	int16_t x = radius;
-	int16_t y = 0;
+	static int16_t x, y, error;
+
+	x = radius;
+	y = 0;
+	error = -x;
 
 	while (x >= y) {
 		bl_grp_cirle4point(cx, cy, x, y);
