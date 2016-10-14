@@ -663,8 +663,9 @@ int8_t bl_is_tsr_on(void)
 
 uint32_t bl_lmem_get_free(void)
 {
-	uint32_t size_byte = 0x4000;
+	static uint32_t size_byte;
 
+	size_byte = 0x4000;
 	size_byte *= free_seg_no;
 
 	return size_byte;
@@ -673,7 +674,7 @@ uint32_t bl_lmem_get_free(void)
 static uint8_t lmem_sys_seg = 0;
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
-	struct bl_lmem_t *lmem;
+	static struct bl_lmem_t *lmem;
 	uint8_t page_no, n;
 
 	/* printf("lmem alloc size = %lu bytes\n", size); */
@@ -707,7 +708,7 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 
 struct bl_lmem_t *bl_lmem_alloc_sys(uint32_t size)
 {
-	struct bl_lmem_t *lmem;
+	static struct bl_lmem_t *lmem;
 
 	lmem_sys_seg = 1;		/* for system segment */
 	lmem = bl_lmem_alloc(size);
@@ -718,7 +719,7 @@ struct bl_lmem_t *bl_lmem_alloc_sys(uint32_t size)
 
 void bl_lmem_free(struct bl_lmem_t *ptr)
 {
-	uint16_t n;
+	uint8_t n;
 
 	if (ptr) {
 		free_seg_no += ptr->page_max;
@@ -742,8 +743,8 @@ void bl_lmem_export(struct bl_lmem_t *ptr, char *name)
 
 struct bl_lmem_t *bl_lmem_import(char *name)
 {
-	struct bl_lmem_t *lmem;
-	char *env;
+	static struct bl_lmem_t *lmem;
+	static char *env;
 
 	lmem = (struct bl_lmem_t *)malloc(sizeof(struct bl_lmem_t));
 	if (lmem == NULL) {		/* not enough heap */
