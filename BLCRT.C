@@ -363,11 +363,6 @@ nularg:	defb	0
 #endasm
 
 
-static int8_t bl_tsr_mode = 0;
-#ifdef BL_TSR
-static int8_t bl_tsr_env_exist = 0;
-#endif
-
 #ifdef __Hhimem
 #asm
 _himem_end:	defw	__Hhimem
@@ -377,44 +372,36 @@ extern unsigned short himem_end;
 #define himem_end	0x9400
 #endif	/* __Hhimem */
 
-static int16_t SegCnt = 0;
-static int16_t free_seg_no = 0;
-static uint8_t cFileHandle = 0;
+static int16_t free_seg_no;
+
+#ifndef BL_1BANK
+struct bl_mem_seg_t {				/* Memory Segment Info. */
+	short BankMax;
+	uint8_t BankTbl[64];
+};
+static struct bl_mem_seg_t tMemSeg;
+static int8_t bl_tsr_mode = 0;
+static char pOvlName[64];
+static long OvlSize;
 
 #ifdef BL_TSR
+static unsigned char mem_seg_size = sizeof(tMemSeg);
 static char pTsrEnvName[14];			/* ENV name */
 static char *pTsrEnv = NULL;			/* ENV data */
+static int8_t bl_tsr_env_exist = 0;
 void MakeTsrEnvName(void);
 void put_seg_table(void);
 void get_seg_table(void);
 #endif
-static char pOvlName[64] = "";
-static long OvlSize = 0;
-
-/* Memory Segment Information */
-struct bl_mem_seg_t {
-	short BankMax;
-	uint8_t BankTbl[64];
-};
-
-#ifndef BL_1BANK
-static struct bl_mem_seg_t tMemSeg;
-#ifdef BL_TSR
-static unsigned char mem_seg_size = sizeof(tMemSeg);
 #endif
-static uint8_t Page2Old = 0;
-#endif
-struct bl_irq_t {
-	uint8_t *stat;
-	uint16_t *addr;
-	uint16_t *bank;
-};
 
 int bl_main(int argc, char *argv[])
 {
-	static int16_t ret_val = 0;
+	static int16_t ret_val;
 #ifndef BL_1BANK
-	static uint8_t seg = 0;
+	static uint8_t cFileHandle;
+	static uint8_t seg, Page2Old;
+	static int16_t SegCnt;
 #endif
 #ifdef R800ONLY
 	if (get_msx_version() == MSXTR) {
@@ -449,7 +436,7 @@ int bl_main(int argc, char *argv[])
 	if (!bl_tsr_mode) {
 		cFileHandle = open(pOvlName, O_RDONLY);		/* Open OVL File */
 		if (cFileHandle == 0xFF) {			/* Not Found? */
-			puts("\nERROR: OVL not found");
+			puts("ERROR: OVL not found");
 			return 0;
 		}
 
@@ -462,7 +449,7 @@ int bl_main(int argc, char *argv[])
 		close(cFileHandle);
 
 		if (tMemSeg.BankMax * 2 > free_seg_no) {
-			puts("\nERROR: Not enough memory");
+			puts("ERROR: Not enough memory");
 			return 0;
 		}
 
@@ -473,11 +460,7 @@ int bl_main(int argc, char *argv[])
 	/* Initialize Bank Caller */
 	BankCallInit();
 
-#ifdef BL_1BANK
-	SegCnt = 0;
-	cFileHandle = 0xFF;
-	OvlSize = 0;
-#else
+#ifndef BL_1BANK
 	if (bl_tsr_mode) {
 		memcpy(Bank_idx_addr + 0x02, tMemSeg.BankTbl, sizeof(tMemSeg.BankTbl));
 		Page2Old = MapperGetPage2();
@@ -536,15 +519,15 @@ int bl_main(int argc, char *argv[])
 	ISRDeinit();
 
 #ifdef BL_TSR
-	if (bl_tsr_mode && !bl_tsr_env_exist) {	/* TSR ENV not exist? */
-		bl_dbg_pr_x("[BL] Save memory info [%s] ...", pTsrEnvName);
-		*(unsigned char *)0x9000 = mem_seg_size;
-		put_seg_table();			/* tMemSeg to temp heap */
-		setenv(pTsrEnvName, (char *)0x9000);
-		bl_dbg_pr("Ok\n");
-	}
-
-	if (!bl_tsr_mode) {
+	if (bl_tsr_mode) {
+		if (!bl_tsr_env_exist) {		/* TSR ENV not exist? */
+			bl_dbg_pr_x("[BL] Save memory info [%s] ...", pTsrEnvName);
+			*(unsigned char *)0x9000 = mem_seg_size;
+			put_seg_table();		/* tMemSeg to temp heap */
+			setenv(pTsrEnvName, (char *)0x9000);
+			bl_dbg_pr("Ok\n");
+		}
+	} else {
 		if (bl_tsr_env_exist)
 			setenv(pTsrEnvName, "");	/* Clear ENV */
 
