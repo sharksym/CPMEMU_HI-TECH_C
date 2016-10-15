@@ -384,6 +384,7 @@ static uint8_t cFileHandle = 0;
 #ifdef BL_TSR
 static char pTsrEnvName[14];			/* ENV name */
 static char *pTsrEnv = NULL;			/* ENV data */
+void MakeTsrEnvName(void);
 void put_seg_table(void);
 void get_seg_table(void);
 #endif
@@ -415,9 +416,6 @@ int bl_main(int argc, char *argv[])
 #ifndef BL_1BANK
 	static uint8_t seg = 0;
 #endif
-#ifdef BL_TSR
-	static int8_t name_cnt, name_pos;
-#endif
 #ifdef R800ONLY
 	if (get_msx_version() == MSXTR) {
 		set_cpu_mode_tr(CPU_TR_R800_DRAM);
@@ -436,18 +434,7 @@ int bl_main(int argc, char *argv[])
 	MakeOvlName();				/* Get Full Path of *.OVL */
 
 #ifdef BL_TSR
-	for (name_pos = 0, name_cnt = 0; pOvlName[name_cnt] != 0; name_cnt++) {
-		if (pOvlName[name_cnt] == '\\')
-			name_pos = name_cnt + 1;
-	}
-
-	strcpy(pTsrEnvName, &pOvlName[name_pos]);
-	name_cnt = strlen(pTsrEnvName);
-	pTsrEnvName[name_cnt - 4] = '_';
-	pTsrEnvName[name_cnt - 3] = 'T';
-	pTsrEnvName[name_cnt - 2] = 'S';
-	pTsrEnvName[name_cnt - 1] = 'R';
-
+	MakeTsrEnvName();			/* Make Name of environment variable */
 	pTsrEnv = getenv(pTsrEnvName);
 	if (pTsrEnv && (pTsrEnv[0] == '*')) {
 		bl_dbg_pr_x("[BL] Load memory info [%s] ...", pTsrEnvName);
@@ -1042,6 +1029,50 @@ _copy_256_p0_to_p2:
 
 #ifdef BL_TSR
 #asm
+;-------------------------------------------------------------------------------
+; Fill pTsrEnvName[]
+;
+;void MakeTsrEnvName(void);
+
+		psect	text
+		global	_strcpy, _strlen
+_MakeTsrEnvName:
+		PUSH	IX
+
+		LD	HL, _pOvlName
+		LD	DE, _pOvlName
+_MakeTsrEnvName_l:
+		LD	A, (HL)
+		AND	A
+		JR	Z, _MakeTsrEnvName_0
+		CP	'\'
+		INC	HL
+		JR	NZ, _MakeTsrEnvName_l
+		LD	D, H
+		LD	E, L			; DE <- filename only
+		JR	_MakeTsrEnvName_l
+_MakeTsrEnvName_0:
+		PUSH	DE
+		LD	HL, _pTsrEnvName
+		PUSH	HL
+		CALL	_strcpy
+		CALL	_strlen			; HL <- length
+		POP	BC			; cleanup stack
+		POP	BC
+
+		LD	DE, _pTsrEnvName - 4
+		ADD	HL, DE
+		LD	(HL), '_'
+		INC	HL
+		LD	(HL), 'T'
+		INC	HL
+		LD	(HL), 'S'
+		INC	HL
+		LD	(HL), 'R'
+
+		POP IX
+		RET
+
 ;-------------------------------------------------------------------------------
 ; Put memory segment information to env-string
 ;
