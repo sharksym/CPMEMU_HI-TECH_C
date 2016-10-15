@@ -178,57 +178,40 @@ nularg:	defb	0
 /* Bank Call Routine */
 #include <bankcall.h>
 
-#define	ENASLT	00024h
-#define	RAMAD1	0f342h
-#define	RAMAD2	0f343h
-
-#define	CALSLT	0001Ch
-#define	EXPTBL	0FCC1h
-#define EXTBIO	0FFCAh
-
-
-
+#ifdef BL_DEBUG
+#define bl_dbg_puts(A)		puts(A)
+#else
+#define bl_dbg_puts(A)
+#endif
 
 uint8_t SegmentTotal = 0;
 uint8_t SegmentFree = 0;
 uint16_t MapperTableAddr = 0;
 
-/* uint16_t MapperALL_SEG = 0; */
-/* uint16_t MapperFRE_SEG = 0; */
-uint16_t MapperRD_SEG = 0;
-uint16_t MapperWR_SEG = 0;
-/* uint16_t MapperCAL_SEG = 0; */
-/* uint16_t MapperCALLS = 0; */
-/* uint16_t MapperPUT_PH = 0; */
-/* uint16_t MapperGET_PH = 0; */
-uint16_t MapperPUT_P0 = 0;
-uint16_t MapperGET_P0 = 0;
-uint16_t MapperPUT_P1 = 0;
-uint16_t MapperGET_P1 = 0;
-uint16_t MapperPUT_P2 = 0;
-uint16_t MapperGET_P2 = 0;
-/* uint16_t MapperPUT_P3 = 0; */
-/* uint16_t MapperGET_P3 = 0; */
-
 uint8_t MapperInit(void);
 uint8_t MapperAllocUser(void);
 uint8_t MapperAllocSys(void);
-void MapperFree(uint8_t SegNo);
+void    MapperFree(uint8_t SegNo);
 
 uint8_t MapperGetPage0(void);
 uint8_t MapperGetPage1(void);
 uint8_t MapperGetPage2(void);
-void MapperPutPage0(uint8_t SegNo);
-void MapperPutPage1(uint8_t SegNo);
-void MapperPutPage2(uint8_t SegNo);
-void MapperPutPage1_DI(uint8_t SegNo);
-
+void    MapperPutPage0(uint8_t SegNo);
+void    MapperPutPage1(uint8_t SegNo);
+void    MapperPutPage2(uint8_t SegNo);
+void    MapperPutPage1_DI(uint8_t SegNo);
 
 void BankCallInit(void);
 void ISRInit(void);
 void ISRDeinit(void);
 
 void copy_256_p0_to_p2(void);
+void put_lmem_seg_table(struct bl_lmem_t *ptr);
+void get_lmem_seg_table(struct bl_lmem_t *ptr);
+
+long _fsize(int fd);				/* Get File Size */
+void brk(void *addr);
+int main(int argc, char *argv[]);		/* main() */
 
 /*
 
@@ -423,20 +406,6 @@ struct bl_irq_t {
 	uint16_t *addr;
 	uint16_t *bank;
 };
-
-/* lmem export, import */
-void put_lmem_seg_table(struct bl_lmem_t *ptr);
-void get_lmem_seg_table(struct bl_lmem_t *ptr);
-
-int main(int argc, char *argv[]);
-long _fsize(int fd);				/* Get File Size */
-void brk(void *addr);
-
-#ifdef BL_DEBUG
-#define bl_dbg_puts(A)		puts(A)
-#else
-#define bl_dbg_puts(A)
-#endif
 
 int bl_main(int argc, char *argv[])
 {
@@ -808,7 +777,6 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 ; Initialize Banking Helper Routine
 ;
 ;void BankCallInit(void);
-		GLOBAL _BankCallInit
 
 _BankCallInit:
 		CALL _MapperGetPage0
@@ -816,7 +784,8 @@ _BankCallInit:
 		CALL _MapperGetPage1
 		LD D,L				; Page1 segment
 		LD (BankIndex_entry),DE		; Set Bank0 table
-		LD HL,(_MapperPUT_P0)
+_BankCallInit_P0a:
+		LD HL, 0			; LD HL,(_MapperPUT_P0)
 		JP BankInit_entry
 
 ;-------------------------------------------------------------------------------
@@ -824,8 +793,6 @@ _BankCallInit:
 ;
 ;void ISRInit(void);
 ;void ISRDeinit(void);
-		GLOBAL _ISRInit
-		GLOBAL _ISRDeinit
 
 _ISRInit:	JP ISRInit_entry
 _ISRDeinit:	JP ISRDeinit_entry
@@ -834,7 +801,6 @@ _ISRDeinit:	JP ISRDeinit_entry
 ; Initialize Mapper Routine
 ;
 ;uint8_t MapperInit(void)
-		GLOBAL _MapperInit
 
 _MapperInit:
 		PUSH IY
@@ -842,45 +808,38 @@ _MapperInit:
 
 		LD A,000H
 		LD DE,0402H			; parameter
-		CALL EXTBIO
+		CALL 0FFCAH			; EXTBIO
 		LD (_SegmentTotal),A		; Total number of segment
 		LD A,C
 		LD (_SegmentFree),A		; Free segment number
 		LD (_MapperTableAddr),HL	; Base address
 
-		LD DE,00003H
-		LD (_MapperALL_SEG),HL
-		ADD HL,DE
-		LD (_MapperFRE_SEG),HL
-		ADD HL,DE
-		LD (_MapperRD_SEG),HL
-		ADD HL,DE
-		LD (_MapperWR_SEG),HL
-		ADD HL,DE
-;		LD (_MapperCAL_SEG),HL
-		ADD HL,DE
-;		LD (_MapperCALLS),HL
-		ADD HL,DE
-;		LD (_MapperPUT_PH),HL
-		ADD HL,DE
-;		LD (_MapperGET_PH),HL
-		ADD HL,DE
-		LD (_MapperPUT_P0),HL
-		ADD HL,DE
-		LD (_MapperGET_P0),HL
-		ADD HL,DE
-		LD (_MapperPUT_P1),HL
-		LD (_MapperPut_P1d),HL
-		ADD HL,DE
-		LD (_MapperGET_P1),HL
-		ADD HL,DE
-		LD (_MapperPUT_P2),HL
-		ADD HL,DE
-		LD (_MapperGET_P2),HL
-;		ADD HL,DE
-;		LD (_MapperPUT_P3),HL
-;		ADD HL,DE
-;		LD (_MapperGET_P3),HL
+		LD (_MapperAlloc_a + 1),HL	; ALL_SEG
+		LD DE,3
+		ADD HL,DE			; FRE_SEG
+		LD (_MapperFree_a + 1),HL
+		ADD HL,DE			; RD_SEG
+		ADD HL,DE			; WR_SEG
+		ADD HL,DE			; CAL_SEG
+		ADD HL,DE			; CALLS
+		ADD HL,DE			; PUT_PH
+		ADD HL,DE			; GET_PH
+		ADD HL,DE			; PUT_P0
+		LD (_BankCallInit_P0a + 1),HL
+		LD (_MapperPutPage0a + 1),HL
+		ADD HL,DE			; GET_P0
+		LD (_MapperGetPage0a + 1),HL
+		ADD HL,DE			; PUT_P1
+		LD (_MapperPutPage1a + 1),HL
+		LD (_MapperPut_P1d_a + 1),HL
+		ADD HL,DE			; GET_P1
+		LD (_MapperGetPage1a + 1),HL
+		ADD HL,DE			; PUT_P2
+		LD (_MapperPutPage2a + 1),HL
+		ADD HL,DE			; GET_P2
+		LD (_MapperGetPage2a + 1),HL
+;		ADD HL,DE			; PUT_P3
+;		ADD HL,DE			; GET_P3
 
 		POP IX
 		POP IY
@@ -895,9 +854,6 @@ _MapperInit:
 ;uint8_t MapperAllocUser(void)
 ;uint8_t MapperAllocSys(void)
 ;void MapperFree(uint8_t SegNo)
-		GLOBAL _MapperAllocUser
-		GLOBAL _MapperAllocSys
-		GLOBAL _MapperFree
 
 _MapperAllocUser:
 		LD A,000H			; for user segment
@@ -911,16 +867,13 @@ _MapperAllocSys:
 _MapperAlloc:
 		PUSH IY
 		PUSH IX
-
-		DEFB 0CDH			; CALL ALL_SEG
-_MapperALL_SEG:	DEFW 00000H
-
+_MapperAlloc_a:
+		CALL 0				; CALL ALL_SEG
 		JR NC,_MapperAlloc_ok
 		LD A,0FFH			; FF means error
-
 _MapperAlloc_ok:
 		LD L,A				; return value (allocated segment number)
-		JR _Mapper_Ret
+		JR _Mapper_ret
 
 _MapperFree:
 		POP BC				; Return Addr
@@ -933,11 +886,9 @@ _MapperFree:
 
 		LD A,E				; SegNo
 		LD B,000H
-
-		DEFB 0CDH			; CALL FRE_SEG
-_MapperFRE_SEG:	DEFW 00000H
-
-_Mapper_Ret:
+_MapperFree_a:
+		CALL 0				; CALL FRE_SEG
+_Mapper_ret:
 		POP IX
 		POP IY
 		EI
@@ -949,36 +900,27 @@ _Mapper_Ret:
 ;uint8_t MapperGetPage0(void)
 ;uint8_t MapperGetPage1(void)
 ;uint8_t MapperGetPage2(void)
-		GLOBAL _MapperGetPage0
-		GLOBAL _MapperGetPage1
-		GLOBAL _MapperGetPage2
 
 _MapperGetPage0:
 		PUSH IY
 		PUSH IX
-
-		LD HL,_MapperGetPage_ret	; RET addr
-		PUSH HL
-		LD HL,(_MapperGET_P0)
-		JP (HL)
+_MapperGetPage0a:
+		CALL 0				; CALL GET_P0
+		JR _MapperGetPage_ret
 
 _MapperGetPage1:
 		PUSH IY
 		PUSH IX
-
-		LD HL,_MapperGetPage_ret	; RET addr
-		PUSH HL
-		LD HL,(_MapperGET_P1)
-		JP (HL)
+_MapperGetPage1a:
+		CALL 0				; CALL GET_P1
+		JR _MapperGetPage_ret
 
 _MapperGetPage2:
 		PUSH IY
 		PUSH IX
-
-		LD HL,_MapperGetPage_ret	; RET addr
-		PUSH HL
-		LD HL,(_MapperGET_P2)
-		JP (HL)
+_MapperGetPage2a:
+		CALL 0				; CALL GET_P2
+;		JR _MapperGetPage_ret
 
 _MapperGetPage_ret:
 		POP IX
@@ -986,7 +928,6 @@ _MapperGetPage_ret:
 
 		LD H,0
 		LD L,A				; Segment No
-
 		EI
 		RET
 
@@ -994,21 +935,21 @@ _MapperGetPage_ret:
 ;void MapperPutPage0(uint8_t SegNo)
 ;void MapperPutPage1(uint8_t SegNo)
 ;void MapperPutPage2(uint8_t SegNo)
-		GLOBAL _MapperPutPage0
-		GLOBAL _MapperPutPage1
-		GLOBAL _MapperPutPage2
 
 _MapperPutPage0:
-		LD HL,(_MapperPUT_P0)
-		JP _MapperPutPageN
+_MapperPutPage0a:
+		LD HL,0				; LD HL,(_MapperPUT_P0)
+		JR _MapperPutPageN
 
 _MapperPutPage1:
-		LD HL,(_MapperPUT_P1)
-		JP _MapperPutPageN
+_MapperPutPage1a:
+		LD HL,0				; LD HL,(_MapperPUT_P1)
+		JR _MapperPutPageN
 
 _MapperPutPage2:
-		LD HL,(_MapperPUT_P2)
-;		JP _MapperPutPageN
+_MapperPutPage2a:
+		LD HL,0				; LD HL,(_MapperPUT_P2)
+;		JR _MapperPutPageN
 
 _MapperPutPageN:
 		POP BC				; Return Addr
@@ -1020,13 +961,12 @@ _MapperPutPageN:
 		PUSH IX
 
 		LD A,E				; SegNo
-		LD (_MapperPut_Pn),HL
-		DEFB 0CDH			; CALL PUT_Pn
-_MapperPut_Pn:	DEFW 00000H
+		LD (_MapperPut_Pn_a + 1),HL
+_MapperPut_Pn_a:
+		CALL 0				; CALL PUT_Pn
 
 		POP IX
 		POP IY
-
 		EI
 		RET
 
@@ -1039,19 +979,18 @@ _MapperPutPage1_DI:
 		PUSH IX
 
 		LD A,L				; SegNo
-		DEFB 0CDH			; CALL PUT_P1
-_MapperPut_P1d:	DEFW 00000H
+_MapperPut_P1d_a:
+		CALL 0				; CALL PUT_P1
 
 		POP IX
 		POP IY
-
 		RET
 
 ;-------------------------------------------------------------------------------
 ; Shared Heap Management
 ;
 ;void *bl_calloc(uint16_t, uint16_t)
-;void bl_free(void *)
+;void  bl_free(void *)
 ;void *bl_malloc(uint16_t)
 ;void *bl_realloc(void *, uint16_t)
 ;void *bl_get_memtop(void)
@@ -1071,22 +1010,13 @@ _bl_get_memtop:	LD HL,(memtop)
 #asm
 ;-------------------------------------------------------------------------------
 ; Copy DOS system scratch 256bytes to 8000H
-;
+; Used: BC, DE, HL
 ;void copy_256_p0_to_p2(void)
-		GLOBAL _copy_256_p0_to_p2
 _copy_256_p0_to_p2:
-;		PUSH BC
-;		PUSH DE
-;		PUSH HL
-
 		LD HL,00000H
 		LD DE,08000H
 		LD BC,256
 		LDIR
-
-;		POP HL
-;		POP DE
-;		POP BC
 		RET
 #endasm
 
@@ -1136,7 +1066,6 @@ _get_seg_table:
 ; Put lmem segment information to env-string
 ;
 ;void put_lmem_seg_table(struct bl_lmem_t *ptr)
-		GLOBAL _put_lmem_seg_table
 _put_lmem_seg_table:
 		PUSH BC
 		PUSH DE
@@ -1151,7 +1080,6 @@ _put_lmem_seg_table:
 ; Get lmem segment information from env-string
 ;
 ;void get_lmem_seg_table(struct bl_lmem_t *ptr)
-		GLOBAL _get_lmem_seg_table
 _get_lmem_seg_table:
 		PUSH BC
 		PUSH DE
