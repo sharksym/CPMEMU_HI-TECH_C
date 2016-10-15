@@ -179,9 +179,11 @@ nularg:	defb	0
 #include <bankcall.h>
 
 #ifdef BL_DEBUG
-#define bl_dbg_puts(A)		puts(A)
+#define bl_dbg_pr(A)		printf(A)
+#define bl_dbg_pr_x(A, X)	printf(A, X)
 #else
-#define bl_dbg_puts(A)
+#define bl_dbg_pr(A)
+#define bl_dbg_pr_x(A, X)
 #endif
 
 uint8_t SegmentTotal = 0;
@@ -429,9 +431,7 @@ int bl_main(int argc, char *argv[])
 	memcpy((int8_t *)0x8000, BankCallBin, sizeof(BankCallBin));
 
 	free_seg_no = MapperInit();
-#ifdef BL_DEBUG
-	printf("[BL] Free seg = %d\n", free_seg_no);
-#endif
+	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
 	strcpy(pOvlName, getenv("PROGRAM"));	/* Get Full Path of PROGRAM */
 	OvlLen = strlen(pOvlName);
@@ -454,13 +454,11 @@ int bl_main(int argc, char *argv[])
 
 	pTsrEnv = getenv(pTsrEnvName);
 	if (pTsrEnv && (pTsrEnv[0] == '*')) {
-#ifdef BL_DEBUG
-		printf("[BL] Load memory info [%s] ...", pTsrEnvName);
-#endif
+		bl_dbg_pr_x("[BL] Load memory info [%s] ...", pTsrEnvName);
 		bl_tsr_mode = 1;
 		bl_tsr_env_exist = 1;
 		get_seg_table();		/* tMemSeg from pTsrEnv */
-		bl_dbg_puts("Ok");
+		bl_dbg_pr("Ok\n");
 	}
 #endif
 
@@ -485,9 +483,7 @@ int bl_main(int argc, char *argv[])
 			return 0;
 		}
 
-#ifdef BL_DEBUG
-		printf("[BL] Loading: %s\n", pOvlName);
-#endif
+		bl_dbg_pr_x("[BL] Loading: %s\n", pOvlName);
 	}
 #endif
 
@@ -513,12 +509,10 @@ int bl_main(int argc, char *argv[])
 		cFileHandle = open(pOvlName, O_RDONLY);	/* re-open */
 		Page2Old = MapperGetPage2();
 
-#ifdef BL_DEBUG
 #ifdef BL_TSR
-		printf("[BL] Allocate sys seg:");
+		bl_dbg_pr("[BL] Allocate sys seg:");
 #else
-		printf("[BL] Allocate usr seg:");
-#endif
+		bl_dbg_pr("[BL] Allocate usr seg:");
 #endif
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no--) {
 #ifdef BL_TSR
@@ -526,9 +520,8 @@ int bl_main(int argc, char *argv[])
 #else
 			seg = MapperAllocUser();	/* Allocate user segment */
 #endif
-#ifdef BL_DEBUG
-			printf(" %02X", seg);
-#endif
+			bl_dbg_pr_x(" %02X", seg);
+
 			tMemSeg.BankTbl[SegCnt] = seg;
 			*(Bank_idx_addr + 0x02 + SegCnt) = seg;
 
@@ -540,7 +533,7 @@ int bl_main(int argc, char *argv[])
 			MapperPutPage2(Page2Old);	/* Set original segment */
 		}
 		close(cFileHandle);
-		bl_dbg_puts("");
+		bl_dbg_pr("\n");
 	}
 #endif
 	/* Set DATA end to himem_end(over 0x9400) */
@@ -549,26 +542,23 @@ int bl_main(int argc, char *argv[])
 	/* Install ISR */
 	ISRInit();
 
-#ifdef BL_DEBUG
-	printf("[BL] Free seg = %d\n", free_seg_no);
-#endif
+	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
 	/* Execute main() function */
+	bl_dbg_pr("[BL] main() start\n");
 	ret_val = main(argc, argv);
-	bl_dbg_puts("[BL] End of main()");
+	bl_dbg_pr("[BL] main() done\n");
 
 	/* Restore Original ISR */
 	ISRDeinit();
 
 #ifdef BL_TSR
 	if (bl_tsr_mode && !bl_tsr_env_exist) {	/* TSR ENV not exist? */
-#ifdef BL_DEBUG
-		printf("[BL] Save memory info [%s] ...", pTsrEnvName);
-#endif
+		bl_dbg_pr_x("[BL] Save memory info [%s] ...", pTsrEnvName);
 		*(unsigned char *)0x9000 = mem_seg_size;
 		put_seg_table();			/* tMemSeg to temp heap */
 		setenv(pTsrEnvName, (char *)0x9000);
-		bl_dbg_puts("Ok");
+		bl_dbg_pr("Ok\n");
 	}
 
 	if (!bl_tsr_mode) {
@@ -576,26 +566,25 @@ int bl_main(int argc, char *argv[])
 			setenv(pTsrEnvName, "");	/* Clear ENV */
 
 		/* Free all segment */
-		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++)
+		bl_dbg_pr("[BL] Free segment:");
+		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no++) {
 			MapperFree(tMemSeg.BankTbl[SegCnt]);
+			bl_dbg_pr_x(" %02X", tMemSeg.BankTbl[SegCnt]);
+		}
+		bl_dbg_pr("\n");
 	}
 #else
-#ifdef BL_DEBUG
-	puts("[BL] Free segment");
-#endif
-
 #ifndef BL_1BANK
 	/* Free all segment */
+	bl_dbg_pr("[BL] Free segment:");
 	for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no++) {
 		MapperFree(tMemSeg.BankTbl[SegCnt]);
+		bl_dbg_pr_x(" %02X", tMemSeg.BankTbl[SegCnt]);
 	}
+	bl_dbg_pr("\n");
 #endif
-
 #endif
-
-#ifdef BL_DEBUG
-	printf("[BL] Free seg = %d\n", free_seg_no);
-#endif
+	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
 	return ret_val;
 }
