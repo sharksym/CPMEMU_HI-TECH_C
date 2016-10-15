@@ -203,6 +203,7 @@ void    MapperPutPage1(uint8_t SegNo);
 void    MapperPutPage2(uint8_t SegNo);
 void    MapperPutPage1_DI(uint8_t SegNo);
 
+void MakeOvlName(void);
 void BankCallInit(void);
 void ISRInit(void);
 void ISRDeinit(void);
@@ -387,7 +388,6 @@ void put_seg_table(void);
 void get_seg_table(void);
 #endif
 static char pOvlName[64] = "";
-static int16_t OvlLen = 0;
 static long OvlSize = 0;
 
 /* Memory Segment Information */
@@ -433,11 +433,7 @@ int bl_main(int argc, char *argv[])
 	free_seg_no = MapperInit();
 	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
-	strcpy(pOvlName, getenv("PROGRAM"));	/* Get Full Path of PROGRAM */
-	OvlLen = strlen(pOvlName);
-	pOvlName[OvlLen - 3] = 'O';
-	pOvlName[OvlLen - 2] = 'V';
-	pOvlName[OvlLen - 1] = 'L';
+	MakeOvlName();				/* Get Full Path of *.OVL */
 
 #ifdef BL_TSR
 	for (name_pos = 0, name_cnt = 0; pOvlName[name_cnt] != 0; name_cnt++) {
@@ -762,6 +758,41 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 }
 
 #asm
+;-------------------------------------------------------------------------------
+; Fill pOvlName[]
+;
+;void MakeOvlName(void);
+
+		psect	text
+		global	_getenv, _strcpy, _strlen
+_MakeOvlName:
+		PUSH	IX
+
+		LD	HL, _str_program
+		PUSH	HL
+		CALL	_getenv			; HL <- full path
+		PUSH	HL
+		LD	HL, _pOvlName
+		PUSH	HL
+		CALL	_strcpy
+		CALL	_strlen			; HL <- length
+		POP	BC			; cleanup stack
+		POP	BC
+		POP	BC
+
+		LD	DE, _pOvlName - 3
+		ADD	HL, DE
+		LD	(HL), 'O'
+		INC	HL
+		LD	(HL), 'V'
+		INC	HL
+		LD	(HL), 'L'
+
+		POP IX
+		RET
+
+_str_program:	DEFB	'P','R','O','G','R','A','M',0
+
 ;-------------------------------------------------------------------------------
 ; Initialize Banking Helper Routine
 ;
