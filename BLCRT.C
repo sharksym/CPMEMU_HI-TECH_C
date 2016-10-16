@@ -226,6 +226,12 @@ start:
 	inc	de
 	ld	(hl),0
 	ldir			;clear memory
+
+	ld	hl,BankCallBin
+	ld	de,BankCall_entry
+	ld	bc,BankCall_size
+	ldir			;transfer BankCall
+
 	ld	hl,nularg
 	push	hl
 	ld	hl,80h		;argument buffer
@@ -322,7 +328,7 @@ int     main(int argc, char *argv[]);		/* main() */
 
 int bl_main(int argc, char *argv[])
 {
-	static int16_t ret_val;
+	static int ret_val;
 #ifndef BL_1BANK
 	static uint8_t cFileHandle;
 	static uint8_t seg, Page2Old;
@@ -336,9 +342,6 @@ int bl_main(int argc, char *argv[])
 		return 0;
 	}
 #endif
-
-	/* Move Bank_Call Routine to 08000H */
-	memcpy((int8_t *)0x8000, BankCallBin, sizeof(BankCallBin));
 
 	free_seg_no = MapperInit();
 	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
@@ -387,7 +390,13 @@ int bl_main(int argc, char *argv[])
 
 #ifndef BL_1BANK
 	if (bl_tsr_mode) {
-		memcpy(Bank_idx_addr + 0x02, tMemSeg.BankTbl, sizeof(tMemSeg.BankTbl));
+#asm
+		; memcpy(Bank_idx_addr + 0x02, tMemSeg.BankTbl, sizeof(tMemSeg.BankTbl));
+		LD	HL, _tMemSeg + 2		; HL = tMemSeg.BankTbl
+		LD	DE, BankIndex_entry + 2		; DE = Bank_idx_addr + 0x02
+		LD	BC, 64				; BC = sizeof(tMemSeg.BankTbl)
+		LDIR
+#endasm
 		Page2Old = MapperGetPage2();
 
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt += 2) {
