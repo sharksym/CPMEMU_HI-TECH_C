@@ -186,106 +186,6 @@ nularg:	defb	0
 #define bl_dbg_pr_x(A, X)
 #endif
 
-uint8_t SegmentTotal = 0;
-uint8_t SegmentFree = 0;
-uint16_t MapperTableAddr = 0;
-
-uint8_t MapperInit(void);
-uint8_t MapperAllocUser(void);
-uint8_t MapperAllocSys(void);
-void    MapperFree(uint8_t SegNo);
-
-uint8_t MapperGetPage0(void);
-uint8_t MapperGetPage1(void);
-uint8_t MapperGetPage2(void);
-void    MapperPutPage0(uint8_t SegNo);
-void    MapperPutPage1(uint8_t SegNo);
-void    MapperPutPage2(uint8_t SegNo);
-void    MapperPutPage1_DI(uint8_t SegNo);
-
-void MakeOvlName(void);
-void BankCallInit(void);
-void ISRInit(void);
-void ISRDeinit(void);
-
-void copy_256_p0_to_p2(void);
-void put_lmem_seg_table(struct bl_lmem_t *ptr);
-void get_lmem_seg_table(struct bl_lmem_t *ptr);
-
-long _fsize(int fd);				/* Get File Size */
-void brk(void *addr);
-int main(int argc, char *argv[]);		/* main() */
-
-/*
-
-Next, the program sets the device number of the extended BIOS in register D,
-the function number in register E, and required parameters in other registers,
-and then calls "EXTBIO" at FFCAh in page-3.
-In this case, the stack pointer must be in page-3.
-If there is the extended BIOS for the specified device number, the contents of
- the registers AF, BC and HL are modified according to the function;
- otherwise, they are preserved. Register DE is always preserved.
-Note that in any cases the contents of the alternative registers
- (AF', BC', DE' and HL') and the index registers (IX and IY) are corrupted.
-
-The functions available in the mapper support extended BIOS are:
-
-
-* Get mapper variable table
-
-	Parameter:	A = 0
-			D = 4 (device number of mapper support)
-			E = 1
-	Result:		A = slot address of primary mapper
-			DE = reserved
-			HL = start address of mapper variable table
-* Get mapper support routine address
-
-	Parameter:	A = 0
-			D = 4
-			E = 2
-	Result:		A = total number of memory mapper segments
-			B = slot number of primary mapper
-			C = number of free segments of primary mapper
-			DE = reserved
-			HL = start address of jump table
-
-address			function
-+0		Slot address of the mapper slot.
-+1		Total number of 16k RAM segments. 1...255 (8...255 for the primary)
-+2		Number of free 16k RAM segments.
-+3		Number of 16k RAM segments allocated to the system
-+4		Number of 16k RAM segments allocated to the user.
-+5...+7		Unused. Always zero.
-+8...		Entries for other mapper slots. If there is none, +8 will be zero.
-A program uses the mapper support code by calling various subroutines.
-These are accessed through a jump table which is located in the MSX-DOS
-system area.
-
-The contents of the jump table are as follows:
-
-address	entry name	function
-+0H	ALL_SEG     Allocate a 16k segment.
-+3H	FRE_SEG     Free a 16k segment.
-+6H	RD_SEG      Read byte from address A:HL to A.
-+9H	WR_SEG      Write byte from E to address A:HL.
-+CH	CAL_SEG     Inter-segment call. Address in IYh:IX
-+FH	CALLS       Inter-segment call. Address in line after the call instruction.
-+12H	PUT_PH      Put segment into page (HL).
-+15H	GET_PH      Get current segment for page (HL)
-+18H	PUT_P0      Put segment into page 0.
-+1BH	GET_P0      Get current segment for page 0.
-+1EH	PUT_P1      Put segment into page 1.
-+21H	GET_P1      Get current segment for page 1.
-+24H	PUT_P2      Put segment into page 2.
-+27H	GET_P2      Get current segment for page 2.
-+2AH	PUT_P3      Not supported since page-3 must never be changed.
-+2DH	GET_P3      Get current segment for page 3.
-
-*/
-
-
-
 #asm
 
 ;-------------------------------------------------------------------------------
@@ -359,7 +259,6 @@ notdos2_mes:
 
 	psect	data
 nularg:	defb	0
-
 #endasm
 
 
@@ -394,6 +293,32 @@ void put_seg_table(void);
 void get_seg_table(void);
 #endif
 #endif
+
+uint8_t MapperInit(void);
+uint8_t MapperAllocUser(void);
+uint8_t MapperAllocSys(void);
+void    MapperFree(uint8_t SegNo);
+
+uint8_t MapperGetPage0(void);
+uint8_t MapperGetPage1(void);
+uint8_t MapperGetPage2(void);
+void    MapperPutPage0(uint8_t SegNo);
+void    MapperPutPage1(uint8_t SegNo);
+void    MapperPutPage2(uint8_t SegNo);
+void    MapperPutPage1_DI(uint8_t SegNo);
+
+void    MakeOvlName(void);
+void    BankCallInit(void);
+void    ISRInit(void);
+void    ISRDeinit(void);
+
+void    copy_256_p0_to_p2(void);
+void    put_lmem_seg_table(struct bl_lmem_t *ptr);
+void    get_lmem_seg_table(struct bl_lmem_t *ptr);
+
+long    _fsize(int fd);
+void    brk(void *addr);
+int     main(int argc, char *argv[]);		/* main() */
 
 int bl_main(int argc, char *argv[])
 {
@@ -799,10 +724,10 @@ _MapperInit:
 		LD A,000H
 		LD DE,0402H			; parameter
 		CALL 0FFCAH			; EXTBIO
-		LD (_SegmentTotal),A		; Total number of segment
+		LD (_MapperSegTotal),A		; Total number of segment
 		LD A,C
-		LD (_SegmentFree),A		; Free segment number
-		LD (_MapperTableAddr),HL	; Base address
+		LD (_MapperSegFree),A		; Free segment number
+		LD (_MapperTblAddr),HL		; Base address
 
 		LD (_MapperAlloc_a + 1),HL	; ALL_SEG
 		LD DE,3
@@ -835,8 +760,14 @@ _MapperInit:
 		POP IY
 
 		LD L,C				; return value (Free segment number)
-
 		RET
+_MapperSegTotal:
+		DEFB 0
+_MapperSegFree:
+		DEFB 0
+_MapperTblAddr:
+		DEFW 0
+
 
 ;-------------------------------------------------------------------------------
 ; Allocate & Free Mapper Page
