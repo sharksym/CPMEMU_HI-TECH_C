@@ -346,6 +346,7 @@ int bl_main(int argc, char *argv[])
 	free_seg_no = MapperInit();
 	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
+#ifndef BL_1BANK
 	MakeOvlName();				/* Get Full Path of *.OVL */
 
 #ifdef BL_TSR
@@ -360,7 +361,6 @@ int bl_main(int argc, char *argv[])
 	}
 #endif
 
-#ifndef BL_1BANK
 	if (!bl_tsr_mode) {
 		cFileHandle = open(pOvlName, O_RDONLY);		/* Open OVL File */
 		if (cFileHandle == 0xFF) {			/* Not Found? */
@@ -452,6 +452,7 @@ int bl_main(int argc, char *argv[])
 	/* Restore Original ISR */
 	ISRDeinit();
 
+#ifndef BL_1BANK
 #ifdef BL_TSR
 	if (bl_tsr_mode) {
 		if (!bl_tsr_env_exist) {		/* TSR ENV not exist? */
@@ -474,7 +475,6 @@ int bl_main(int argc, char *argv[])
 		bl_dbg_pr("\n");
 	}
 #else
-#ifndef BL_1BANK
 	/* Free all segment */
 	bl_dbg_pr("[BL] Free segment:");
 	for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no++) {
@@ -489,6 +489,7 @@ int bl_main(int argc, char *argv[])
 	return ret_val;
 }
 
+#ifndef BL_1BANK
 void bl_get_ovl_info(char *name, short *bank_max)
 {
 	strcpy(name, pOvlName);
@@ -511,6 +512,7 @@ int8_t bl_is_tsr_on(void)
 {
 	return bl_tsr_mode;
 }
+#endif
 
 uint32_t bl_lmem_get_free(void)
 {
@@ -661,6 +663,7 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 	/* MapperPutPage1(page1_seg_old); */
 }
 
+#ifndef BL_1BANK
 #asm
 ;-------------------------------------------------------------------------------
 ; Fill pOvlName[]
@@ -696,7 +699,10 @@ _MakeOvlName:
 		RET
 
 _str_program:	DEFB	'P','R','O','G','R','A','M',0
+#endasm
+#endif
 
+#asm
 ;-------------------------------------------------------------------------------
 ; Initialize Banking Helper Routine
 ;
