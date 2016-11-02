@@ -1,0 +1,210 @@
+###
+#   HI-TECH C package path
+#
+#CPMDIR = C:\Emul\CPMEMU_HI-TECH_C
+CPMDIR = ..\..
+
+
+###
+#   Drive mapping for CP/M executor
+#   A: HI-TECH C package path
+#   B: Current path
+
+
+###
+#   Flags
+#
+SHELL = cmd.exe
+#CFLAGS := -DANSI -DCPM -DHI_TECH_C -Dz80
+CFLAGS := -DANSI -DCPM
+MKFLAGS :=
+LIBOUT :=
+
+
+###
+#   HI-TECH C compiler
+#
+CPP  := $(CPMDIR)\CPM $(CPMDIR)\CPP
+P1   := $(CPMDIR)\CPM $(CPMDIR)\P1
+CGEN := $(CPMDIR)\CPM $(CPMDIR)\CGEN
+ZAS  := $(CPMDIR)\CPM $(CPMDIR)\ZAS
+LINK := $(CPMDIR)\CPM $(CPMDIR)\LINK
+
+
+###
+#   Startup code
+#
+src-bank00 :=     \
+    BLCRT.C       \
+
+
+###
+#   Banking Library source files
+#
+include $(CPMDIR)\BLSRC.CFG
+BLSRC-CP := $(foreach file, $(src-bl), $(patsubst %.AS,%.ACP, $(patsubst %.C,%.CCP,$(file))))
+
+
+###
+#   Target CFG file
+#
+include $(CFG).CFG
+
+
+###
+#   Definitions
+#
+
+#   Output files path
+OUTDIR := $(target).OUT
+RELEASEDIR := RELEASE
+
+#   App mode0: DOS1/DOS2 compatible COM (No banking helper)
+PSECT_CFG :=
+ifeq ($(app-mode),0)
+  CFLAGS += -DBL_DISABLE -DBL_DOS1
+  ifneq ($(psect-data),)
+    PSECT_CFG := ,data=$(psect-data)
+  else
+    PSECT_CFG := ,data
+  endif
+  ifneq ($(psect-bss),)
+    PSECT_CFG := $(PSECT_CFG),bss=$(psect-bss)
+  else
+    PSECT_CFG := $(PSECT_CFG),bss
+  endif
+else
+    PSECT_CFG := ,data,bss
+endif
+
+#   App mode1: DOS2 COM for one bank (bank00)
+ifeq ($(app-mode),1)
+  CFLAGS += -DDOS2ONLY -DBL_1BANK
+endif
+
+#   App mode2: DOS2 COM/OVL for multi-bank
+#   lib-r800: App can run on MSXturboR only
+#   TSR mode: App stays in DOS2 system segment memory
+#   bank-max: App can load partial of OVL
+#   himem: Reserved memory over 9400H for sharing page2 area
+ifeq ($(app-mode),2)
+  CFLAGS += -DDOS2ONLY
+  ifeq ($(lib-r800),1)
+    CFLAGS += -DR800ONLY
+  endif
+  ifeq ($(tsr-mode),1)
+    CFLAGS += -DBL_TSR
+  endif
+  ifneq ($(bank-max),)
+    CFLAGS += -DBL_BMAX=$(bank-max)
+  endif
+  ifneq ($(himem-size),)
+    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H+$(himem-size)
+  else
+    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H
+  endif
+else
+    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H
+endif
+
+#   C library selection
+ifeq ($(app-mode),0)
+  ifeq ($(lib-float),1)
+    LIBC := A:LIBFMSX.LIB
+  else
+    LIBC := A:LIBCMSX.LIB
+  endif
+else
+  ifeq ($(lib-r800),1)
+    ifeq ($(lib-float),1)
+      LIBC := A:LIBFMSXT.LIB
+    else
+      LIBC := A:LIBCMSXT.LIB
+    endif
+  else
+    ifeq ($(lib-float),1)
+      LIBC := A:LIBFMSX2.LIB
+    else
+      LIBC := A:LIBCMSX2.LIB
+    endif
+  endif
+endif
+
+#   OPTIM switch
+ifeq ($(dis-optim),1)
+  MKFLAGS += /O0
+endif
+
+#   cflags from CFG
+CFLAGS += $(cflag)
+
+###
+#   Banking Tools
+#
+#BLMKRULE := $(CPMDIR)\CPM $(CPMDIR)\BLMKRULE
+#BLLIST   := $(CPMDIR)\CPM $(CPMDIR)\BLLIST
+#BLEXTREF := $(CPMDIR)\CPM $(CPMDIR)\BLEXTREF
+#BLCALLER := $(CPMDIR)\CPM $(CPMDIR)\BLCALLER
+#BLMERGE  := $(CPMDIR)\CPM $(CPMDIR)\BLMERGE
+#BLOPTIM  := $(CPMDIR)\CPM $(CPMDIR)\BLOPTIM
+BLMKRULE := $(CPMDIR)\BLMKRULE.EXE
+BLLIST   := $(CPMDIR)\BLLIST.EXE
+BLEXTREF := $(CPMDIR)\BLEXTREF.EXE
+BLCALLER := $(CPMDIR)\BLCALLER.EXE
+BLMERGE  := $(CPMDIR)\BLMERGE.EXE
+BLOPTIM  := $(CPMDIR)\BLOPTIM.EXE
+
+
+###
+#   Rules
+#
+.PHONY: all
+all: prepare_rules blsrc_cp build_job blsrc_rm
+
+clean: prepare_rules cleanup_job
+
+release: all release_job clean
+
+prepare_rules:
+	@echo * Generate Rules *
+	@$(BLMKRULE) $(CFG).CFG $(CFG).MK $(MKFLAGS)
+
+build_job:
+	@echo * Build *
+	@make -f$(CFG).MK CFG=$(CFG) CPMC=OBJ CPMD=. build
+
+release_job:
+	@echo * Prepare for Release *
+	@if exist $(RELEASEDIR) ( @echo off ) else ( @mkdir $(RELEASEDIR) )
+	@copy /y $(OUTDIR)\*.* $(RELEASEDIR)\
+
+pre_job:
+	@echo * Pre-Job *
+	$(pre-job)
+
+post_job:
+	@echo * Post-Job *
+	$(post-job)
+
+end_job:
+	@echo * End-Job *
+	$(end-job)
+
+cleanup_job:
+	@echo * Cleanup *
+	@make -f$(CFG).MK CFG=$(CFG) CPMC=OBJ CPMD=. cleanup
+	@del $(CFG).MK > NUL
+
+###
+#   Copy/Remove Banking Library source files
+#
+blsrc_cp: $(BLSRC-CP)
+
+blsrc_rm: $(BLSRC-RM)
+	@del $(src-bl) > NUL
+
+%.CCP:
+	@copy $(CPMDIR)\$(basename $@).C .\ > NUL
+
+%.ACP:
+	@copy $(CPMDIR)\$(basename $@).AS .\ > NUL
