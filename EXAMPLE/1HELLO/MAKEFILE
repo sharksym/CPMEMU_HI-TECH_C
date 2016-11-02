@@ -17,6 +17,7 @@ CPMDIR = ..\..
 SHELL = cmd.exe
 #CFLAGS := -DANSI -DCPM -DHI_TECH_C -Dz80
 CFLAGS := -DANSI -DCPM
+MKFLAGS :=
 LIBOUT :=
 
 
@@ -84,6 +85,7 @@ endif
 #   App mode2: DOS2 COM/OVL for multi-bank
 #   lib-r800: App can run on MSXturboR only
 #   TSR mode: App stays in DOS2 system segment memory
+#   bank-max: App can load partial of OVL
 #   himem: Reserved memory over 9400H for sharing page2 area
 ifeq ($(app-mode),2)
   CFLAGS += -DDOS2ONLY
@@ -92,6 +94,9 @@ ifeq ($(app-mode),2)
   endif
   ifeq ($(tsr-mode),1)
     CFLAGS += -DBL_TSR
+  endif
+  ifneq ($(bank-max),)
+    CFLAGS += -DBL_BMAX=$(bank-max)
   endif
   ifneq ($(himem-size),)
     CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H+$(himem-size)
@@ -125,6 +130,11 @@ else
   endif
 endif
 
+#   OPTIM switch
+ifeq ($(dis-optim),1)
+  MKFLAGS += /O0
+endif
+
 #   cflags from CFG
 CFLAGS += $(cflag)
 
@@ -149,7 +159,7 @@ BLOPTIM  := $(CPMDIR)\BLOPTIM.EXE
 #   Rules
 #
 .PHONY: all
-all: prepare_rules blsrc_cp build_job
+all: prepare_rules blsrc_cp build_job blsrc_rm
 
 clean: prepare_rules cleanup_job
 
@@ -157,7 +167,7 @@ release: all release_job clean
 
 prepare_rules:
 	@echo * Generate Rules *
-	@$(BLMKRULE) $(CFG).CFG $(CFG).MK
+	@$(BLMKRULE) $(CFG).CFG $(CFG).MK $(MKFLAGS)
 
 build_job:
 	@echo * Build *
@@ -176,7 +186,9 @@ post_job:
 	@echo * Post-Job *
 	$(post-job)
 
-end_job: blsrc_rm
+end_job:
+	@echo * End-Job *
+	$(end-job)
 
 cleanup_job:
 	@echo * Cleanup *
