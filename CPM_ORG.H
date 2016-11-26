@@ -107,4 +107,3 @@ extern uchar		setfcb(struct fcb *, char *);
 #define	CPMCFS	35		/* compute file size */
 #define	CPMDSEG	51		/* set DMA segment */
 
-

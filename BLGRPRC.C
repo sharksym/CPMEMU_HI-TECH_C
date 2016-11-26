@@ -174,4 +174,3 @@ void bl_grp_get_ge5_pat_pal(char *filename, uint16_t *palette)
 }
 
 ;
-

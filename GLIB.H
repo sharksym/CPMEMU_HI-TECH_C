@@ -82,4 +82,3 @@ void    glocate(uint,uint);     /* graphic locate x,y */
 void    setpg(uchar,uchar);     /* set page(display,active) */
 uint    vramsize(void);         /* get vram size (16,64,128) */
 
-

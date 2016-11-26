@@ -21,4 +21,3 @@ extern void	_fassert(int, char *, char *);
 
 #endif /* _ASSERT_H_ */
 
-

@@ -33,4 +33,3 @@ extern char *	strncasestr(char*, char*, size_t);
 #define	strnistr	strncasestr
 
 #endif /* _STRING_H_ */
-

@@ -21,4 +21,3 @@ void bl_grp_print_cursor(void);
 void bl_grp_print_backspace(void);
 void bl_grp_print_back(char count);
 
-

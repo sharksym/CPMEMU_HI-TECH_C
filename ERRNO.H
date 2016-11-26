@@ -4,4 +4,3 @@
 extern int	errno;			/* system error number */
 
 #endif /* _ERRNO_H_ */
-

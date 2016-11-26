@@ -66,4 +66,3 @@
 #define	REG2	register
 #define	REG3	register
 #endif	i8096 || m68k
-

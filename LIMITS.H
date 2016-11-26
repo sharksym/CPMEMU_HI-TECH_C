@@ -20,4 +20,3 @@
 #define	ULONG_MAX	4294967295	/* unsigned long */
 
 #endif _LIMITS_H_
-

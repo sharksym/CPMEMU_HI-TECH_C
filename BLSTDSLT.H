@@ -9,4 +9,3 @@ void bl_copy_from_slot(uint8_t slot, uint8_t *src, uint8_t *dest, uint16_t count
 
 void bl_select_page1_slot(uint8_t slot);
 void bl_restore_page1_slot(void);
-

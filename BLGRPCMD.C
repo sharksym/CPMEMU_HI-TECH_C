@@ -544,4 +544,3 @@ void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t
 }
 
 ;
-

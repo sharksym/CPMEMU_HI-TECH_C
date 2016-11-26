@@ -423,4 +423,3 @@ void bl_grp_print_back(char count)
 }
 #endif
 ;
-

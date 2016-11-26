@@ -33,4 +33,3 @@ void bl_disable_irq(uint8_t irq);
 /* Frame rate control */
 void bl_set_frame_rate(uint16_t rate);
 void bl_wait_frame_rate(void);
-

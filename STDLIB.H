@@ -26,4 +26,3 @@ extern int	abs(int);
 extern long	labs(long);
 
 #endif /* _STDLIB_H_ */
-
