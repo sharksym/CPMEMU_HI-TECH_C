@@ -46,3 +46,4 @@ void bl_vdp_cmd_mmm(uint8_t *reg_addr);
 void bl_vdp_cmd_hmmv(uint8_t *reg_addr);
 void bl_vdp_cmd_line(uint8_t *reg_addr);
 void bl_vdp_cmd_pset(uint8_t *reg_addr);
+

@@ -59,3 +59,4 @@ void	di();		/* disable interrupts */
 void	ei();		/* enable interrupts */
 
 #endif /* _MSXBIOS_H_ */
+

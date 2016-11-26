@@ -10,3 +10,4 @@ typedef void *	va_list[1];
 #define	va_end(ap)
 
 #endif /* _STDARG_H_ */
+

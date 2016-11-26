@@ -82,3 +82,4 @@ extern char *	fgets(char *, int, FILE *);
 extern char *	_bufallo(void);
 
 #endif /* _STDIO_H_ */
+

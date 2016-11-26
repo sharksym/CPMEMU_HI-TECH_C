@@ -28,3 +28,4 @@ extern	unsigned char	_ctype_[];
 #define toascii(c)	((c)&0x7F)
 
 #endif /* _CTYPE_H_ */
+

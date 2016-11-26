@@ -19,3 +19,4 @@ extern void psg_tone_(unsigned short ch_tone);
 #define psg_volume(ch, data)	write_psg((8 + ch), data)
 extern void psg_envelope_period(unsigned short env);
 #define psg_envelope_type(data)	write_psg(13, data)
+

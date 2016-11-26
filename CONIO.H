@@ -14,3 +14,4 @@ extern char *	cgets(char *);
 extern void	cputs(char *);
 
 #endif /* _CONIO_H_ */
+

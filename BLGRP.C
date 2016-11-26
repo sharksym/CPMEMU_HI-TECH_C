@@ -1004,3 +1004,4 @@ void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size)
 }
 
 ;
+

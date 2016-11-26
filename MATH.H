@@ -16,3 +16,4 @@ extern double log(double), log10(double), pow(double, double), exp(double);
 extern double sinh(double), cosh(double), tanh(double);
 
 #endif _MATH_H_
+

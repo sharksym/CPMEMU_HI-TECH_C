@@ -69,3 +69,4 @@ struct bl_grp_var_t {			/* bl_grp_var can't exceed 256bytes */
 #define BL_GRP_SHARED_MEM	(2048)	/* min. 2Kbytes shared memory */
 
 extern struct bl_grp_var_t bl_grp;
+

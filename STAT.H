@@ -53,3 +53,4 @@ extern int	stat(char *, struct stat *);
 #endif /* DOS2ONLY */
 
 #endif /* _STAT_H_ */
+

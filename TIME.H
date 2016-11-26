@@ -42,3 +42,4 @@ extern int timeup(time_t);	   /* check if timer expired */
 extern size_t strftime(char *s, size_t maxs, char *f, struct tm *t);
 
 #endif /* _TIME_H_ */
+

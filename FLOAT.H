@@ -40,3 +40,4 @@
 #define	LDBL_MAX_10_EXP	DBL_MAX_10_EXP
 
 #endif /* _FLOAT_H_ */
+

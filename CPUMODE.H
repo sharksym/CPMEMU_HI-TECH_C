@@ -17,3 +17,4 @@ extern void set_cpu_mode_tr(char mode);
 extern char get_cpu_mode_tr(void);
 extern void set_cpu_mode_wx(char mode);
 
+

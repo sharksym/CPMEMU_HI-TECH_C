@@ -24,3 +24,4 @@
 #define GETPNT (*(unsigned int *)0xF3FA)
 
 #endif /* _EXEC_H_ */
+

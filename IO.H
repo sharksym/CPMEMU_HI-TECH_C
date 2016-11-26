@@ -167,3 +167,4 @@ unsigned char getattr(char *);
 #define DOSVER (*(char *)0xf313)	/* MSX: 0=DOS1 */
 
 #endif /* _IO_H_ */
+

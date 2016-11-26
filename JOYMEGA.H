@@ -14,3 +14,4 @@ extern unsigned short joymega_data[2];
 extern void joymega_poll_data(void);
 /* port = 1 or 2 */
 #define joymega_pressed(port, button)	(joymega_data[port] & button ? 1 : 0)
+
