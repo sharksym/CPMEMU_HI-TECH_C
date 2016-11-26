@@ -8,4 +8,3 @@ int sub(void)
 
 	return 0;
 }
-
