@@ -530,6 +530,8 @@ uint32_t bl_lmem_get_free(void)
 }
 
 static uint8_t lmem_sys_seg = 0;
+static uint8_t lmem_page_no;
+static uint16_t lmem_offset;
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	static struct bl_lmem_t *lmem;
@@ -587,6 +589,13 @@ void bl_lmem_free(struct bl_lmem_t *ptr)
 	}
 }
 
+uint8_t bl_lmem_seg_info(struct bl_lmem_t *ptr, uint32_t addr32)
+{
+	lmem_page_no = (uint8_t)(addr32 >> 14);
+
+	return ptr->page_tbl[lmem_page_no];
+}
+
 void bl_lmem_export(struct bl_lmem_t *ptr, char *name)
 {
 	if (ptr->sys_used) {
@@ -623,22 +632,19 @@ struct bl_lmem_t *bl_lmem_import(char *name)
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size)
 {
 	/* uint8_t page1_seg_old = *(BankIndex_addr + 1); */
-	static uint8_t page_no;
-	static uint16_t offset;
-
 #asm
 	DI
 #endasm
-	page_no = (uint8_t)(addr32 >> 14);
-	offset = ((uint16_t)addr32 & 0x3FFF) | 0x4000;
+	lmem_page_no = (uint8_t)(addr32 >> 14);
+	lmem_offset = ((uint16_t)addr32 & 0x3FFF) | 0x4000;
 
-	MapperPutPage1_DI(dest->page_tbl[page_no]);
+	MapperPutPage1_DI(dest->page_tbl[lmem_page_no]);
 	while (size--) {
-		*((uint8_t *)offset++) = *src++;
-		if ((offset == 0x8000) && (size > 1)) {	/* End of mapped area? */
-			offset = 0x4000;
-			page_no++;	/* for next mem page */
-			MapperPutPage1_DI(dest->page_tbl[page_no]);
+		*((uint8_t *)lmem_offset++) = *src++;
+		if ((lmem_offset == 0x8000) && (size > 1)) {	/* End of mapped area? */
+			lmem_offset = 0x4000;
+			lmem_page_no++;				/* for next mem page */
+			MapperPutPage1_DI(dest->page_tbl[lmem_page_no]);
 		}
 	}
 	/* MapperPutPage1(page1_seg_old); */
@@ -647,22 +653,19 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, uint16_t size)
 {
 	/* uint8_t page1_seg_old = *(BankIndex_addr + 1); */
-	static uint8_t page_no;
-	static uint16_t offset;
-
 #asm
 	DI
 #endasm
-	page_no = (uint8_t)(addr32 >> 14);
-	offset = (((uint16_t)addr32) & 0x3FFF) | 0x4000;
+	lmem_page_no = (uint8_t)(addr32 >> 14);
+	lmem_offset = (((uint16_t)addr32) & 0x3FFF) | 0x4000;
 
-	MapperPutPage1_DI(src->page_tbl[page_no]);
+	MapperPutPage1_DI(src->page_tbl[lmem_page_no]);
 	while (size--) {
-		*dest++ = *((uint8_t *)offset++);
-		if ((offset == 0x8000) && (size > 1)) {	/* End of mapped area? */
-			offset = 0x4000;
-			page_no++;	/* for next mem page */
-			MapperPutPage1_DI(src->page_tbl[page_no]);
+		*dest++ = *((uint8_t *)lmem_offset++);
+		if ((lmem_offset == 0x8000) && (size > 1)) {	/* End of mapped area? */
+			lmem_offset = 0x4000;
+			lmem_page_no++;				/* for next mem page */
+			MapperPutPage1_DI(src->page_tbl[lmem_page_no]);
 		}
 	}
 	/* MapperPutPage1(page1_seg_old); */
