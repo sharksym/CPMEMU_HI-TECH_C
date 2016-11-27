@@ -589,11 +589,9 @@ void bl_lmem_free(struct bl_lmem_t *ptr)
 	}
 }
 
-uint8_t bl_lmem_seg_info(struct bl_lmem_t *ptr, uint32_t addr32)
+uint8_t bl_lmem_get_seg(struct bl_lmem_t *ptr, uint32_t addr32)
 {
-	lmem_page_no = (uint8_t)(addr32 >> 14);
-
-	return ptr->page_tbl[lmem_page_no];
+	return ptr->page_tbl[(uint8_t)(addr32 >> 14)];
 }
 
 void bl_lmem_export(struct bl_lmem_t *ptr, char *name)
