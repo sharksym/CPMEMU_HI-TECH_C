@@ -19,6 +19,10 @@ extern int16_t bl_bank;
 /* Get OVL info */
 void bl_get_ovl_info(char *name, short *bank_max);
 
+/* Get BANK info */
+#define bl_get_bank_info()	bl_get_seg_info(bl_bank)
+uint16_t bl_get_seg_info(short bank);
+
 /* Set TSR mode */
 void bl_tsr_on(void);
 void bl_tsr_off(void);

@@ -496,6 +496,11 @@ void bl_get_ovl_info(char *name, short *bank_max)
 	*bank_max = tMemSeg.BankMax;
 }
 
+uint16_t bl_get_seg_info(short bank)
+{
+	return *((uint16_t *)Bank_idx_addr + bank);
+}
+
 void bl_tsr_on(void)
 {
 #ifdef BL_TSR
