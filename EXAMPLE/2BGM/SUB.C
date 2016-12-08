@@ -7,12 +7,14 @@
 
 void shot(void)
 {
-	puts("Effect Ch: C (Push SPACE key)");
-	puts("Ch: A, Buffer info");
+	puts("Effect Ch.C (Push SPACE key)");
+	puts("Buffer Ch.A Ch.B Ch.C");
+	printf("Avail= %04X %04X %04X\n",
+		bl_snd_bgm_get_avail(0), bl_snd_bgm_get_avail(1), bl_snd_bgm_get_avail(2));
 
 	while (!key_clicked(KEY_ESC) && (bl_snd_get_stat() != BL_SND_STAT_IDLE)) {
-		printf("Pos = %04X, Avail = %04X\r",
-			bl_snd_bgm_get_pos(0), bl_snd_bgm_get_avail(0));
+		printf("Pos  = %04X %04X %04X\r",
+			bl_snd_bgm_get_pos(0), bl_snd_bgm_get_pos(1), bl_snd_bgm_get_pos(2));
 
 		if (key_pressed(KEY_SPACE)) {
 			bl_snd_bgm_overlay(2, "T120 S0 L128 O7 V15 Z2 C<<C<<C<<C Z0");
@@ -25,10 +27,21 @@ void shot(void)
 
 int sub(void)
 {
-	bl_snd_init();
+	bl_snd_init(0);
+
+	/* 도레미파솔라시도 */
+	puts("BGM Ch.A");
+
+	/* Piano */
+	bl_snd_bgm_enqueue(0, "L2 O4 V15 T120 S1");
+	bl_snd_bgm_enqueue(0, "N36 N38 N40N41 N43 N45 N47N48 R");
+
+	bl_snd_bgm_play();
+	shot();
+	bl_snd_bgm_stop();
 
 	/* 꽃 */
-	puts("BGM Ch: A, B");
+	puts("BGM Ch.A, B");
 
 	/* Violin */
 	bl_snd_bgm_enqueue(0, "O5 V15 T60 S3");
@@ -51,7 +64,7 @@ int sub(void)
 	bl_snd_bgm_stop();
 
 	/* 환희의 송가 */
-	puts("BGM Ch: A, B, C");
+	puts("BGM Ch.A, B, C");
 
 	/* Piano */
 	bl_snd_bgm_enqueue(0, "L4 O4 V15 T120 S1");
@@ -78,20 +91,50 @@ int sub(void)
 	shot();
 	bl_snd_bgm_stop();
 
-	/* 학교종이 땡땡땡 */
-	puts("BGM Ch: A (Enqueue test)");
+	/* 테트리스 */
+	puts("BGM Ch.A, B, C");
 
-	bl_snd_bgm_enqueue(0, "L8O4V15 T240 S1");
-	bl_snd_bgm_enqueue(0, "GGAAGGE4 GGEED4. R GGAAGGE4 GEDEC4. R");
+	/* Piano */
+	bl_snd_bgm_enqueue(0, "V14 S1");
+	bl_snd_bgm_enqueue(1, "V14 S1");
+	bl_snd_bgm_enqueue(2, "V13 S1");
+
+	/* MML from http://www.mabinogiworld.com/showthread.php?12888-Request-Tetris-theme */
+	bl_snd_bgm_enqueue(0, "t80l16o4>erc-cde32d32c<bara>cerdcc-r8cdrercr<arar4>drfargfer8cef32e32dcc-r8cdn56en56cr");
+	bl_snd_bgm_enqueue(0, "<ara4>erc-cde32d32c<bara>cerdcc-r8cdrercr<arar4>drfargfer8cef32e32dcc-r8cdn56en56cr<ar");
+	bl_snd_bgm_enqueue(0, "l4aecdc-c<ag+b>ecdc-c8e8ag+2l16>erc-cde32d32c<bara>cerdcc-r8cdrercr<arar4>drfargfer8ce");
+	bl_snd_bgm_enqueue(0, "f32e32dcc-r8cdn56en56cr<ara4");
+
+	bl_snd_bgm_enqueue(1, "t80l16o4brg+abb+32b32ag+e8eab+rbag+eg+ab8b+8a8e8eo2ab>cd>frab+rbagr8egrfeg+eg+abrb+rarere4br");
+	bl_snd_bgm_enqueue(1, "g+abb+32b32ag+e8eab+rbag+eg+ab8b+8a8e8e<<ab>cd>frab+rbagr8egrfeg+eg+abrb+rarer");
+	bl_snd_bgm_enqueue(1, "l4ec<abg+aeeg+b+abg+a8>c8ee2l16brg+abb+32b32ag+e8eab+rbag+eg+ab8b+8a8e8er4frab+rbagr8");
+	bl_snd_bgm_enqueue(1, "egrfeg+eg+abrb+rarere4");
+
+	bl_snd_bgm_enqueue(2, "t80l16o2e>e<e>e<e>e<e>e<a>a<a>a<a>a<a>an32g+n32g+<e>e<e>e<a>a<a>a<a>ac-cd<drdrd32d32agc");
+	bl_snd_bgm_enqueue(2, "b+cb+cgcgb>brberg+r<a>e<a>e<a>eee<e>e<e>e<e>e<e>e<a>a<a>a<a>a<a>an32g+n32g+<e>e<e>e<a>a");
+	bl_snd_bgm_enqueue(2, "<a>a<a>ac-cd<drdrd32d32agcb+cbcgcgb>brbergr<a>e<a>e<a>eee<a>e<a>e<a>e<a>en32en32en32en32");
+	bl_snd_bgm_enqueue(2, "e<a>e<a>e<a>e<a>en32en32en32en32e<a>e<a>e<a>e<a>en32en32en32en32e<a>e<a>e<a>e<a>en32");
+	bl_snd_bgm_enqueue(2, "en32en32en32e<e>e<e>e<e>e<e>e<a>a<a>a<a>a<a>an32g+n32g+<e>e<e>e<a>a<a>a<a>ac-cd<drdr");
+	bl_snd_bgm_enqueue(2, "d32d32agcb+cb+cgcgb>brberg+r<a>e<a>e<a4");
+
+	bl_snd_bgm_play();
+	shot();
+	bl_snd_bgm_stop();
+
+	/* 학교종이 땡땡땡 */
+	puts("BGM Ch.A (Enqueue test)");
+
+	bl_snd_bgm_enqueue(0, "L16O4V15 T240 S3");
+	bl_snd_bgm_enqueue(0, "GGAAGGE8 GGEED8. R GGAAGGE8 GEDEC8. R");
 
 	bl_snd_bgm_play();
 
-	puts("Ch: A, Buffer info");
+	puts("Buffer Ch.A");
 	while (!key_pressed(KEY_ESC)) {
 		printf("Pos = %04X, Avail = %04X\r",
 			bl_snd_bgm_get_pos(0), bl_snd_bgm_get_avail(0));
 		if (bl_snd_bgm_get_avail(0) > 128)
-			bl_snd_bgm_enqueue(0, "GGAAGGE4 GGEED4. R GGAAGGE4 GEDEC4. R");
+			bl_snd_bgm_enqueue(0, "GGAAGGE8 GGEED8. R GGAAGGE8 GEDEC8. R");
 	}
 	bl_snd_bgm_stop();
 
