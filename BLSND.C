@@ -26,7 +26,7 @@ struct bl_snd_var_t bl_snd = {
 	0, BL_SND_STAT_IDLE, BL_BGM_CMD_NONE,
 };
 
-void bl_bgm_init(void);
+void bl_bgm_init(uint8_t mode);
 void bl_bgm_deinit(void);
 void bl_bgm_cmd(uint8_t cmd);
 void bl_bgm_enqueue(uint8_t ch, uint8_t overlay, uint8_t *mml_ch);
@@ -45,12 +45,12 @@ uint8_t bl_snd_get_stat(void)
 	return bl_snd.state;
 }
 
-void bl_snd_init(void)
+void bl_snd_init(uint8_t mode)
 {
 	if (bl_snd.enable)
 		return;
 
-	bl_bgm_init();
+	bl_bgm_init(mode);
 
 	bl_request_irq(IRQ_SND_CYCL, bl_bgm_isr);
 	bl_enable_irq(IRQ_SND_CYCL);

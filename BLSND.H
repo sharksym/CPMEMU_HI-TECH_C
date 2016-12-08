@@ -24,7 +24,7 @@
 #define BL_SND_STAT_PAUSE	3
 
 uint8_t bl_snd_get_stat(void);
-void bl_snd_init(void);
+void bl_snd_init(uint8_t mode);
 void bl_snd_deinit(void);
 void bl_snd_bgm_enqueue(uint8_t ch, char *mml);
 void bl_snd_bgm_overlay(uint8_t ch, char *mml);
