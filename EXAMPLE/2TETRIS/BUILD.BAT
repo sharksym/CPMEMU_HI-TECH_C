@@ -1,0 +1,3 @@
+make -fMAKEFILE CFG=2TETRIS clean
+make -fMAKEFILE CFG=2TETRIS
+pause
