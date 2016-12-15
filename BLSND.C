@@ -12,14 +12,12 @@
 #define BL_BGM_CMD_PAUSE	3
 #define BL_BGM_CMD_RESUME	4
 
-#define BL_SND_BGM_MAX		3
-
 struct bl_snd_var_t {
 	uint8_t enable;
 	uint8_t state;
 	uint8_t command;
 
-	uint8_t vars[BL_SND_BGM_MAX * 2][32];
+	uint8_t vars[15][32];
 };
 
 struct bl_snd_var_t bl_snd = {
