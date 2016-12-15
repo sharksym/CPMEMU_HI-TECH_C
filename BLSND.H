@@ -22,7 +22,7 @@
 /* Mode flags */
 #define BL_SND_MODE_REPEAT	1			/* REPEAT enable */
 #define BL_SND_MODE_FM		2			/* FM enable */
-#define BL_SND_MODE_FM_RTH	4			/* FM Rythme mode */
+#define BL_SND_MODE_FM_RTH	4			/* FM Rhythm mode */
 
 /* State */
 #define BL_SND_STAT_IDLE	0
