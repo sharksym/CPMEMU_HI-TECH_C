@@ -109,6 +109,9 @@ uint16_t init_palette[] = {
 	0xFFFF	/* end mark */
 };
 
+static struct bl_grp_var_t bl_grp_bak;
+static uint8_t bl_grp_suspended = 0;
+
 extern void bl_grp_fnt_init(void);
 
 int8_t bl_grp_init(void)
@@ -211,6 +214,41 @@ void bl_grp_deinit(void)
 uint8_t bl_grp_get_vdp_ver(void)
 {
 	return bl_grp.vdp_ver;
+}
+
+static void restore_vdp_regs(void)
+{
+	uint8_t n;
+
+	memcpy((uint8_t *)0xF3DF, &bl_grp.reg_shadow[0], 8);	/* 0 ~ 7 */
+	memcpy((uint8_t *)0xFFE7, &bl_grp.reg_shadow[8], 16);	/* 8 ~ 23 */
+	memcpy((uint8_t *)0xFFFA, &bl_grp.reg_shadow[25], 3);	/* 25 ~ 27 */
+
+	for (n = 0; n < 28; n++)
+		bl_write_vdp(n, bl_grp.reg_shadow[n]);
+}
+
+void bl_grp_suspend(void)
+{
+	bl_grp_suspended = 1;
+
+	bl_free(bl_grp.shared_mem);
+	memcpy(&bl_grp_bak, &bl_grp, sizeof(struct bl_grp_var_t));
+
+	restore_vdp_regs();
+}
+
+void bl_grp_resume(void)
+{
+	if (!bl_grp_suspended)
+		return;
+
+	bl_grp_suspended = 0;
+
+	memcpy(&bl_grp, &bl_grp_bak, sizeof(struct bl_grp_var_t));
+	bl_grp.shared_mem = (uint8_t *)bl_malloc(BL_GRP_SHARED_MEM);
+
+	restore_vdp_regs();
 }
 
 #if 1	/* ASM version */

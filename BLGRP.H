@@ -41,6 +41,8 @@
 char bl_grp_init(void);
 void bl_grp_deinit(void);
 uint8_t bl_grp_get_vdp_ver(void);
+void bl_grp_suspend(void);
+void bl_grp_resume(void);
 
 #define GRP_REG_SHADOW_ADDR	0x8300	/* Shadow register in BANKING HELPER */
 #define bl_grp_get_vdp_shadow(no)	*((uint8_t *)(GRP_REG_SHADOW_ADDR + no))
