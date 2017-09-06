@@ -1,9 +1,12 @@
         Toolchain for developing MSX-DOS/DOS2 application
-                                 by Yeongman Seo (email: sharksym@hitel.net)
+                                 by Yeongman Seo <email: sharksym@hitel.net>
 
 WHAT IS IT?
 
-    This toolchain canbe used for developing MSX-DOS/DOS2 application.
+    It is a toolchain for developing MSX-DOS/DOS2 application.
+    Win32 environment is required.
+
+    Please find more examples as below.
     http://sharksym.egloos.com/category/HI-TECH%20C
 
 
@@ -17,10 +20,15 @@ TOOLCHAIN:
         http://hp.vector.co.jp/authors/VA000084/
 
     MSX-DOS, MSX-DOS2 libraries:
+        Copyright by Yeongman Seo.
+        It is free for any use, private or commercial, strictly as-is.
         R800 instruction, V9958 Graphics, ISR and etc are supported.
         TSR is possible for MSX-DOS2 only.
 
-    MSX-DOS2 Banking toolkit:
+    MSX-DOS2 Banking toolkit for Win32:
+        Copyright by Yeongman Seo.
+        It is free for any use, private or commercial, strictly as-is.
         Code banking and memory segment allocator are supported.
-        Banking toolkit generate banking-calls and overlay code.
+        The toolkit generate banking-calls and overlay code.
+        An enhanced code optimizer is provided.
 
