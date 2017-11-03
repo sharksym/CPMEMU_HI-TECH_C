@@ -885,8 +885,7 @@ void bl_grp_set_adjust_h(int8_t h)
 		h = 8;
 
 	bl_grp.adjust_h = h;
-	h += 7;
-	bl_grp_update_reg_bit(18, 0x0F, adj_h[h]);
+	bl_grp_update_reg_bit(18, 0x0F, adj_h[h + 7]);
 }
 
 static uint8_t adj_v[16] =
@@ -899,8 +898,7 @@ void bl_grp_set_adjust_v(int8_t v)
 		v = 8;
 
 	bl_grp.adjust_v = v;
-	v += 7;
-	bl_grp_update_reg_bit(18, 0xF0, adj_v[v]);
+	bl_grp_update_reg_bit(18, 0xF0, adj_v[v + 7]);
 }
 
 void bl_grp_set_scroll_mode(uint8_t mode)
