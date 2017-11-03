@@ -111,6 +111,7 @@ uint16_t init_palette[] = {
 
 static struct bl_grp_var_t bl_grp_bak;
 static uint8_t bl_grp_suspended = 0;
+static uint16_t addr;
 
 extern void bl_grp_fnt_init(void);
 
@@ -351,29 +352,33 @@ void bl_grp_set_irq_hblank_line(uint8_t line)
 	bl_grp_update_reg_bit(19, 0xFF, line);
 }
 
-void bl_grp_set_pattern_name_addr(uint16_t addr)
+void bl_grp_set_pattern_name_addr(uint16_t addr_)
 {
+	addr = addr_;
 	bl_grp.pattern_name_addr = addr;
 	addr |= table_pattern_name_fix[bl_grp.screen_mode];
 	bl_grp_update_reg_bit( 2, 0x3F, (uint8_t)(addr >> 10));
 }
 
-void bl_grp_set_color_addr(uint16_t addr)
+void bl_grp_set_color_addr(uint16_t addr_)
 {
+	addr = addr_;
 	bl_grp.color_addr = addr;
 	addr |= table_color_fix[bl_grp.screen_mode];
 	bl_grp_update_reg_bit( 3, 0xFF, (uint8_t)(addr >> 6));
 	bl_grp_update_reg_bit(10, 0x03, (uint8_t)(addr >> 14));
 }
 
-void bl_grp_set_pattern_gen_addr(uint16_t addr)
+void bl_grp_set_pattern_gen_addr(uint16_t addr_)
 {
+	addr = addr_;
 	bl_grp.pattern_gen_addr = addr;
 	bl_grp_update_reg_bit( 4, 0x1F, (uint8_t)(addr >> 11));
 }
 
-void bl_grp_set_sprite_attr_view_addr(uint16_t addr)
+void bl_grp_set_sprite_attr_view_addr(uint16_t addr_)
 {
+	addr = addr_;
 	bl_grp.sprite_attr_view_addr = addr;
 	bl_grp.sprite_color_view_addr = addr - 0x200;
 	addr |= table_sprite_attr_fix[bl_grp.screen_mode];
@@ -381,14 +386,16 @@ void bl_grp_set_sprite_attr_view_addr(uint16_t addr)
 	bl_grp_update_reg_bit(11, 0x01, (uint8_t)(addr >> 15));
 }
 
-void bl_grp_set_sprite_attr_active_addr(uint16_t addr)
+void bl_grp_set_sprite_attr_active_addr(uint16_t addr_)
 {
+	addr = addr_;
 	bl_grp.sprite_attr_active_addr = addr;
 	bl_grp.sprite_color_active_addr = addr - 0x200;
 }
 
-void bl_grp_set_sprite_gen_view_addr(uint16_t addr)
+void bl_grp_set_sprite_gen_view_addr(uint16_t addr_)
 {
+	addr = addr_;
 	bl_grp.sprite_gen_view_addr = addr;
 	bl_grp_update_reg_bit( 6, 0x1F, (uint8_t)(addr >> 11));
 }
@@ -401,7 +408,6 @@ void bl_grp_set_sprite_gen_active_addr(uint16_t addr)
 void bl_grp_setup_mc_pattern(void)
 {
 	uint8_t row_data[32], n, m, data_begin;
-	uint16_t addr;
 
 	bl_vdp_vram_h = 0;
 	bl_vdp_vram_m = 0;
@@ -762,8 +768,7 @@ static uint16_t clear_fill_size, clear_fill_val;
 static uint16_t table_fill_size[] = { 960, 1920, 2048, 768, 768, 768 };
 static void bl_grp_clear_screen_fill(void)
 {
-	uint16_t addr;
-	uint8_t val = ' ';
+	static uint8_t val = ' ';
 
 	if (bl_grp.screen_mode == GRP_SCR_MC) {
 		addr = bl_grp.pattern_gen_addr;
