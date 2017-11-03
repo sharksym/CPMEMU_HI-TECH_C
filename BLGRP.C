@@ -565,11 +565,11 @@ void bl_grp_set_line_212(uint8_t on)
 {
 	if (on) {
 		bl_grp.line_212 = 1;
-		bl_grp.height = bl_grp.interlace_on ? 240 : 212;
+		bl_grp.height = 212;
 		on = 0x80;
 	} else {
 		bl_grp.line_212 = 0;
-		bl_grp.height = bl_grp.interlace_on ? 240 : 192;
+		bl_grp.height = 192;
 		on = 0x00;
 	}
 	bl_grp_update_reg_bit(9, 0x80, on);
@@ -584,10 +584,8 @@ void bl_grp_set_display_mode(uint8_t mode)
 
 	if ((bl_grp.display_mode & GRP_DISP_IL_E0) == GRP_DISP_IL_E0) {
 		bl_grp.interlace_on = 1;
-		bl_grp.height = 240;
 	} else {
 		bl_grp.interlace_on = 0;
-		bl_grp.height = bl_grp.line_212 ? 212 : 192;
 	}
 
 	bl_grp_setup_font_draw_func();
@@ -835,7 +833,7 @@ void bl_grp_clear_screen(void)
 		hmmv_cmd[2] = 0;
 		hmmv_cmd[3] = page++;
 		*(uint16_t *)(&hmmv_cmd[4]) = bl_grp.width;
-		*(uint16_t *)(&hmmv_cmd[6]) = bl_grp.height;	/* 192, 212, 240 */
+		*(uint16_t *)(&hmmv_cmd[6]) = bl_grp.height;	/* 192, 212 */
 		hmmv_cmd[8] = val;
 
 		bl_vdp_cmd_hmmv(hmmv_cmd);
