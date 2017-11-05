@@ -933,10 +933,9 @@ void bl_grp_set_scroll_v(uint8_t v)
 static uint16_t pal_data;
 void bl_grp_set_palette(uint8_t no, uint8_t r, uint8_t g, uint8_t b)
 {
-	pal_data = (uint16_t)no << 12;
-	pal_data |= (uint16_t)g << 8;
-	pal_data |= r << 4;
-	pal_data |= b;
+	*((uint8_t *)&pal_data + 1) = (no << 4) | g;
+	*((uint8_t *)&pal_data + 0) = (r  << 4) | b;
+
 	bl_grp.palette[no] = pal_data;
 
 	bl_set_palette_(pal_data);
