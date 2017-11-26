@@ -6,6 +6,7 @@
 /*#include <stdio.h>*/
 #include <string.h>
 #include <io.h>
+#include <cpumode.h>
 #include <msxbdos.h>
 #include <blstd.h>
 #include <blstdvdp.h>
@@ -112,11 +113,17 @@ uint16_t init_palette[] = {
 static struct bl_grp_var_t bl_grp_bak;
 static uint8_t bl_grp_suspended = 0;
 static uint16_t addr;
+static char msx_ver;
 
 extern void bl_grp_fnt_init(void);
 
 int8_t bl_grp_init(void)
 {
+	/* MSX2/2+/tR only */
+	msx_ver = get_msx_version();
+	if (msx_ver == MSX1)
+		return -1;
+
 	memset(&bl_grp, 0x00, sizeof(struct bl_grp_var_t));
 	bl_grp.shared_mem = (uint8_t *)bl_malloc(BL_GRP_SHARED_MEM);
 	if (bl_grp.shared_mem == NULL)			/* not enough memory? */
@@ -158,9 +165,18 @@ int8_t bl_grp_init(void)
 	bl_grp.reg_shadow[24] = 0;				/* 24 dummy */
 
 	if (bl_grp.vdp_ver) {					/* 25 ~ 27 */
-		bl_grp.reg_shadow[25] = *(uint8_t *)0xFFFA;
-		bl_grp.reg_shadow[26] = *(uint8_t *)0xFFFB;
-		bl_grp.reg_shadow[27] = *(uint8_t *)0xFFFC;
+		if (msx_ver == MSX2) {				/* MSX2 with V9958 */
+			bl_grp.reg_shadow[25] = 0;
+			bl_grp.reg_shadow[26] = 0;
+			bl_grp.reg_shadow[27] = 0;
+			bl_write_vdp(25, 0);
+			bl_write_vdp(26, 0);
+			bl_write_vdp(27, 0);
+		} else {
+			bl_grp.reg_shadow[25] = *(uint8_t *)0xFFFA;
+			bl_grp.reg_shadow[26] = *(uint8_t *)0xFFFB;
+			bl_grp.reg_shadow[27] = *(uint8_t *)0xFFFC;
+		}
 	}
 
 	/* Initialize palette */
@@ -233,9 +249,11 @@ static void restore_vdp_regs(void)
 		bl_write_vdp(n, bl_grp.reg_shadow[n]);
 
 	if (bl_grp.vdp_ver) {					/* 25 ~ 27 */
-		*(uint8_t *)0xFFFA = bl_grp.reg_shadow[25];
-		*(uint8_t *)0xFFFB = bl_grp.reg_shadow[26];
-		*(uint8_t *)0xFFFC = bl_grp.reg_shadow[27];
+		if (msx_ver >= MSX2P) {
+			*(uint8_t *)0xFFFA = bl_grp.reg_shadow[25];
+			*(uint8_t *)0xFFFB = bl_grp.reg_shadow[26];
+			*(uint8_t *)0xFFFC = bl_grp.reg_shadow[27];
+		}
 
 		bl_write_vdp(25, bl_grp.reg_shadow[25]);
 		bl_write_vdp(26, bl_grp.reg_shadow[26]);
@@ -496,7 +514,9 @@ void bl_grp_set_yae_yjk_mode(uint8_t mode)
 	mode &= 0x18;
 	bl_grp.yae_yjk_mode = mode;
 
-	bl_grp_update_reg_bit(25, 0x18, mode);
+	if (bl_grp.vdp_ver) {
+		bl_grp_update_reg_bit(25, 0x18, mode);
+	}
 }
 
 void bl_grp_set_display_on(uint8_t on)
@@ -904,7 +924,10 @@ void bl_grp_set_adjust_v(int8_t v)
 void bl_grp_set_scroll_mode(uint8_t mode)
 {
 	bl_grp.scroll_mode = mode & 0x03;
-	bl_grp_update_reg_bit(25, 0x03, bl_grp.scroll_mode);
+
+	if (bl_grp.vdp_ver) {
+		bl_grp_update_reg_bit(25, 0x03, bl_grp.scroll_mode);
+	}
 }
 
 void bl_grp_set_scroll_h(uint16_t h)
@@ -920,8 +943,10 @@ void bl_grp_set_scroll_h(uint16_t h)
 		r27 = 8 - r27;
 	}
 
-	bl_grp_update_reg_bit(26, 0xFF, r26);
-	bl_grp_update_reg_bit(27, 0xFF, r27);
+	if (bl_grp.vdp_ver) {
+		bl_grp_update_reg_bit(26, 0xFF, r26);
+		bl_grp_update_reg_bit(27, 0xFF, r27);
+	}
 }
 
 void bl_grp_set_scroll_v(uint8_t v)
