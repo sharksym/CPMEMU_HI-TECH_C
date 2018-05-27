@@ -101,21 +101,6 @@ unsigned char	setfcb(struct fcb *, char *);
 
 #endif /* DOS2ONLY */
 
-/* MSX-DOS2 fileinfor block 64bytes
-struct msxfib
-{
-	unsigned char	ff;
-	unsigned char	name[13];
-	unsigned char	attr;
-	unsigned int	time;
-	unsigned int	date;
-	unsigned int	cl;
-	long 		size;
-	unsigned char	drive;
-	unsigned char	internal[38];
-};
-*/
-
 /* first 64bytes of struct fileinfo is equal with DOS2 file infoblock */
 struct	fileinfo
 {
@@ -125,7 +110,7 @@ struct	fileinfo
 	unsigned int	time;
 	unsigned int	date;
 	unsigned int	cl;
-	long 		size;
+	unsigned long	size;		/* Upto 4GB */
 	unsigned char	drive;		/* Logical drive A=1, B=2, ...Default=0 */
 	unsigned char	internal[38];	/* Should not be touched! */
 #ifdef DOS2ONLY
