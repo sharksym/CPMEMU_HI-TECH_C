@@ -477,7 +477,7 @@ main_ret:
 			setenv(pTsrEnvName, "");	/* Clear ENV */
 
 		/* Free all segment */
-		bl_dbg_pr("[BL] Free segment:");
+		bl_dbg_pr("[BL] Release seg:");
 		for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no++) {
 			MapperFree(tMemSeg.BankTbl[SegCnt]);
 			bl_dbg_pr_x(" %02X", tMemSeg.BankTbl[SegCnt]);
@@ -486,7 +486,7 @@ main_ret:
 	}
 #else
 	/* Free all segment */
-	bl_dbg_pr("[BL] Free segment:");
+	bl_dbg_pr("[BL] Release seg:");
 	for (SegCnt = 0; SegCnt < tMemSeg.BankMax * 2; SegCnt++, free_seg_no++) {
 		MapperFree(tMemSeg.BankTbl[SegCnt]);
 		bl_dbg_pr_x(" %02X", tMemSeg.BankTbl[SegCnt]);
