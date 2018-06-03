@@ -16,6 +16,10 @@ typedef unsigned long uint32_t;
 /* bl_bank is defined at each bank (Number is set 0,1,2,3... ) */
 extern int16_t bl_bank;
 
+/* exit() */
+void bl_exit(int n);
+#define exit(n)		bl_exit(n)
+
 /* Get OVL info */
 void bl_get_ovl_info(char *name, short *bank_max);
 

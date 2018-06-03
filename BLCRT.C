@@ -326,9 +326,9 @@ long    _fsize(int fd);
 void    brk(void *addr);
 int     main(int argc, char *argv[]);		/* main() */
 
+static int ret_val;
 int bl_main(int argc, char *argv[])
 {
-	static int ret_val;
 #ifndef BL_1BANK
 	static uint8_t cFileHandle;
 	static uint8_t seg, Page2Old;
@@ -444,10 +444,20 @@ int bl_main(int argc, char *argv[])
 
 	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
+	/* Backup regs for bl_exit() */
+#asm
+	LD	(main_ix), IX
+	LD	(main_iy), IY
+	LD	(main_sp), SP
+#endasm
+
 	/* Execute main() function */
 	bl_dbg_pr("[BL] main() start\n");
 	ret_val = main(argc, argv);
-	bl_dbg_pr("[BL] main() done\n");
+#asm
+main_ret:
+#endasm
+	bl_dbg_pr_x("[BL] main() done (ret = %d)\n", ret_val);
 
 	/* Restore Original ISR */
 	ISRDeinit();
@@ -488,6 +498,24 @@ int bl_main(int argc, char *argv[])
 
 	return ret_val;
 }
+
+;void bl_exit(int n);
+#asm
+	psect	data
+main_ix:	DEFW	0
+main_iy:	DEFW	0
+main_sp:	DEFW	0
+	global	_bl_exit
+	psect	text
+_bl_exit:
+		POP	HL
+		POP	HL
+		LD	(_ret_val), HL
+		LD	IX, (main_ix)
+		LD	IY, (main_iy)
+		LD	SP, (main_sp)
+		JP	main_ret		; return to bl_main()
+#endasm
 
 #ifndef BL_1BANK
 void bl_get_ovl_info(char *name, short *bank_max)
