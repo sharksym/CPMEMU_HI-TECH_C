@@ -790,18 +790,18 @@ _MapperInit:
 		ADD HL,DE			; GET_PH
 		ADD HL,DE			; PUT_P0
 		LD (_BankCallInit_P0a + 1),HL
-		LD (_MapperPutPage0a + 1),HL
+		LD (_MapperPutPage0 + 1),HL
 		ADD HL,DE			; GET_P0
-		LD (_MapperGetPage0a + 1),HL
+		LD (_MapperGetPage0 + 1),HL
 		ADD HL,DE			; PUT_P1
-		LD (_MapperPutPage1a + 1),HL
+		LD (_MapperPutPage1 + 1),HL
 		LD (_MapperPut_P1d_a + 1),HL
 		ADD HL,DE			; GET_P1
-		LD (_MapperGetPage1a + 1),HL
+		LD (_MapperGetPage1 + 1),HL
 		ADD HL,DE			; PUT_P2
-		LD (_MapperPutPage2a + 1),HL
+		LD (_MapperPutPage2 + 1),HL
 		ADD HL,DE			; GET_P2
-		LD (_MapperGetPage2a + 1),HL
+		LD (_MapperGetPage2 + 1),HL
 ;		ADD HL,DE			; PUT_P3
 ;		ADD HL,DE			; GET_P3
 
@@ -872,33 +872,21 @@ _Mapper_ret:
 ;uint8_t MapperGetPage2(void)
 
 _MapperGetPage0:
-		PUSH IY
-		PUSH IX
-_MapperGetPage0a:
 		CALL 0				; CALL GET_P0
-		JR _MapperGetPage_ret
+		LD H,0
+		LD L,A
+		RET
 
 _MapperGetPage1:
-		PUSH IY
-		PUSH IX
-_MapperGetPage1a:
 		CALL 0				; CALL GET_P1
-		JR _MapperGetPage_ret
+		LD H,0
+		LD L,A
+		RET
 
 _MapperGetPage2:
-		PUSH IY
-		PUSH IX
-_MapperGetPage2a:
 		CALL 0				; CALL GET_P2
-;		JR _MapperGetPage_ret
-
-_MapperGetPage_ret:
-		POP IX
-		POP IY
-
 		LD H,0
-		LD L,A				; Segment No
-		EI
+		LD L,A
 		RET
 
 ;-------------------------------------------------------------------------------
@@ -907,17 +895,14 @@ _MapperGetPage_ret:
 ;void MapperPutPage2(uint8_t SegNo)
 
 _MapperPutPage0:
-_MapperPutPage0a:
 		LD HL,0				; LD HL,(_MapperPUT_P0)
 		JR _MapperPutPageN
 
 _MapperPutPage1:
-_MapperPutPage1a:
 		LD HL,0				; LD HL,(_MapperPUT_P1)
 		JR _MapperPutPageN
 
 _MapperPutPage2:
-_MapperPutPage2a:
 		LD HL,0				; LD HL,(_MapperPUT_P2)
 ;		JR _MapperPutPageN
 
@@ -927,17 +912,10 @@ _MapperPutPageN:
 		PUSH DE
 		PUSH BC
 
-		PUSH IY
-		PUSH IX
-
 		LD A,E				; SegNo
 		LD (_MapperPut_Pn_a + 1),HL
 _MapperPut_Pn_a:
 		CALL 0				; CALL PUT_Pn
-
-		POP IX
-		POP IY
-		EI
 		RET
 
 ;-----------------------------------------------------------------
