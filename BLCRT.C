@@ -311,7 +311,6 @@ uint8_t MapperGetPage2(void);
 void    MapperPutPage0(uint8_t SegNo);
 void    MapperPutPage1(uint8_t SegNo);
 void    MapperPutPage2(uint8_t SegNo);
-void    MapperPutPage1_DI(uint8_t SegNo);
 
 void    MakeOvlName(void);
 void    BankCallInit(void);
@@ -664,16 +663,19 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 	lmem_page_no = (uint8_t)(addr32 >> 14);
 	lmem_offset = ((uint16_t)addr32 & 0x3FFF) | 0x4000;
 
-	MapperPutPage1_DI(dest->page_tbl[lmem_page_no]);
+	MapperPutPage1(dest->page_tbl[lmem_page_no]);
 	while (size--) {
 		*((uint8_t *)lmem_offset++) = *src++;
 		if ((lmem_offset == 0x8000) && (size > 1)) {	/* End of mapped area? */
 			lmem_offset = 0x4000;
 			lmem_page_no++;				/* for next mem page */
-			MapperPutPage1_DI(dest->page_tbl[lmem_page_no]);
+			MapperPutPage1(dest->page_tbl[lmem_page_no]);
 		}
 	}
 	/* MapperPutPage1(page1_seg_old); */
+#asm
+	EI
+#endasm
 }
 
 void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, uint16_t size)
@@ -685,16 +687,19 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 	lmem_page_no = (uint8_t)(addr32 >> 14);
 	lmem_offset = (((uint16_t)addr32) & 0x3FFF) | 0x4000;
 
-	MapperPutPage1_DI(src->page_tbl[lmem_page_no]);
+	MapperPutPage1(src->page_tbl[lmem_page_no]);
 	while (size--) {
 		*dest++ = *((uint8_t *)lmem_offset++);
 		if ((lmem_offset == 0x8000) && (size > 1)) {	/* End of mapped area? */
 			lmem_offset = 0x4000;
 			lmem_page_no++;				/* for next mem page */
-			MapperPutPage1_DI(src->page_tbl[lmem_page_no]);
+			MapperPutPage1(src->page_tbl[lmem_page_no]);
 		}
 	}
 	/* MapperPutPage1(page1_seg_old); */
+#asm
+	EI
+#endasm
 }
 
 #ifndef BL_1BANK
@@ -795,7 +800,6 @@ _MapperInit:
 		LD (_MapperGetPage0 + 1),HL
 		ADD HL,DE			; PUT_P1
 		LD (_MapperPutPage1 + 1),HL
-		LD (_MapperPut_P1d_a + 1),HL
 		ADD HL,DE			; GET_P1
 		LD (_MapperGetPage1 + 1),HL
 		ADD HL,DE			; PUT_P2
@@ -916,22 +920,6 @@ _MapperPutPageN:
 		LD (_MapperPut_Pn_a + 1),HL
 _MapperPut_Pn_a:
 		CALL 0				; CALL PUT_Pn
-		RET
-
-;-----------------------------------------------------------------
-;void MapperPutPage1_DI(uint8_t SegNo)
-;L = SegNo
-_MapperPutPage1_DI:
-		DI
-		PUSH IY
-		PUSH IX
-
-		LD A,L				; SegNo
-_MapperPut_P1d_a:
-		CALL 0				; CALL PUT_P1
-
-		POP IX
-		POP IY
 		RET
 
 ;-------------------------------------------------------------------------------
