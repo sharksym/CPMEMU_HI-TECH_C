@@ -813,12 +813,13 @@ _bl_grp_clear_screen_fill_:
 _bl_grp_clear_screen_fill_lp:
 	LD A,D
 	OR E
-	JP Z,_bl_grp_clear_screen_fill_end
+	JR Z,_bl_grp_clear_screen_fill_end
 	LD A,L			; data
 	OUT (098H),A		; write vram
 	DEC DE
 	jp _bl_grp_clear_screen_fill_lp
 _bl_grp_clear_screen_fill_end:
+	EI
 #endasm
 }
 
