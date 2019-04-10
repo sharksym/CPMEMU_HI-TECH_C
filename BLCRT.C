@@ -839,15 +839,13 @@ _MapperAllocSys:
 		LD B,000H			; for primary mapper
 
 _MapperAlloc:
-		PUSH IY
-		PUSH IX
 _MapperAlloc_a:
 		CALL 0				; CALL ALL_SEG
-		JR NC,_MapperAlloc_ok
-		LD A,0FFH			; FF means error
-_MapperAlloc_ok:
+		LD H,0
 		LD L,A				; return value (allocated segment number)
-		JR _Mapper_ret
+		RET NC
+		LD L,0FFH			; return value (Error = FFh)
+		RET
 
 _MapperFree:
 		POP BC				; Return Addr
@@ -855,18 +853,10 @@ _MapperFree:
 		PUSH DE
 		PUSH BC
 
-		PUSH IY
-		PUSH IX
-
 		LD A,E				; SegNo
 		LD B,000H
 _MapperFree_a:
-		CALL 0				; CALL FRE_SEG
-_Mapper_ret:
-		POP IX
-		POP IY
-		EI
-		RET
+		JP 0				; JP FRE_SEG
 
 ;-------------------------------------------------------------------------------
 ; Get Mapper Page
@@ -917,10 +907,7 @@ _MapperPutPageN:
 		PUSH BC
 
 		LD A,E				; SegNo
-		LD (_MapperPut_Pn_a + 1),HL
-_MapperPut_Pn_a:
-		CALL 0				; CALL PUT_Pn
-		RET
+		JP (HL)				; JP PUT_Pn
 
 ;-------------------------------------------------------------------------------
 ; Shared Heap Management
