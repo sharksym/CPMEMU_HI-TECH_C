@@ -29,8 +29,6 @@
 	global	start, _main, _exit, __Hbss, __Lbss, __argc_, startup
 	global	_GetBdosVersion, _gcBdosMode
 
-	jp	start		;By Tatsu
-				;On MS-DOS, return to MS-DOS
 start:	ld	hl,(6)		;base address of fdos
 	ld	sp,hl		;stack grows downwards
 	ld	de,__Lbss	;Start of BSS segment
@@ -70,8 +68,7 @@ start:	ld	hl,(6)		;base address of fdos
 
 	call	_main
 	push	hl
-	call	_exit
-	jp	0
+	jp	_exit
 
 	psect	data
 nularg:	defb	0
@@ -95,8 +92,6 @@ nularg:	defb	0
 
 	global	start, _main, _exit, __Hbss, __Lbss, __argc_, startup, wrelop
 
-	jp	start		;By Tatsu
-				;On MS-DOS, return to MS-DOS
 start:
 	ld	hl,(6)		;base address of fdos
 	ld	sp,hl		;stack grows downwards
@@ -139,8 +134,7 @@ start:
 	push	hl
 	call	_main
 	push	hl
-	call	_exit
-	jp	0
+	jp	_exit
 
 notdos2:
 	ld	de,notdos2_mes
@@ -200,8 +194,6 @@ nularg:	defb	0
 
 	global	start, _exit, __Hbss, __Lbss, __argc_, startup, wrelop
 
-	jp	start		;By Tatsu
-				;On MS-DOS, return to MS-DOS
 start:
 	ld	hl,(6)		;base address of fdos
 	ld	sp,hl		;stack grows downwards
@@ -250,8 +242,7 @@ start:
 	push	hl
 	call	_bl_main
 	push	hl
-	call	_exit
-	jp	0
+	jp	_exit
 
 notdos2:
 	ld	de,notdos2_mes
