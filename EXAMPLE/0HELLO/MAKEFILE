@@ -107,6 +107,11 @@ else
     CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H
 endif
 
+#   bl_pre_op() usage
+ifeq ($(pre-op),1)
+  CFLAGS += -DBL_PREOP
+endif
+
 #   C library selection
 ifeq ($(app-mode),0)
   ifeq ($(lib-float),1)
