@@ -548,8 +548,6 @@ uint32_t bl_lmem_get_free(void)
 }
 
 static uint8_t lmem_sys_seg = 0;
-static uint8_t lmem_page_no;
-static uint16_t lmem_offset;
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	static struct bl_lmem_t *lmem;
@@ -647,13 +645,15 @@ struct bl_lmem_t *bl_lmem_import(char *name)
 
 void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint16_t size)
 {
-	/* uint8_t page1_seg_old = *(BankIndex_addr + 1); */
+	uint8_t lmem_page_no, page1_seg;
+	uint16_t lmem_offset;
 #asm
 	DI
 #endasm
 	lmem_page_no = (uint8_t)(addr32 >> 14);
 	lmem_offset = ((uint16_t)addr32 & 0x3FFF) | 0x4000;
 
+	page1_seg = MapperGetPage1();
 	MapperPutPage1(dest->page_tbl[lmem_page_no]);
 	while (size--) {
 		*((uint8_t *)lmem_offset++) = *src++;
@@ -663,7 +663,7 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 			MapperPutPage1(dest->page_tbl[lmem_page_no]);
 		}
 	}
-	/* MapperPutPage1(page1_seg_old); */
+	MapperPutPage1(page1_seg);
 #asm
 	EI
 #endasm
@@ -671,13 +671,15 @@ void bl_lmem_copy_to(struct bl_lmem_t *dest, uint32_t addr32, uint8_t *src, uint
 
 void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, uint16_t size)
 {
-	/* uint8_t page1_seg_old = *(BankIndex_addr + 1); */
+	uint8_t lmem_page_no, page1_seg;
+	uint16_t lmem_offset;
 #asm
 	DI
 #endasm
 	lmem_page_no = (uint8_t)(addr32 >> 14);
 	lmem_offset = (((uint16_t)addr32) & 0x3FFF) | 0x4000;
 
+	page1_seg = MapperGetPage1();
 	MapperPutPage1(src->page_tbl[lmem_page_no]);
 	while (size--) {
 		*dest++ = *((uint8_t *)lmem_offset++);
@@ -687,7 +689,7 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 			MapperPutPage1(src->page_tbl[lmem_page_no]);
 		}
 	}
-	/* MapperPutPage1(page1_seg_old); */
+	MapperPutPage1(page1_seg);
 #asm
 	EI
 #endasm
