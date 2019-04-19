@@ -31,6 +31,14 @@
 
 start:	ld	hl,(6)		;base address of fdos
 	ld	sp,hl		;stack grows downwards
+#endasm
+#ifdef BL_PREOP
+#asm
+	global	_bl_pre_op
+	call	_bl_pre_op
+#endasm
+#endif
+#asm
 	ld	de,__Lbss	;Start of BSS segment
 	or	a		;clear carry
 	ld	hl,__Hbss
@@ -103,7 +111,14 @@ start:
 	ld	a,b
 	cp	2
 	jp	c,notdos2
-
+#endasm
+#ifdef BL_PREOP
+#asm
+	global	_bl_pre_op
+	call	_bl_pre_op
+#endasm
+#endif
+#asm
 	ld	de,__Lbss	;Start of BSS segment
 	or	a		;clear carry
 	ld	hl,__Hbss
@@ -205,7 +220,14 @@ start:
 	ld	a,b
 	cp	2
 	jp	c,notdos2
-
+#endasm
+#ifdef BL_PREOP
+#asm
+	global	_bl_pre_op
+	call	_bl_pre_op
+#endasm
+#endif
+#asm
 	ld	de,__Lbss	;Start of BSS segment
 	or	a		;clear carry
 	ld	hl,__Hbss
