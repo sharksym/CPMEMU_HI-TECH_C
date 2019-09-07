@@ -288,8 +288,9 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 #asm
 ;void bl_grp_print_str(char *str)
 	global	_bl_grp_print_str
-	global	_bl_write_vram
 	global	_font_8x8
+; for BLOPTIM parser
+global	_bl_write_vram
 
 _bl_grp_print_str:
 	pop bc			; return addr
@@ -307,7 +308,12 @@ _bl_grp_print_pattern:		; for T0, T1, G1, G2, G3
 	ret z			; string end?
 
 	ld l,a
-	call _bl_write_vram
+; for BLOPTIM parser
+push	hl
+call	_bl_write_vram
+ld	hl,2
+add	hl,sp
+ld	sp,hl
 
 _bl_grp_print_pattern_lp:
 	inc de
