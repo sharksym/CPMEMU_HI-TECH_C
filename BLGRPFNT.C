@@ -39,17 +39,23 @@ uint8_t font_2048[] = {				/* w8 x h8 x 256 or w8 x h16 x 128 */
 uint8_t font_kr[] = {				/* w16 x h16 x 8x4x4 */
 #include "font_kr.h"
 };
+
+uint16_t ks2kssm[2350]={
+#include "ks2kssm.h"
+};
 #endif
 
 void draw_font_null(uint8_t *font)
 {
 }
 
+uint8_t print_kr_mode = 0;
 uint8_t font_text_mode;
 uint8_t font_width_byte;
-extern uint8_t font_h16_1, font_h16_2;
-extern uint8_t *font_asc_1, *font_asc_2;
-extern void (*font_func_1)(uint8_t *font), (*font_func_2)(uint8_t *font);
+uint8_t font_work[64];
+extern uint8_t font_h16;
+extern uint8_t *font_asc;
+extern void (*font_func)(uint8_t *font);
 
 void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	/* non-interlace mode */
@@ -82,8 +88,7 @@ void (*font_draw_func_table[2][10])(uint8_t *font) = {
 
 void bl_grp_set_font(uint8_t *font)
 {
-	font_asc_1 = font;
-	font_asc_2 = font;
+	font_asc = font;
 }
 
 void bl_grp_load_font(char *filename)
@@ -164,8 +169,7 @@ void bl_grp_setup_font_draw_func(void)
 		break;
 	}
 
-	font_func_1 = font_func_2 =
-		font_draw_func_table[bl_grp.interlace_on][bl_grp.screen_mode];
+	font_func = font_draw_func_table[bl_grp.interlace_on][bl_grp.screen_mode];
 }
 
 void bl_grp_set_font_size(uint8_t w, uint8_t h)
@@ -175,14 +179,7 @@ void bl_grp_set_font_size(uint8_t w, uint8_t h)
 	bl_draw_font_w = bl_grp.font_width;
 	bl_draw_font_h = bl_grp.font_height;
 	font_width_byte = (bl_grp.font_width) >> (bl_grp.bpp_shift);
-
-	if (h > 8) {				/* add hl,hl */
-		font_h16_1 = 0x29;
-		font_h16_2 = 0x29;
-	} else {				/* nop */
-		font_h16_1 = 0x00;
-		font_h16_2 = 0x00;
-	}
+	font_h16 = (h > 8) ? 0x29 : 0x00;	/* add hl,hl / nop */
 
 	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:
@@ -219,6 +216,11 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 	/* pre-calculation for G4,G6 */
 	bl_draw_font_g4c();
 	bl_draw_font_g6c();
+}
+
+void bl_grp_set_print_kr(uint8_t on)
+{
+	print_kr_mode = on ? 0x01 : 0x00;
 }
 
 static uint16_t vram_faddr;
@@ -289,32 +291,151 @@ _bl_grp_print_pattern_lp:
 	jp _bl_grp_print_pattern_lp
 
 _bl_grp_print_bitmap:		; for bitmap graphic
+	ld a,(_print_kr_mode)
+	and a
+	jp nz, _bl_grp_print_bitmap_k
+_bl_grp_print_bitmap_l:
 	ld a,(de)
 	and a
 	ret z			; string end?
+
 	push de			; backup str
-
-	ld h,0
 	ld l,a
-	add hl,hl
-	add hl,hl
-	add hl,hl		; font idx = (uint16_t)(*str) * 8
-_font_h16_1:			; uint8_t font_h16_1; 'add hl,hl' or 'nop'
-	add hl,hl		; font idx = (uint16_t)(*str) * 16
-
-	defb 001h		; ld bc,_font_2048
-_font_asc_1:			; uint8_t *font_asc_1;
-	defw _font_2048
-	add hl,bc		; hl = font addr
-
-	defb 0cdh		; call (_font_draw_func)
-_font_func_1:			; void *font_func_1;
-	defw _draw_font_null
-
+	call _bl_grp_draw_w8
 	pop de			; restore str
 	inc de			; str++
-	jp _bl_grp_print_bitmap
+	jp _bl_grp_print_bitmap_l
+
+_bl_grp_print_bitmap_k:		; euc-kr
+	ld a,(de)
+	and a
+	ret z			; string end?
+	bit 7,a
+	jp z,_bl_grp_draw_k1	; ascii area?
+
+	ld h,a
+	inc de			; str++
+	ld a,(de)
+	ld l,a			; hl = character code
+	push de			; backup str
+	push hl
+	call _bl_grp_make_font_k
+	pop hl			; cleanup stack
+
+	ld de,_font_work + 32	; target
+	ld hl,_font_work
+	call _bl_grp_copy_font_k
+	ld hl,_font_work + 1
+	call _bl_grp_copy_font_k
+
+	ld hl,_font_work + 32	; left part
+	call _font_jp_func
+	ld hl,_font_work + 48	; right part
+	call _font_jp_func
+	pop de			; restore str
+	inc de			; str++
+	jp _bl_grp_print_bitmap_k
+
+_bl_grp_copy_font_k:		; change order
+	ld bc,01040h		; b = 16
+_bl_grp_copy_font_l:
+	ldi
+	inc hl
+	djnz _bl_grp_copy_font_l
+	ret
+
+_bl_grp_draw_k1:
+	push de			; backup str
+	ld l,a
+	call _bl_grp_draw_w8
+	pop de			; restore str
+	inc de			; str++
+	jp _bl_grp_print_bitmap_k
 #endasm
+
+#ifdef BLGRPFNT_KR
+static uint8_t table_cho_[21] =
+{ 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+static uint8_t table_jung[30] =
+{ 0, 0, 0, 1, 2, 3, 4, 5, 0, 0, 6, 7, 8, 9, 10, 11, 0, 0, 12, 13, 14, 15, 16, 17, 0, 0, 18, 19, 20, 21};
+static uint8_t table_jong[30] =
+{ 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 0, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27};
+
+static uint8_t bul_cho1[22] =
+{ 0*20, 0*20, 0*20, 0*20, 0*20, 0*20, 0*20, 0*20, 0*20, 1*20, 3*20,
+  3*20, 3*20, 1*20, 2*20, 4*20, 4*20, 4*20, 2*20, 1*20, 3*20, 0*20 };
+static uint8_t bul_cho2[22] =
+{ 0*20, 5*20, 5*20, 5*20, 5*20, 5*20, 5*20, 5*20, 5*20, 6*20, 7*20,
+  7*20, 7*20, 6*20, 6*20, 7*20, 7*20, 7*20, 6*20, 6*20, 7*20, 5*20 };
+static uint8_t bul_jong[22] =
+{ 0*28, 0*28, 2*28, 0*28, 2*28, 1*28, 2*28, 1*28, 2*28, 3*28, 0*28,
+  2*28, 1*28, 3*28, 3*28, 1*28, 2*28, 1*28, 3*28, 3*28, 1*28, 1*28 };
+
+void bl_grp_make_font_k(uint16_t k_code)
+{
+	static uint16_t font_pos;
+	static uint16_t code;
+	static uint16_t cho__bul, jung_bul, jong_bul;
+	uint8_t cho, jung, jong;
+	uint8_t n;
+
+	/* Convert KS to KSSM */
+	code = ks2kssm[(((k_code >> 8) & 0xFF) - 0xB0) * 94 + (uint8_t)k_code - 0xA1];
+
+	cho  = table_cho_[(code >> 10) & 0x001F];
+	jung = table_jung[(code >> 5) & 0x001F];
+	jong = table_jong[code & 0x001F];
+
+	if (!jong) {
+		if (!jung) {
+			cho__bul = 1 * 20;
+			jung_bul = 0 * 22;
+		} else {
+			cho__bul = bul_cho1[jung];
+
+			if ((cho == 1) || (cho == 16))
+				jung_bul = 0 * 22;
+			else
+				jung_bul = 1 * 22;
+		}
+	} else {
+		if (!jung) {
+			cho__bul = 6 * 20;
+			jung_bul = 0 * 22;
+			jong_bul = 1 * 28;
+		} else {
+			cho__bul = bul_cho2[jung];
+
+			if ((cho == 1) || (cho == 16))
+				jung_bul = 2 * 22;
+			else
+				jung_bul = 3 * 22;
+
+			jong_bul = bul_jong[jung];
+		}
+	}
+
+	font_pos = (cho__bul + cho) << 5;
+	memcpy(font_work, &font_kr[font_pos], 32);
+
+	font_pos = (160 + jung_bul + jung) << 5;
+	for (n = 0; n < 32; n++) {
+		font_work[n] |= font_kr[font_pos + n];
+	}
+
+	if (jong) {
+		font_pos = (160 + 88 + jong_bul + jong) << 5;
+		for (n = 0; n < 32; n++) {
+			font_work[n] |= font_kr[font_pos + n];
+		}
+	}
+}
+#else
+void bl_grp_make_font_k(uint16_t k_code)
+{
+	k_code = k_code;
+}
+#endif
 
 void bl_grp_print(uint16_t x, uint16_t y, char *str)
 {
@@ -332,20 +453,21 @@ _bl_grp_print_chr:
 	push hl
 	push bc
 
+_bl_grp_draw_w8:		; draw font (l = code)
 	ld h,0
 	add hl,hl
 	add hl,hl
 	add hl,hl		; font idx = (uint16_t)(*str) * 8
-_font_h16_2:			; uint8_t font_h16_2; 'add hl,hl' or 'nop'
+_font_h16:			; uint8_t font_h16; 'add hl,hl' or 'nop'
 	add hl,hl		; font idx = (uint16_t)(*str) * 16
 
 	defb 001h		; ld bc,_font_2048
-_font_asc_2:			; uint8_t *font_asc_2;
+_font_asc:			; uint8_t *font_asc;
 	defw _font_2048
 	add hl,bc		; hl = font addr
-
+_font_jp_func:
 	defb 0c3h		; jp (_font_draw_func)
-_font_func_2:			; void *font_func_2;
+_font_func:			; void *font_func;
 	defw _draw_font_null
 #endasm
 
