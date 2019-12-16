@@ -452,6 +452,8 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_update_reg_bit( 0, 0x0E, mode_0_1[mode][0]);
 	bl_grp_update_reg_bit( 1, 0x18, mode_0_1[mode][1]);
 
+	bl_grp_set_yae_yjk_mode(bl_grp.yae_yjk_mode);
+	bl_grp_set_color_border(bl_grp.color_border);
 	bl_grp_set_pattern_name_addr(table_addr[mode][0]);
 	bl_grp_set_color_addr(table_addr[mode][1]);
 	bl_grp_set_pattern_gen_addr(table_addr[mode][2]);
@@ -459,8 +461,6 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_set_sprite_active(0);
 	bl_grp_set_sprite_gen_view(0);
 	bl_grp_set_sprite_gen_active(0);
-
-	bl_grp_set_yae_yjk_mode(bl_grp.yae_yjk_mode);
 	bl_grp_update_palette(bl_grp.palette);
 
 	bl_grp.row_byte = table_addr[mode][5];
