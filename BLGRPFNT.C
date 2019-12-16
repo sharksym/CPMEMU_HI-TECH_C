@@ -15,10 +15,6 @@
 #include <blgrpdat.h>
 
 #ifdef NO_BLGRPFNT
-void bl_grp_fnt_init(void)
-{
-}
-
 void bl_grp_set_font_size(uint8_t w, uint8_t h)
 {
 	w = h;
@@ -35,24 +31,15 @@ void bl_grp_setup_font_draw_func(void)
 
 #else
 
-uint8_t font_8x8_org[] = {
+uint8_t font_2048[] = {				/* w8 x h8 x 256 or w8 x h16 x 128 */
 #include "font_e.h"
 };
 
-uint8_t font_8x8_center[] = {
-/*#include "font_e.h"*/
-0,
+#ifdef BLGRPFNT_KR
+uint8_t font_kr[] = {				/* w16 x h16 x 8x4x4 */
+#include "font_kr.h"
 };
-
-uint8_t font_8x8_bold[] = {
-/*#include "font_e.h"*/
-0,
-};
-
-uint8_t font_8x8_wide[] = {
-/*#include "font_e.h"*/
-0,
-};
+#endif
 
 void draw_font_null(uint8_t *font)
 {
@@ -60,9 +47,9 @@ void draw_font_null(uint8_t *font)
 
 uint8_t font_text_mode;
 uint8_t font_width_byte;
-uint8_t font_8x8_init = 0;
-extern uint8_t *font_8x8;
-void (*font_draw_func)(uint8_t *font) = draw_font_null;
+extern uint8_t font_h16_1, font_h16_2;
+extern uint8_t *font_asc_1, *font_asc_2;
+extern void (*font_func_1)(uint8_t *font), (*font_func_2)(uint8_t *font);
 
 void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	/* non-interlace mode */
@@ -93,32 +80,10 @@ void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	}
 };
 
-void bl_grp_fnt_init(void)
+void bl_grp_set_font(uint8_t *font)
 {
-#if 0
-	uint16_t n;
-	uint8_t *org, *center, *bold, *wide;
-#endif
-	font_8x8 = font_8x8_org;
-#if 0
-	if (!font_8x8_init) {
-		font_8x8_init = 1;			/* init once! */
-		org = font_8x8_org;
-		center = font_8x8_center;
-		bold = font_8x8_bold;
-		wide = font_8x8_wide;
-		for (n = 0; n < sizeof(font_8x8_org); n++) {
-			*center >>= 1;
-			*bold = *center | (*center >> 1);
-			*wide = (*center & 0xF0) | ((*center & 0x1E) >> 1);
-
-			org++;
-			center++;
-			bold++;
-			wide++;
-		}
-	}
-#endif
+	font_asc_1 = font;
+	font_asc_2 = font;
 }
 
 void bl_grp_load_font(char *filename)
@@ -129,9 +94,26 @@ void bl_grp_load_font(char *filename)
 	if (fh == 0xFF)
 		return;
 
-	read(fh, font_8x8_org, 2048);
+	read(fh, font_2048, 2048);
 
 	close(fh);
+}
+
+void bl_grp_load_font_kr(char *filename)
+{
+#ifdef BLGRPFNT_KR
+	uint8_t fh;
+
+	fh = open(filename, O_RDONLY);
+	if (fh == 0xFF)
+		return;
+
+	read(fh, font_kr, 11520);
+
+	close(fh);
+#else
+	filename = filename;
+#endif
 }
 
 static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
@@ -141,7 +123,7 @@ static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
 	bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)addr;
 	bl_vdp_vram_cnt = 2048;
-	bl_copy_to_vram_nn(font_8x8);
+	bl_copy_to_vram_nn(font_2048);
 }
 
 void bl_grp_setup_text_font(void)
@@ -169,8 +151,6 @@ void bl_grp_setup_text_font(void)
 
 void bl_grp_setup_font_draw_func(void)
 {
-	font_draw_func = font_draw_func_table[bl_grp.interlace_on][bl_grp.screen_mode];
-
 	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:
 	case GRP_SCR_T2:
@@ -184,31 +164,8 @@ void bl_grp_setup_font_draw_func(void)
 		break;
 	}
 
-#asm
-	; Setup function pointer
-	ld hl,(_font_draw_func)
-	ld (_bl_grp_print_chr_addr + 1),hl
-	ld (_bl_grp_print_bitmap_addr + 1),hl
-#endasm
-}
-
-void bl_grp_set_font_style(uint8_t style)
-{
-	switch (style) {
-	case GRP_FONT_CENTER:
-		font_8x8 = font_8x8_center;
-		break;
-	case GRP_FONT_BOLD:
-		font_8x8 = font_8x8_bold;
-		break;
-	case GRP_FONT_WIDE:
-		font_8x8 = font_8x8_wide;
-		break;
-	case GRP_FONT_ORGIN:
-	default:
-		font_8x8 = font_8x8_org;
-		break;
-	}
+	font_func_1 = font_func_2 =
+		font_draw_func_table[bl_grp.interlace_on][bl_grp.screen_mode];
 }
 
 void bl_grp_set_font_size(uint8_t w, uint8_t h)
@@ -218,6 +175,14 @@ void bl_grp_set_font_size(uint8_t w, uint8_t h)
 	bl_draw_font_w = bl_grp.font_width;
 	bl_draw_font_h = bl_grp.font_height;
 	font_width_byte = (bl_grp.font_width) >> (bl_grp.bpp_shift);
+
+	if (h > 8) {				/* add hl,hl */
+		font_h16_1 = 0x29;
+		font_h16_2 = 0x29;
+	} else {				/* nop */
+		font_h16_1 = 0x00;
+		font_h16_2 = 0x00;
+	}
 
 	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:
@@ -288,7 +253,7 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 #asm
 ;void bl_grp_print_str(char *str)
 	global	_bl_grp_print_str
-	global	_font_8x8
+	global	_font_2048
 ; for BLOPTIM parser
 global	_bl_write_vram
 
@@ -334,29 +299,22 @@ _bl_grp_print_bitmap:		; for bitmap graphic
 	add hl,hl
 	add hl,hl
 	add hl,hl		; font idx = (uint16_t)(*str) * 8
+_font_h16_1:			; uint8_t font_h16_1; 'add hl,hl' or 'nop'
+	add hl,hl		; font idx = (uint16_t)(*str) * 16
 
-	defb 001h		; ld bc,NN
-_font_8x8:			; uint8_t *font_8x8;
-	defw 0
+	defb 001h		; ld bc,_font_2048
+_font_asc_1:			; uint8_t *font_asc_1;
+	defw _font_2048
 	add hl,bc		; hl = font addr
 
-_bl_grp_print_bitmap_addr:
-	call 00000h		; call (_font_draw_func)
+	defb 0cdh		; call (_font_draw_func)
+_font_func_1:			; void *font_func_1;
+	defw _draw_font_null
+
 	pop de			; restore str
 	inc de			; str++
 	jp _bl_grp_print_bitmap
 #endasm
-
-/* C version
-void bl_grp_print_str(char *str)
-{
-	while (*str) {
-		fcode_idx = (uint16_t)(*str) << 3;
-		font_draw_func(font_8x8 + fcode_idx);
-		str++;
-	}
-}
-*/
 
 void bl_grp_print(uint16_t x, uint16_t y, char *str)
 {
@@ -369,35 +327,27 @@ void bl_grp_print(uint16_t x, uint16_t y, char *str)
 	global	_bl_grp_print_chr
 
 _bl_grp_print_chr:
-	pop de			; return addr
-	pop bc			; char chr
+	pop bc			; return addr
+	pop hl			; char chr
+	push hl
 	push bc
-	push de
 
-	ld a,c			; char chr
-	ld b,000h
-	rla
-	rl b
-	rla
-	rl b
-	rla
-	rl b
-	and 0f8h
-	ld c,a			; font idx = (uint16_t)(chr) << 3
+	ld h,0
+	add hl,hl
+	add hl,hl
+	add hl,hl		; font idx = (uint16_t)(*str) * 8
+_font_h16_2:			; uint8_t font_h16_2; 'add hl,hl' or 'nop'
+	add hl,hl		; font idx = (uint16_t)(*str) * 16
 
-	ld hl,(_font_8x8)
+	defb 001h		; ld bc,_font_2048
+_font_asc_2:			; uint8_t *font_asc_2;
+	defw _font_2048
 	add hl,bc		; hl = font addr
-_bl_grp_print_chr_addr:
-	jp 00000h		; jp (_font_draw_func)
-#endasm
 
-/* C version
-void bl_grp_print_chr(char chr)
-{
-	fcode_idx = (uint16_t)chr << 3;
-	font_draw_func(font_8x8 + fcode_idx);
-}
-*/
+	defb 0c3h		; jp (_font_draw_func)
+_font_func_2:			; void *font_func_2;
+	defw _draw_font_null
+#endasm
 
 void bl_grp_print_cursor(void)
 {

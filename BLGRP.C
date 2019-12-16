@@ -115,8 +115,6 @@ static uint8_t bl_grp_suspended = 0;
 static uint16_t addr;
 static char msx_ver;
 
-extern void bl_grp_fnt_init(void);
-
 int8_t bl_grp_init(void)
 {
 	/* MSX2/2+/tR only */
@@ -131,8 +129,6 @@ int8_t bl_grp_init(void)
 
 	/* VDP version */
 	bl_grp.vdp_ver = bl_read_vdp(1) & 0x04 ? GRP_VER_9958 : GRP_VER_9938;
-
-	bl_grp_fnt_init();
 
 	bl_grp.screen_mode = 0xFF;			/* dummy */
 	bl_grp.yae_yjk_mode = GRP_YAE0_YJK0;
@@ -157,7 +153,7 @@ int8_t bl_grp_init(void)
 	bl_grp.height = 212;
 
 	bl_grp_set_font_size(8, 8);
-	bl_grp_set_font_color(15, 0);
+	bl_grp_set_font_color(bl_grp.color_text_fg, bl_grp.color_text_bg);
 
 	/* VDP register shadow */
 	memcpy(&bl_grp.reg_shadow[0], (uint8_t *)0xF3DF, 8);	/* 0 ~ 7 */

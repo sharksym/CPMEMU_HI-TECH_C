@@ -2,14 +2,10 @@
  * BLGRPFNT.H
  */
 
-#define GRP_FONT_ORGIN	0x00
-#define GRP_FONT_CENTER	0x01
-#define GRP_FONT_BOLD	0x02
-#define GRP_FONT_WIDE	0x03
-
+void bl_grp_set_font(uint8_t *font);
 void bl_grp_load_font(char *filename);
+void bl_grp_load_font_kr(char *filename);
 void bl_grp_setup_text_font(void);
-void bl_grp_set_font_style(uint8_t style);
 void bl_grp_set_font_size(uint8_t w, uint8_t h);
 void bl_grp_set_font_color(uint8_t fg, uint8_t bg);
 
