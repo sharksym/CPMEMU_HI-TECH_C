@@ -124,6 +124,9 @@ static uint8_t bl_grp_suspended = 0;
 static uint16_t addr;
 static char msx_ver;
 
+static void vdp_sync_regs_shadow(void);
+static void vdp_restore_regs(void);
+
 int8_t bl_grp_init(void)
 {
 	/* MSX2/2+/tR only */
@@ -232,8 +235,10 @@ void bl_grp_deinit(void)
 	bl_grp_set_yae_yjk_mode(GRP_YAE0_YJK0);
 	bl_grp_reset_palette();
 
-	bl_grp_set_text_mode();
+	vdp_sync_regs_shadow();
 	bl_free(bl_grp.shared_mem);
+
+	bl_grp_set_text_mode();
 }
 
 uint8_t bl_grp_get_vdp_ver(void)
@@ -241,23 +246,26 @@ uint8_t bl_grp_get_vdp_ver(void)
 	return bl_grp.vdp_ver;
 }
 
-static void restore_vdp_regs(void)
+static void vdp_sync_regs_shadow(void)
 {
-	uint8_t n;
-
 	memcpy((uint8_t *)0xF3DF, &bl_grp.reg_shadow[0], 8);	/* 0 ~ 7 */
 	memcpy((uint8_t *)0xFFE7, &bl_grp.reg_shadow[8], 16);	/* 8 ~ 23 */
+
+	if (msx_ver >= MSX2P) {					/* 25 ~ 27 */
+		*(uint8_t *)0xFFFA = bl_grp.reg_shadow[25];
+		*(uint8_t *)0xFFFB = bl_grp.reg_shadow[26];
+		*(uint8_t *)0xFFFC = bl_grp.reg_shadow[27];
+	}
+}
+
+static void vdp_restore_regs(void)
+{
+	uint8_t n;
 
 	for (n = 0; n <= 23; n++)				/* 0 ~ 23 */
 		bl_write_vdp(n, bl_grp.reg_shadow[n]);
 
 	if (bl_grp.vdp_ver) {					/* 25 ~ 27 */
-		if (msx_ver >= MSX2P) {
-			*(uint8_t *)0xFFFA = bl_grp.reg_shadow[25];
-			*(uint8_t *)0xFFFB = bl_grp.reg_shadow[26];
-			*(uint8_t *)0xFFFC = bl_grp.reg_shadow[27];
-		}
-
 		bl_write_vdp(25, bl_grp.reg_shadow[25]);
 		bl_write_vdp(26, bl_grp.reg_shadow[26]);
 		bl_write_vdp(27, bl_grp.reg_shadow[27]);
@@ -266,12 +274,15 @@ static void restore_vdp_regs(void)
 
 void bl_grp_suspend(void)
 {
+	if (bl_grp_suspended)
+		return;
+
 	bl_grp_suspended = 1;
 
 	bl_free(bl_grp.shared_mem);
 	memcpy(&bl_grp_bak, &bl_grp, sizeof(struct bl_grp_var_t));
 
-	restore_vdp_regs();
+	vdp_sync_regs_shadow();
 }
 
 void bl_grp_resume(void)
@@ -284,7 +295,7 @@ void bl_grp_resume(void)
 	memcpy(&bl_grp, &bl_grp_bak, sizeof(struct bl_grp_var_t));
 	bl_grp.shared_mem = (uint8_t *)bl_malloc(BL_GRP_SHARED_MEM);
 
-	restore_vdp_regs();
+	vdp_restore_regs();
 }
 
 extern uint8_t update_bits;
