@@ -197,33 +197,6 @@ int8_t bl_grp_init(void)
 #define CALSLT		0001CH
 #define EXPTBL		0FCC1H
 
-#asm
-;void bl_grp_set_text_mode(void);
-		GLOBAL _bl_grp_set_text_mode
-
-_bl_grp_set_text_mode:
-		PUSH AF
-		PUSH BC
-		PUSH DE
-		PUSH HL
-		PUSH IX
-		PUSH IY
-
-		XOR A			; A = Screen Mode 0
-		LD IX,CHGMOD
-		LD IY,(EXPTBL-1)
-		CALL CALSLT
-		EI
-
-		POP IY
-		POP IX
-		POP HL
-		POP DE
-		POP BC
-		POP AF
-		RET
-#endasm
-
 void bl_grp_deinit(void)
 {
 	bl_grp_set_palette0_on(0);		/* disable palette 0 */
@@ -237,8 +210,19 @@ void bl_grp_deinit(void)
 
 	vdp_sync_regs_shadow();
 	bl_free(bl_grp.shared_mem);
+#asm
+	PUSH	IX
+	PUSH	IY
 
-	bl_grp_set_text_mode();
+	XOR	A				; SCREEN 0
+	LD	IX, CHGMOD
+	LD	IY, (EXPTBL - 1)
+	CALL	CALSLT
+
+	POP	IY
+	POP	IX
+	EI
+#endasm
 }
 
 uint8_t bl_grp_get_vdp_ver(void)
