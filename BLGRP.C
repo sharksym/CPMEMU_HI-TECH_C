@@ -758,9 +758,9 @@ static void bl_grp_clear_screen_fill(void)
 #asm
 		DI
 		DEFB	011H			; LD DE, nn
-_clear_size:	DEFB	00000H
+_clear_size:	DEFW	00000H
 		DEFB	021H			; LD HL, nn
-_clear_val:	DEFB	00000H
+_clear_val:	DEFW	00000H
 
 		LD	C, 098H
 clear_screen_fill_lp:
