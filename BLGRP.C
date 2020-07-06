@@ -110,6 +110,15 @@ uint16_t init_palette[] = {
 	0xFFFF	/* end mark */
 };
 
+static uint8_t adj_to_reg[16] = {
+	/* -7, -6 ... -1, 0, 1, ... 7, 8 */
+	0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0, 0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8
+};
+
+static int8_t adj_from_reg[16] = {
+	0, -1, -2, -3, -4, -5, -6, -7, 8, 7, 6, 5, 4, 3, 2, 1
+};
+
 static struct bl_grp_var_t bl_grp_bak;
 static uint8_t bl_grp_suspended = 0;
 static uint16_t addr;
@@ -130,31 +139,6 @@ int8_t bl_grp_init(void)
 	/* VDP version */
 	bl_grp.vdp_ver = bl_read_vdp(1) & 0x04 ? GRP_VER_9958 : GRP_VER_9938;
 
-	bl_grp.screen_mode = 0xFF;			/* dummy */
-	bl_grp.yae_yjk_mode = GRP_YAE0_YJK0;
-	bl_grp.text_width = 40;
-	bl_grp.palette0_on = 0;
-	bl_grp.line_212 = 1;
-	bl_grp.display_mode = GRP_DISP_240P;
-	bl_grp.interlace_on = 0;
-
-	bl_grp.color_text_fg = WORK_FORCOL;
-	bl_grp.color_text_bg = WORK_BAKCOL;
-	bl_grp.color_border = WORK_BDRCOL;
-
-	bl_grp.adjust_h = 0;
-	bl_grp.adjust_v = 0;
-
-	bl_grp.scroll_mode = GRP_SCROLL_P1;
-	bl_grp.scroll_h = 0;
-	bl_grp.scroll_v = 0;
-
-	bl_grp.width = 256;
-	bl_grp.height = 212;
-
-	bl_grp_set_font_size(8, 8);
-	bl_grp_set_font_color(bl_grp.color_text_fg, bl_grp.color_text_bg);
-
 	/* VDP register shadow */
 	memcpy(&bl_grp.reg_shadow[0], (uint8_t *)0xF3DF, 8);	/* 0 ~ 7 */
 	memcpy(&bl_grp.reg_shadow[8], (uint8_t *)0xFFE7, 16);	/* 8 ~ 23 */
@@ -174,6 +158,31 @@ int8_t bl_grp_init(void)
 			bl_grp.reg_shadow[27] = *(uint8_t *)0xFFFC;
 		}
 	}
+
+	bl_grp.screen_mode = 0xFF;			/* dummy */
+	bl_grp.yae_yjk_mode = GRP_YAE0_YJK0;
+	bl_grp.text_width = 40;
+	bl_grp.palette0_on = 0;
+	bl_grp.line_212 = 1;
+	bl_grp.display_mode = GRP_DISP_240P;
+	bl_grp.interlace_on = 0;
+
+	bl_grp.color_text_fg = WORK_FORCOL;
+	bl_grp.color_text_bg = WORK_BAKCOL;
+	bl_grp.color_border = WORK_BDRCOL;
+
+	bl_grp.adjust_h = adj_from_reg[bl_grp.reg_shadow[18] & 0xF];
+	bl_grp.adjust_v = adj_from_reg[(bl_grp.reg_shadow[18] >> 4) & 0xF];
+
+	bl_grp.scroll_mode = GRP_SCROLL_P1;
+	bl_grp.scroll_h = 0;
+	bl_grp.scroll_v = 0;
+
+	bl_grp.width = 256;
+	bl_grp.height = 212;
+
+	bl_grp_set_font_size(8, 8);
+	bl_grp_set_font_color(bl_grp.color_text_fg, bl_grp.color_text_bg);
 
 	/* Initialize palette */
 	memcpy(bl_grp.palette, init_palette, sizeof(init_palette));
@@ -216,8 +225,6 @@ void bl_grp_deinit(void)
 {
 	bl_grp_set_palette0_on(0);		/* disable palette 0 */
 	bl_grp_set_line_212(1);
-	bl_grp_set_adjust_h(0);
-	bl_grp_set_adjust_v(0);
 	bl_grp_set_scroll_h(0);
 	bl_grp_set_scroll_v(0);
 	bl_grp_set_view(0);
@@ -429,9 +436,6 @@ void bl_grp_set_screen_mode(uint8_t mode)
 	bl_grp_set_palette0_on(bl_grp.palette0_on);
 	bl_grp_set_line_212(bl_grp.line_212);
 	bl_grp_set_display_mode(bl_grp.display_mode);
-
-	bl_grp_set_adjust_h(bl_grp.adjust_h);
-	bl_grp_set_adjust_v(bl_grp.adjust_v);
 
 	bl_grp_set_scroll_mode(bl_grp.scroll_mode);
 	bl_grp_set_scroll_h(bl_grp.scroll_h);
@@ -848,8 +852,6 @@ void bl_grp_set_sprite_gen_active(uint8_t page)
 	bl_grp_set_sprite_gen_active_addr(table_sprite_gen_page[bl_grp.screen_mode][page]);
 }
 
-static uint8_t adj_h[16] =
-	{ 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00, 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08 };
 void bl_grp_set_adjust_h(int8_t h)
 {
 	if (h < -7)
@@ -858,11 +860,9 @@ void bl_grp_set_adjust_h(int8_t h)
 		h = 8;
 
 	bl_grp.adjust_h = h;
-	bl_grp_update_reg_bit(18, 0x0F, adj_h[h + 7]);
+	bl_grp_update_reg_bit(18, 0x0F, adj_to_reg[h + 7]);
 }
 
-static uint8_t adj_v[16] =
-	{ 0x70, 0x60, 0x50, 0x40, 0x30, 0x20, 0x10, 0x00, 0xF0, 0xE0, 0xD0, 0xC0, 0xB0, 0xA0, 0x90, 0x80 };
 void bl_grp_set_adjust_v(int8_t v)
 {
 	if (v < -7)
@@ -871,7 +871,7 @@ void bl_grp_set_adjust_v(int8_t v)
 		v = 8;
 
 	bl_grp.adjust_v = v;
-	bl_grp_update_reg_bit(18, 0xF0, adj_v[v + 7]);
+	bl_grp_update_reg_bit(18, 0xF0, adj_to_reg[v + 7] << 4);
 }
 
 void bl_grp_set_scroll_mode(uint8_t mode)
@@ -1012,7 +1012,7 @@ void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size)
 
 	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)vram_addr;
 	bl_vdp_vram_cnt = size;
 	bl_copy_to_vram_nn(src);
@@ -1027,7 +1027,7 @@ void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size)
 
 	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
 	bl_vdp_vram_l = (uint8_t)vram_addr;
 	bl_vdp_vram_cnt = size;
 	bl_copy_from_vram_nn(dest);
