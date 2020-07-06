@@ -513,19 +513,22 @@ main_ret:
 
 ;void bl_exit(int n);
 #asm
-	psect	data
-main_ix:	DEFW	0
-main_iy:	DEFW	0
-main_sp:	DEFW	0
 	global	_bl_exit
 	psect	text
 _bl_exit:
 		POP	HL
 		POP	HL
 		LD	(_ret_val), HL
-		LD	IX, (main_ix)
-		LD	IY, (main_iy)
-		LD	SP, (main_sp)
+
+		DEFB	0DDH, 021H		; LD IX, nn
+main_ix:	DEFW	0
+
+		DEFB	0FDH, 021H		; LD IY, nn
+main_iy:	DEFW	0
+
+		DEFB	031H			; LD SP, nn
+main_sp:	DEFW	0
+
 		JP	main_ret		; return to bl_main()
 #endasm
 
@@ -749,7 +752,7 @@ _MakeOvlName:
 		INC	HL
 		LD	(HL), 'L'
 
-		POP IX
+		POP	IX
 		RET
 
 _str_program:	DEFB	'P','R','O','G','R','A','M',0
