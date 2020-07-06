@@ -735,8 +735,8 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	bl_vdp_cmd_wait();
 }
 
-static uint16_t clear_fill_size, clear_fill_val;
-static uint16_t table_fill_size[] = { 960, 1920, 2048, 768, 768, 768 };
+extern uint16_t clear_size, clear_val;
+static uint16_t table_fill_size[] = { 960 - 1, 1920 - 1, 2048 - 1, 768 - 1, 768 - 1, 768 - 1 };
 static void bl_grp_clear_screen_fill(void)
 {
 	static uint8_t val = ' ';
@@ -750,27 +750,26 @@ static void bl_grp_clear_screen_fill(void)
 	}
 
 	bl_set_vram_addr16(addr);
-	bl_write_vram(val);
+	bl_write_vram(val);			/* First byte */
 
-	clear_fill_size = table_fill_size[bl_grp.screen_mode];
-	clear_fill_val = val;
+	clear_size = table_fill_size[bl_grp.screen_mode];
+	clear_val = val;
 
 #asm
-_bl_grp_clear_screen_fill_:
-	DI
-	LD HL,(_clear_fill_size)
-	EX DE,HL
-	LD HL,(_clear_fill_val)
-_bl_grp_clear_screen_fill_lp:
-	LD A,D
-	OR E
-	JR Z,_bl_grp_clear_screen_fill_end
-	LD A,L			; data
-	OUT (098H),A		; write vram
-	DEC DE
-	jp _bl_grp_clear_screen_fill_lp
-_bl_grp_clear_screen_fill_end:
-	EI
+		DI
+		DEFB	011H			; LD DE, nn
+_clear_size:	DEFB	00000H
+		DEFB	021H			; LD HL, nn
+_clear_val:	DEFB	00000H
+
+		LD	C, 098H
+clear_screen_fill_lp:
+		OUT	(C), L			; write vram
+		DEC	DE
+		LD	A, D
+		OR	E
+		JP	NZ, clear_screen_fill_lp
+		EI
 #endasm
 }
 
