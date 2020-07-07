@@ -509,8 +509,8 @@ main_ret:
 	return ret_val;
 }
 
-;void bl_exit(int n);
 #asm
+;void bl_exit(int n);
 	global	_bl_exit
 	psect	text
 _bl_exit:
@@ -562,12 +562,7 @@ int8_t bl_is_tsr_on(void)
 
 uint32_t bl_lmem_get_free(void)
 {
-	static uint32_t size_byte;
-
-	size_byte = 0x4000;
-	size_byte *= free_seg_no;
-
-	return size_byte;
+	return (uint32_t)free_seg_no * 0x4000;
 }
 
 static uint8_t lmem_sys_seg = 0;
