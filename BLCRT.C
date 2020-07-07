@@ -565,8 +565,25 @@ uint32_t bl_lmem_get_free(void)
 	return (uint32_t)free_seg_no * 0x4000;
 }
 
-static uint8_t lmem_sys_seg = 0;
-struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
+#asm
+	global	_bl_lmem_alloc, _bl_lmem_alloc_sys
+	psect	text
+
+;struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
+_bl_lmem_alloc:
+		XOR	A
+		JR	bl_lmem_alloc_
+
+;struct bl_lmem_t *bl_lmem_alloc_sys(uint32_t size)
+_bl_lmem_alloc_sys:
+		LD	A, 1
+bl_lmem_alloc_:
+		LD	(_lmem_sys_seg), A
+		JP	_bl_lmem_alloc_do
+#endasm
+
+static uint8_t lmem_sys_seg;
+struct bl_lmem_t *bl_lmem_alloc_do(uint32_t size)
 {
 	static struct bl_lmem_t *lmem;
 	static uint8_t seg;
@@ -593,17 +610,6 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 		bl_dbg_pr_x(" %02X", seg);
 	}
 	bl_dbg_pr_x("\n[BL] Free seg = %d\n", free_seg_no);
-
-	return lmem;
-}
-
-struct bl_lmem_t *bl_lmem_alloc_sys(uint32_t size)
-{
-	static struct bl_lmem_t *lmem;
-
-	lmem_sys_seg = 1;		/* for system segment */
-	lmem = bl_lmem_alloc(size);
-	lmem_sys_seg = 0;
 
 	return lmem;
 }
