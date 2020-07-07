@@ -300,7 +300,6 @@ struct bl_mem_seg_t {				/* Memory Segment Info. */
 static struct bl_mem_seg_t tMemSeg;
 static int8_t bl_tsr_mode = 0;
 static char pOvlName[64];
-static long OvlSize;
 
 #ifdef BL_TSR
 static unsigned char mem_seg_size = sizeof(tMemSeg);
@@ -380,8 +379,7 @@ int bl_main(int argc, char *argv[])
 			return 0;
 		}
 
-		OvlSize = _fsize(cFileHandle);
-		tMemSeg.BankMax = (short)(OvlSize >> 15);
+		tMemSeg.BankMax = (short)(_fsize(cFileHandle) >> 15);
 #ifdef BL_BMAX
 		if (tMemSeg.BankMax > BL_BMAX)			/* Partial loading? */
 			tMemSeg.BankMax = BL_BMAX;
