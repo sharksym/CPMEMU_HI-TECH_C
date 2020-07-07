@@ -571,7 +571,7 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 	static struct bl_lmem_t *lmem;
 	uint8_t page_no, n;
 
-	/* printf("lmem alloc size = %lu bytes\n", size); */
+	bl_dbg_pr_x("[BL] lmem alloc size = %lu bytes\n", size);
 	page_no = (uint8_t)((size + 0x3FFF) >> 14);	/* N page */
 	if (!page_no || (page_no > free_seg_no)) {
 		return NULL;
@@ -590,9 +590,9 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 			lmem->page_tbl[n] = MapperAllocSys();
 		else
 			lmem->page_tbl[n] = MapperAllocUser();
-		/* printf("seg no %02X\n", lmem->page_tbl[n]); */
+		bl_dbg_pr_x("[BL] seg %02X\n", lmem->page_tbl[n]);
 	}
-	/* printf("Free seg = %d\n", free_seg_no); */
+	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
 	return lmem;
 }
@@ -619,7 +619,7 @@ void bl_lmem_free(struct bl_lmem_t *ptr)
 		}
 		free(ptr);
 
-/*		printf("Free seg = %d\n", free_seg_no);*/
+		bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 	}
 }
 
