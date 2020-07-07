@@ -569,6 +569,7 @@ static uint8_t lmem_sys_seg = 0;
 struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 {
 	static struct bl_lmem_t *lmem;
+	static uint8_t seg;
 	uint8_t page_no, n;
 
 	bl_dbg_pr_x("[BL] lmem alloc size = %lu bytes\n", size);
@@ -585,14 +586,13 @@ struct bl_lmem_t *bl_lmem_alloc(uint32_t size)
 	free_seg_no -= page_no;
 	lmem->page_max = page_no;
 	lmem->sys_used = lmem_sys_seg;
+	bl_dbg_pr("[BL] seg:");
 	for (n = 0; n < page_no; n++) {
-		if (lmem_sys_seg)
-			lmem->page_tbl[n] = MapperAllocSys();
-		else
-			lmem->page_tbl[n] = MapperAllocUser();
-		bl_dbg_pr_x("[BL] seg %02X\n", lmem->page_tbl[n]);
+		seg = lmem_sys_seg ? MapperAllocSys() : MapperAllocUser();
+		lmem->page_tbl[n] = seg;
+		bl_dbg_pr_x(" %02X", seg);
 	}
-	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
+	bl_dbg_pr_x("\n[BL] Free seg = %d\n", free_seg_no);
 
 	return lmem;
 }
