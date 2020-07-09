@@ -16,6 +16,10 @@ typedef unsigned long uint32_t;
 /* bl_bank is defined at each bank (Number is set 0,1,2,3... ) */
 extern int16_t bl_bank;
 
+/* callback for 'Not enough memory'
+   Adjust BankMax. */
+short bl_cb_adjust_BankMax(short free_bank);
+
 /* exit() */
 void bl_exit(int n);
 #define exit(n)		bl_exit(n)

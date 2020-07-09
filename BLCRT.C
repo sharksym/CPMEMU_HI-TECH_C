@@ -365,8 +365,11 @@ int bl_main(int argc, char *argv[])
 		close(cFileHandle);
 
 		if (tMemSeg.BankMax * 2 > free_seg_no) {
-			puts("ERROR: Not enough memory");
-			return 0;
+			tMemSeg.BankMax = bl_cb_adjust_BankMax(free_seg_no / 2);
+			if (tMemSeg.BankMax * 2 > free_seg_no) {
+				puts("ERROR: Not enough memory");
+				return 0;
+			}
 		}
 
 		bl_dbg_pr_x("[BL] Loading: %s\n", pOvlName);
