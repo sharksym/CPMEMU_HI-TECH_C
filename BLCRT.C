@@ -290,6 +290,10 @@ void get_seg_table(void);
 #endif
 #endif
 
+void	bl_clear_himem(void);
+void    brk(void *addr);
+long    _fsize(int fd);
+
 uint8_t MapperInit(void);
 uint8_t MapperAllocUser(void);
 uint8_t MapperAllocSys(void);
@@ -311,8 +315,6 @@ void    copy_256_p0_to_p2(void);
 void    put_lmem_seg_table(struct bl_lmem_t *ptr);
 void    get_lmem_seg_table(struct bl_lmem_t *ptr);
 
-long    _fsize(int fd);
-void    brk(void *addr);
 int     main(int argc, char *argv[]);		/* main() */
 
 static int ret_val;
@@ -323,6 +325,12 @@ int bl_main(int argc, char *argv[])
 	static uint8_t seg, Page2Old;
 	static int16_t SegCnt;
 #endif
+	/* Clear himem(0x9400 ~) as Zero */
+	bl_clear_himem();
+
+	/* Set DATA end to himem_end(over 0x9400) */
+	brk((void *)himem_end);
+
 #ifdef R800ONLY
 	if (get_msx_version() == MSXTR) {
 		set_cpu_mode_tr(CPU_TR_R800_DRAM);
@@ -331,7 +339,6 @@ int bl_main(int argc, char *argv[])
 		return 0;
 	}
 #endif
-
 	free_seg_no = MapperInit();
 	bl_dbg_pr_x("[BL] Free seg = %d\n", free_seg_no);
 
@@ -427,9 +434,6 @@ int bl_main(int argc, char *argv[])
 		bl_dbg_pr("\n");
 	}
 #endif
-	/* Set DATA end to himem_end(over 0x9400) */
-	brk((void *)himem_end);
-
 	/* Install ISR */
 	ISRInit();
 
@@ -490,7 +494,31 @@ main_ret:
 	return ret_val;
 }
 
+#ifndef BL_1BANK
 #asm
+;-------------------------------------------------------------------------------
+; Clear Himem (9400H ~ )
+;
+;void	bl_clear_himem(void);
+	global	_bl_clear_himem
+	psect	text
+_bl_clear_himem:
+		LD	BC, __Hhimem - __Lhimem
+		LD	A, B
+		OR	C
+		RET	Z
+
+		LD	HL, __Lhimem
+		LD	DE, __Lhimem + 1
+		LD	(HL), 0
+		DEC	BC
+		LDIR
+		RET
+#endasm
+#endif
+
+#asm
+;-------------------------------------------------------------------------------
 ;void bl_exit(int n);
 	global	_bl_exit
 	psect	text
