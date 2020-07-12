@@ -277,6 +277,9 @@ struct bl_mem_seg_t {				/* Memory Segment Info. */
 };
 static struct bl_mem_seg_t tMemSeg;
 static int8_t bl_tsr_mode = 0;
+static uint8_t Page2Old, seg;
+static short SegCnt;
+static short SegOvl;
 static char pOvlName[64];
 
 #ifdef BL_TSR
@@ -311,6 +314,11 @@ void    BankCallInit(void);
 void    ISRInit(void);
 void    ISRDeinit(void);
 
+uint8_t	OvlOpen(void);
+void	OvlClose(void);
+short	OvlGetBankMax(void);
+void	OvlLoad16kbPage2(uint8_t SegNo);
+
 void    copy_256_p0_to_p2(void);
 void    put_lmem_seg_table(struct bl_lmem_t *ptr);
 void    get_lmem_seg_table(struct bl_lmem_t *ptr);
@@ -320,11 +328,6 @@ int     main(int argc, char *argv[]);		/* main() */
 static int ret_val;
 int bl_main(int argc, char *argv[])
 {
-#ifndef BL_1BANK
-	static uint8_t cFileHandle;
-	static uint8_t seg, Page2Old;
-	static int16_t SegCnt;
-#endif
 	/* Clear himem(0x9400 ~) as Zero */
 	bl_clear_himem();
 
@@ -358,18 +361,17 @@ int bl_main(int argc, char *argv[])
 #endif
 
 	if (!bl_tsr_mode) {
-		cFileHandle = open(pOvlName, O_RDONLY);		/* Open OVL File */
-		if (cFileHandle == 0xFF) {			/* Not Found? */
+		if (OvlOpen() == 0xFF) {			/* Open OVL, Not Found? */
 			puts("ERROR: OVL not found");
 			return 0;
 		}
 
-		tMemSeg.BankMax = (short)(_fsize(cFileHandle) >> 15);
+		tMemSeg.BankMax = OvlGetBankMax();
 #ifdef BL_BMAX
 		if (tMemSeg.BankMax > BL_BMAX)			/* Partial loading? */
 			tMemSeg.BankMax = BL_BMAX;
 #endif
-		close(cFileHandle);
+		OvlClose();
 
 		if (tMemSeg.BankMax * 2 > free_seg_no) {
 			tMemSeg.BankMax = bl_cb_adjust_BankMax(free_seg_no / 2);
@@ -404,7 +406,7 @@ int bl_main(int argc, char *argv[])
 		MapperPutPage2(Page2Old);		/* Set original segment */
 	} else {
 		/* Load Banked code via Page2 */
-		cFileHandle = open(pOvlName, O_RDONLY);	/* re-open */
+		OvlOpen();				/* re-open */
 		Page2Old = MapperGetPage2();
 
 #ifdef BL_TSR
@@ -423,14 +425,13 @@ int bl_main(int argc, char *argv[])
 			tMemSeg.BankTbl[SegCnt] = seg;
 			*(Bank_idx_addr + 0x02 + SegCnt) = seg;
 
-			MapperPutPage2(seg);    	/* Set segment */
-			read(cFileHandle, (uint8_t *)0x8000, 0x4000);
+			OvlLoad16kbPage2(seg);    	/* Set segment & Load 16KB */
 			if (!(SegCnt & 0x01))		/* Page0 area?, Copy 0x0000~0x00FF */
 				copy_256_p0_to_p2();
 
 			MapperPutPage2(Page2Old);	/* Set original segment */
 		}
-		close(cFileHandle);
+		OvlClose();
 		bl_dbg_pr("\n");
 	}
 #endif
@@ -540,6 +541,31 @@ main_sp:	DEFW	0
 #endasm
 
 #ifndef BL_1BANK
+static int fh_ovl;
+
+uint8_t OvlOpen(void)
+{
+	fh_ovl = open(pOvlName, O_RDONLY);
+
+	return (uint8_t)fh_ovl;
+}
+
+void OvlClose(void)
+{
+	close(fh_ovl);
+}
+
+short OvlGetBankMax(void)
+{
+	return (short)(_fsize(fh_ovl) >> 15);
+}
+
+void OvlLoad16kbPage2(uint8_t SegNo)
+{
+	MapperPutPage2(SegNo);
+	read(fh_ovl, (uint8_t *)0x8000, 0x4000);
+}
+
 void bl_get_ovl_info(char *name, short *bank_max)
 {
 	strcpy(name, pOvlName);
@@ -549,6 +575,30 @@ void bl_get_ovl_info(char *name, short *bank_max)
 uint16_t bl_get_seg_info(short bank)
 {
 	return *((uint16_t *)Bank_idx_addr + bank);
+}
+
+void bl_overlay_seg(short dest_bank, short ovl_bank)
+{
+	uint8_t seg0, seg1;
+
+	ISRDeinit();
+
+	SegOvl = (ovl_bank - 1) * 2;
+	SegCnt = (dest_bank - 1) * 2;
+	seg0 = tMemSeg.BankTbl[SegCnt];
+	seg1 = tMemSeg.BankTbl[SegCnt + 1];
+
+	lseek(OvlOpen(), (long)(ovl_bank - 1) * 0x8000, SEEK_SET);
+	OvlLoad16kbPage2(seg0);
+	copy_256_p0_to_p2();
+	OvlLoad16kbPage2(seg1);
+	MapperPutPage2(Page2Old);
+	OvlClose();
+
+	*(Bank_idx_addr + 0x02 + SegOvl) = seg0;
+	*(Bank_idx_addr + 0x03 + SegOvl) = seg1;
+
+	ISRInit();
 }
 
 void bl_tsr_on(void)
@@ -595,7 +645,6 @@ static uint8_t lmem_sys_seg;
 struct bl_lmem_t *bl_lmem_alloc_do(uint32_t size)
 {
 	static struct bl_lmem_t *lmem;
-	static uint8_t seg;
 	uint8_t page_no, n;
 
 	bl_dbg_pr_x("[BL] lmem alloc size = %lu bytes\n", size);

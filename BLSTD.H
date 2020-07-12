@@ -31,6 +31,9 @@ void bl_get_ovl_info(char *name, short *bank_max);
 #define bl_get_bank_info()	bl_get_seg_info(bl_bank)
 uint16_t bl_get_seg_info(short bank);
 
+/* Overlay BANK with specified OVL bank */
+void bl_overlay_seg(short dest_bank, short ovl_bank);
+
 /* Set TSR mode */
 void bl_tsr_on(void);
 void bl_tsr_off(void);
