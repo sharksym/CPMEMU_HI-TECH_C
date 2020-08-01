@@ -6,6 +6,12 @@ CPMDIR = ..\..
 
 
 ###
+#   Temporary work path
+#
+WORKDIR = .
+
+
+###
 #   Drive mapping for CP/M executor
 #   A: HI-TECH C package path
 #   B: Current path
@@ -24,11 +30,11 @@ LIBOUT :=
 ###
 #   HI-TECH C compiler
 #
-CPP  := $(CPMDIR)\CPM $(CPMDIR)\CPP
-P1   := $(CPMDIR)\CPM $(CPMDIR)\P1
-CGEN := $(CPMDIR)\CPM $(CPMDIR)\CGEN
-ZAS  := $(CPMDIR)\CPM $(CPMDIR)\ZAS
-LINK := $(CPMDIR)\CPM $(CPMDIR)\LINK
+CPP  := $(CPMDIR)\CPM -w0 $(CPMDIR)\CPP
+P1   := $(CPMDIR)\CPM -w0 $(CPMDIR)\P1
+CGEN := $(CPMDIR)\CPM -w0 $(CPMDIR)\CGEN
+ZAS  := $(CPMDIR)\CPM -w0 $(CPMDIR)\ZAS
+LINK := $(CPMDIR)\CPM -w0 $(CPMDIR)\LINK
 
 
 ###
@@ -167,11 +173,11 @@ release: all release_job clean
 
 prepare_rules:
 	@echo * Generate Rules *
-	@$(BLMKRULE) $(CFG).CFG $(CFG).MK $(MKFLAGS)
+	@$(BLMKRULE) $(CFG).CFG $(WORKDIR)\$(CFG).MK $(MKFLAGS)
 
 build_job:
 	@echo * Build *
-	@make -f$(CFG).MK CFG=$(CFG) CPMC=OBJ CPMD=. build
+	@make -f$(WORKDIR)\$(CFG).MK CFG=$(CFG) CPMC=$(WORKDIR) CPMD=$(WORKDIR) build
 
 release_job:
 	@echo * Prepare for Release *
@@ -192,8 +198,8 @@ end_job:
 
 cleanup_job:
 	@echo * Cleanup *
-	@make -f$(CFG).MK CFG=$(CFG) CPMC=OBJ CPMD=. cleanup
-	@del $(CFG).MK > NUL
+	@make -f$(WORKDIR)\$(CFG).MK CFG=$(CFG) CPMC=$(WORKDIR) CPMD=$(WORKDIR) cleanup
+	@del $(WORKDIR)\$(CFG).MK > NUL
 
 ###
 #   Copy/Remove Banking Library source files
