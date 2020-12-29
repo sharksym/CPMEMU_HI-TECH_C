@@ -26,7 +26,7 @@
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 
-	global	start, _main, _exit, __Hbss, __Lbss, __argc_, startup
+	global	start, _main, _exit_, __Hbss, __Lbss, __argc_, startup
 	global	_GetBdosVersion, _gcBdosMode
 
 start:	ld	hl,(6)		;base address of fdos
@@ -67,8 +67,7 @@ start:	ld	hl,(6)		;base address of fdos
 	ld	(_gcBdosMode),a
 
 	call	_main
-	push	hl
-	jp	_exit
+	jp	_exit_		; hl <- err no.
 
 	psect	data
 nularg:	defb	0
@@ -90,7 +89,7 @@ nularg:	defb	0
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 
-	global	start, _main, _exit, __Hbss, __Lbss, __argc_, startup, wrelop
+	global	start, _main, _exit_, __Hbss, __Lbss, __argc_, startup, wrelop
 
 start:
 	ld	hl,(6)		;base address of fdos
@@ -133,8 +132,7 @@ start:
 	ld	hl,(__argc_)
 	push	hl
 	call	_main
-	push	hl
-	jp	_exit
+	jp	_exit_		;hl <- err no.
 
 notdos2:
 	ld	de,notdos2_mes
@@ -192,7 +190,7 @@ nularg:	defb	0
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 
-	global	start, _exit, __Hbss, __Lbss, __argc_, startup, wrelop
+	global	start, _exit_, __Hbss, __Lbss, __argc_, startup, wrelop
 
 start:
 	ld	hl,(6)		;base address of fdos
@@ -241,8 +239,7 @@ start:
 	ld	hl,(__argc_)
 	push	hl
 	call	_bl_main
-	push	hl
-	jp	_exit
+	jp	_exit_		;hl <- err no.
 
 notdos2:
 	ld	de,notdos2_mes
