@@ -833,15 +833,6 @@ _BankCallInit_P0a:
 		JP BankInit_entry
 
 ;-------------------------------------------------------------------------------
-; Interrupt Service Routine
-;
-;void ISRInit(void);
-;void ISRDeinit(void);
-
-_ISRInit:	JP ISRInit_entry
-_ISRDeinit:	JP ISRDeinit_entry
-
-;-------------------------------------------------------------------------------
 ; Initialize Mapper Routine
 ;
 ;uint8_t MapperInit(void)
