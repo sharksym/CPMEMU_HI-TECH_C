@@ -24,6 +24,10 @@ short bl_cb_adjust_BankMax(short free_bank);
 void bl_exit(int n);
 #define exit(n)		bl_exit(n)
 
+/* Abort Handler */
+void bl_abort_on(void);
+void bl_abort_off(void);
+
 /* Get OVL info */
 void bl_get_ovl_info(char *name, short *bank_max);
 

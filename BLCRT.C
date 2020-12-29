@@ -204,6 +204,7 @@ start:
 	cp	2
 	jp	c,notdos2
 
+	di			;disable interrupt
 	ld	de,__Lbss	;Start of BSS segment
 	or	a		;clear carry
 	ld	hl,__Hbss
@@ -221,6 +222,7 @@ start:
 	ld	de,BankCall_entry
 	ld	bc,BankCall_size
 	ldir			;transfer BankCall
+	call	abort_init
 
 	ld	hl,nularg
 	push	hl
@@ -238,7 +240,12 @@ start:
 	push	hl
 	ld	hl,(__argc_)
 	push	hl
+	ei			;enable interrupt
+
 	call	_bl_main
+	push	hl
+	call	abort_deinit
+	pop	hl
 	jp	_exit_		;hl <- err no.
 
 notdos2:
@@ -289,6 +296,8 @@ void put_seg_table(void);
 void get_seg_table(void);
 #endif
 #endif
+
+extern uint8_t bl_abort;
 
 void	bl_clear_himem(void);
 void    brk(void *addr);
@@ -443,6 +452,8 @@ int bl_main(int argc, char *argv[])
 	LD	(main_iy), IY
 	LD	(main_sp), SP
 #endasm
+	/* Enable Abort Handler */
+	bl_abort_on();
 
 	/* Execute main() function */
 	bl_dbg_pr("[BL] main() start\n");
@@ -450,6 +461,9 @@ int bl_main(int argc, char *argv[])
 #asm
 main_ret:
 #endasm
+	/* Disable Abort Handler */
+	bl_abort_off();
+
 	bl_dbg_pr_x("[BL] main() done (ret = %d)\n", ret_val);
 
 	/* Restore Original ISR */
@@ -535,6 +549,31 @@ main_iy:	DEFW	0
 main_sp:	DEFW	0
 
 		JP	main_ret		; return to bl_main()
+
+;void bl_abort_on(void);
+;void bl_abort_off(void);
+		global	_bl_abort_on, _bl_abort_off, _callbdos_ixiy
+		psect	text
+_bl_abort_on:
+		LD	A, 1
+		JR	set_bl_abort
+_bl_abort_off:
+		XOR	A
+set_bl_abort:
+		LD	(_bl_abort), A
+		RET
+
+abort_init:
+		LD	HL, _bl_exit
+		LD	(_ExitAddr), HL
+		LD	DE, _AbortCallback
+		JR	set_abort_cb
+abort_deinit:
+		LD	DE, 0
+set_abort_cb:
+		LD	C, 063H			; _DEFAB
+		JP	_callbdos_ixiy
+
 #endasm
 
 #ifndef BL_1BANK
