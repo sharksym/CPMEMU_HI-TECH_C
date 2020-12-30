@@ -223,6 +223,7 @@ start:
 	ld	bc,BankCall_size
 	ldir			;transfer BankCall
 	call	abort_init
+	call	diskerr_init
 
 	ld	hl,nularg
 	push	hl
@@ -244,6 +245,7 @@ start:
 
 	call	_bl_main
 	push	hl
+	call	diskerr_deinit
 	call	abort_deinit
 	pop	hl
 	jp	_exit_		;hl <- err no.
@@ -572,6 +574,15 @@ abort_deinit:
 		LD	DE, 0
 set_abort_cb:
 		LD	C, 063H			; _DEFAB
+		JP	_callbdos_ixiy
+
+diskerr_init:
+		LD	DE, _DiskECallback
+		JR	set_diskerr_cb
+diskerr_deinit:
+		LD	DE, 0
+set_diskerr_cb:
+		LD	C, 064H			; _DEFER
 		JP	_callbdos_ixiy
 
 #endasm
