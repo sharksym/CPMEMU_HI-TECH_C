@@ -20,6 +20,12 @@
 #define WORK_BAKCOL	*((uint8_t *)(0xF3EA))
 #define WORK_BDRCOL	*((uint8_t *)(0xF3EB))
 
+#define YAE_YJK_MODE	0x18	/* bit mask for yae yjk mode */
+#define SPR_MODE	0x03	/* bit mask for sprite mode */
+#define DISP_MODE	0x0E	/* bit mask for display timing mode */
+#define DISP_IL_E0	0x0C	/* bit mask for interlaced two field */
+#define SCROLL_MODE	0x03	/* bit mask for scroll mode */
+
 static uint8_t scrmode[] = {
 	0,	/* T1 */
 	0,	/* T2 */
@@ -121,6 +127,8 @@ static int8_t adj_from_reg[16] = {
 
 static struct bl_grp_var_t bl_grp_bak;
 static uint8_t bl_grp_suspended = 0;
+static uint8_t vdp_reg_org[28];
+static uint8_t scrmod_org;
 static uint16_t addr;
 static char msx_ver;
 
@@ -162,29 +170,32 @@ int8_t bl_grp_init(void)
 		}
 	}
 
-	bl_grp.screen_mode = 0xFF;			/* dummy */
-	bl_grp.yae_yjk_mode = GRP_YAE0_YJK0;
-	bl_grp.display_on = 1;
-	bl_grp.sprite_mode = GRP_SPR_8;
-	bl_grp.sprite_on = 1;
-	bl_grp.text_width = 40;
-	bl_grp.palette0_on = 0;
-	bl_grp.line_212 = 1;
-	bl_grp.display_mode = GRP_DISP_240P;
-	bl_grp.interlace_on = 0;
+	memcpy(vdp_reg_org, bl_grp.reg_shadow, sizeof(vdp_reg_org));
+	scrmod_org = WORK_SCRMOD;
+
+	bl_grp.screen_mode  = 0xFF;			/* dummy */
+	bl_grp.yae_yjk_mode = 0;
+	bl_grp.display_on   = 0;
+	bl_grp.sprite_mode  = 0;
+	bl_grp.sprite_on    = 1;
+	bl_grp.text_width   = 40;
+	bl_grp.palette0_on  = 0;
+	bl_grp.line_212     = 1;
+	bl_grp.display_mode = bl_grp.reg_shadow[9] & DISP_MODE;
+	bl_grp.interlace_on = (bl_grp.reg_shadow[9] & DISP_IL_E0) == DISP_IL_E0 ? 1 : 0;
 
 	bl_grp.color_text_fg = WORK_FORCOL;
 	bl_grp.color_text_bg = WORK_BAKCOL;
-	bl_grp.color_border = WORK_BDRCOL;
+	bl_grp.color_border  = WORK_BDRCOL;
 
 	bl_grp.adjust_h = adj_from_reg[bl_grp.reg_shadow[18] & 0xF];
 	bl_grp.adjust_v = adj_from_reg[(bl_grp.reg_shadow[18] >> 4) & 0xF];
 
-	bl_grp.scroll_mode = GRP_SCROLL_P1;
-	bl_grp.scroll_h = 0;
-	bl_grp.scroll_v = 0;
+	bl_grp.scroll_mode = 0;
+	bl_grp.scroll_h    = 0;
+	bl_grp.scroll_v    = 0;
 
-	bl_grp.width = 256;
+	bl_grp.width  = 256;
 	bl_grp.height = 212;
 
 	bl_grp_set_font_size(8, 8);
@@ -196,12 +207,9 @@ int8_t bl_grp_init(void)
 	return bl_grp.vdp_ver;
 }
 
-#define CHGMOD		0005FH
-#define CALSLT		0001CH
-#define EXPTBL		0FCC1H
-
 void bl_grp_deinit(void)
 {
+#if 0
 	bl_grp_set_display_on(1);
 	bl_grp_set_sprite_mode(GRP_SPR_8);
 	bl_grp_set_sprite_on(1);
@@ -213,17 +221,22 @@ void bl_grp_deinit(void)
 	bl_grp_set_active(0);
 	bl_grp_set_yae_yjk_mode(GRP_YAE0_YJK0);
 	bl_grp_reset_palette();
-
+#else
+	bl_grp_reset_palette();
+	vdp_reg_org[1] &= ~0x40;		/* display off */
+	memcpy(bl_grp.reg_shadow, vdp_reg_org, sizeof(vdp_reg_org));
+	vdp_restore_regs();
+#endif
 	vdp_sync_regs_shadow();
 	bl_free(bl_grp.shared_mem);
 #asm
 	PUSH	IX
 	PUSH	IY
 
-	XOR	A				; SCREEN 0
-	LD	IX, CHGMOD
-	LD	IY, (EXPTBL - 1)
-	CALL	CALSLT
+	LD	A, (_scrmod_org)
+	LD	IX, 0005FH			; CHGMOD
+	LD	IY, (0FCC1H - 1)		; EXPTBL - 1
+	CALL	0001CH				; CALSLT
 
 	POP	IY
 	POP	IX
@@ -468,11 +481,10 @@ void bl_grp_set_screen_mode(uint8_t mode)
 
 void bl_grp_set_yae_yjk_mode(uint8_t mode)
 {
-	mode &= 0x18;
 	bl_grp.yae_yjk_mode = mode;
 
 	if (bl_grp.vdp_ver) {
-		bl_grp_update_reg_bit(25, 0x18, mode);
+		bl_grp_update_reg_bit(25, YAE_YJK_MODE, mode);
 	}
 }
 
@@ -505,9 +517,8 @@ uint8_t bl_grp_get_display_on(void)
 
 void bl_grp_set_sprite_mode(uint8_t mode)
 {
-/*	mode &= 0x03;*/
 	bl_grp.sprite_mode = mode;
-	bl_grp_update_reg_bit(1, 0x03, mode);
+	bl_grp_update_reg_bit(1, SPR_MODE, mode);
 }
 
 void bl_grp_set_sprite_on(uint8_t on)
@@ -561,11 +572,10 @@ void bl_grp_set_line_212(uint8_t on)
 extern void bl_grp_setup_font_draw_func(void);	/* from BLGRPFNT.C */
 void bl_grp_set_display_mode(uint8_t mode)
 {
-/*	mode &= 0x0E;*/
 	bl_grp.display_mode = mode;
-	bl_grp_update_reg_bit(9, 0x0E, mode);
+	bl_grp_update_reg_bit(9, DISP_MODE, mode);
 
-	if ((bl_grp.display_mode & GRP_DISP_IL_E0) == GRP_DISP_IL_E0) {
+	if ((bl_grp.display_mode & DISP_IL_E0) == DISP_IL_E0) {
 		bl_grp.interlace_on = 1;
 	} else {
 		bl_grp.interlace_on = 0;
@@ -876,10 +886,10 @@ void bl_grp_set_adjust_v(int8_t v)
 
 void bl_grp_set_scroll_mode(uint8_t mode)
 {
-	bl_grp.scroll_mode = mode & 0x03;
+	bl_grp.scroll_mode = mode;
 
 	if (bl_grp.vdp_ver) {
-		bl_grp_update_reg_bit(25, 0x03, bl_grp.scroll_mode);
+		bl_grp_update_reg_bit(25, SCROLL_MODE, bl_grp.scroll_mode);
 	}
 }
 
