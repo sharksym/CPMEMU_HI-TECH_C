@@ -14,6 +14,10 @@
 #include <blgrpfnt.h>
 #include <blgrpdat.h>
 
+static uint16_t addr;
+static uint8_t  data;
+static int16_t  x, y, error;
+
 static uint8_t pset_cmd[7] = {
 	0x00,	/* R36 DX low */
 	0x00,	/* R37 DX high */
@@ -25,28 +29,25 @@ static uint8_t pset_cmd[7] = {
 };
 void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 {
-	static uint16_t vram_addr_pp;
-	static uint8_t vram_data_pp;
-
-	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
-		vram_addr_pp = bl_grp.pattern_gen_addr;
-		vram_addr_pp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
-		vram_addr_pp += y & 0x07;
-		vram_addr_pp += (x & 0xFE) << 2;	/* (x / 2) * 8 */
-		bl_vdp_vram_h = (uint8_t)(vram_addr_pp >> 14);
+	if (bl_grp.screen_mode == GRP_SCR_MC) {		/* MC */
+		addr = bl_grp.pattern_gen_addr;
+		addr += (y & 0xF8) << 5;		/* (y / 8) * 256 */
+		addr += y & 0x07;
+		addr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
+		bl_vdp_vram_h = (uint8_t)(addr >> 14);
 		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-		bl_vdp_vram_m = (uint8_t)((vram_addr_pp >> 8) & 0x3F);
-		bl_vdp_vram_l = (uint8_t)vram_addr_pp;
-		vram_data_pp = bl_read_vram();
+		bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
+		bl_vdp_vram_l = (uint8_t)addr;
+		data = bl_read_vram();
 
 		if (x & 0x01) {				/* low 4bit */
-			vram_data_pp &= 0xF0;
-			vram_data_pp |= c;
+			data &= 0xF0;
+			data |= c;
 		} else {				/* high 4bit */
-			vram_data_pp &= 0x0F;
-			vram_data_pp |= c << 4;
+			data &= 0x0F;
+			data |= c << 4;
 		}
-		bl_write_vram(vram_data_pp);
+		bl_write_vram(data);
 	} else {
 		pset_cmd[3] = bl_grp.active_page;
 		if (bl_grp.interlace_on) {
@@ -96,52 +97,49 @@ static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 
 uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 {
-	static uint16_t vram_addr_gp;
-	static uint8_t vram_data_gp;
-
-	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
-		vram_addr_gp = bl_grp.pattern_gen_addr;
-		vram_addr_gp += (y & 0xF8) << 5;	/* (y / 8) * 256 */
-		vram_addr_gp += y & 0x07;
-		vram_addr_gp += (x & 0xFE) << 2;	/* (x / 2) * 8 */
-		bl_vdp_vram_h = (uint8_t)(vram_addr_gp >> 14);
+	if (bl_grp.screen_mode == GRP_SCR_MC) {		/* MC */
+		addr = bl_grp.pattern_gen_addr;
+		addr += (y & 0xF8) << 5;		/* (y / 8) * 256 */
+		addr += y & 0x07;
+		addr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
+		bl_vdp_vram_h = (uint8_t)(addr >> 14);
 		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-		bl_vdp_vram_m = (uint8_t)((vram_addr_gp >> 8) & 0x3F);
-		bl_vdp_vram_l = (uint8_t)vram_addr_gp;
-		vram_data_gp = bl_read_vram();
+		bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
+		bl_vdp_vram_l = (uint8_t)addr;
+		data = bl_read_vram();
 
 		if (!(x & 0x01))
-			vram_data_gp >>= 4;
+			data >>= 4;
 
-		return (vram_data_gp & 0x0F);
+		return (data & 0x0F);
 	}
 
-	vram_addr_gp = y * bl_grp.row_byte;
-	vram_addr_gp += x >> (bl_grp.bpp_shift);
-	bl_vdp_vram_h = (uint8_t)(vram_addr_gp >> 14);
+	addr = y * bl_grp.row_byte;
+	addr += x >> (bl_grp.bpp_shift);
+	bl_vdp_vram_h = (uint8_t)(addr >> 14);
 	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr_gp >> 8) & 0x3F);
-	bl_vdp_vram_l = (uint8_t)vram_addr_gp;
+	bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
+	bl_vdp_vram_l = (uint8_t)addr;
 
-	vram_data_gp = bl_read_vram();
+	data = bl_read_vram();
 
 	switch (bl_grp.bpp_shift) {
 	case 1:
 		if (!(x & 0x01))
-			vram_data_gp >>= 4;
+			data >>= 4;
 
-		vram_data_gp &= 0x0F;
+		data &= 0x0F;
 		break;
 	case 2:
 		x &= 0x03;
 		if (x == 0)
-			vram_data_gp >>= 6;
+			data >>= 6;
 		else if (x == 1)
-			vram_data_gp >>= 4;
+			data >>= 4;
 		else if (x == 2)
-			vram_data_gp >>= 2;
+			data >>= 2;
 
-		vram_data_gp &= 0x03;
+		data &= 0x03;
 		break;
 	case 3:	/* not yet... */
 		break;
@@ -150,7 +148,7 @@ uint8_t bl_grp_get_pixel(uint16_t x, uint16_t y)
 		break;
 	}
 
-	return vram_data_gp;
+	return data;
 }
 
 static uint8_t hmmm_cmd[15] = {
@@ -275,7 +273,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 	uint16_t line_w, line_h;
 	uint8_t sy0, sy1, dy0, dy1;
 	static int16_t deltax, deltay;
-	static int16_t error, step, x, y, inc;
+	static int16_t step, inc;
 
 	if (bl_grp.screen_mode == GRP_SCR_MC) {	/* MC */
 		deltax = dx > sx ? dx - sx : sx - dx;
@@ -520,8 +518,6 @@ void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_
 
 void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t op)
 {
-	static int16_t x, y, error;
-
 	x = radius;
 	y = 0;
 	error = -x;
