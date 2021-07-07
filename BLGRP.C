@@ -209,25 +209,13 @@ int8_t bl_grp_init(void)
 
 void bl_grp_deinit(void)
 {
-#if 0
-	bl_grp_set_display_on(1);
-	bl_grp_set_sprite_mode(GRP_SPR_8);
-	bl_grp_set_sprite_on(1);
-	bl_grp_set_palette0_on(0);		/* disable palette 0 */
-	bl_grp_set_line_212(1);
-	bl_grp_set_scroll_h(0);
-	bl_grp_set_scroll_v(0);
-	bl_grp_set_view(0);
-	bl_grp_set_active(0);
-	bl_grp_set_yae_yjk_mode(GRP_YAE0_YJK0);
 	bl_grp_reset_palette();
-#else
-	bl_grp_reset_palette();
+
 	vdp_reg_org[1] &= ~0x40;		/* display off */
 	memcpy(bl_grp.reg_shadow, vdp_reg_org, sizeof(vdp_reg_org));
 	vdp_restore_regs();
-#endif
 	vdp_sync_regs_shadow();
+
 	bl_free(bl_grp.shared_mem);
 #asm
 	PUSH	IX
@@ -310,7 +298,7 @@ extern uint8_t update_bits;
 _bl_grp_update_reg_hl:			; fastcall for BLOPTIM
 		DI
 					; HL = no_mask
-		LD D,083H		; VDP shadow register addr high
+		LD D,GRP_REG_SHADOW_HI	; VDP shadow register addr high
 		LD E,H			; VDP shadow register addr low
 		LD A,(DE)		; Read old value
 		AND L			; Mask bits
@@ -573,14 +561,9 @@ extern void bl_grp_setup_font_draw_func(void);	/* from BLGRPFNT.C */
 void bl_grp_set_display_mode(uint8_t mode)
 {
 	bl_grp.display_mode = mode;
-	bl_grp_update_reg_bit(9, DISP_MODE, mode);
 
-	if ((bl_grp.display_mode & DISP_IL_E0) == DISP_IL_E0) {
-		bl_grp.interlace_on = 1;
-	} else {
-		bl_grp.interlace_on = 0;
-	}
-
+	bl_grp_update_reg_bit(9, DISP_MODE, bl_grp.display_mode);
+	bl_grp.interlace_on = (bl_grp.display_mode & DISP_IL_E0) == DISP_IL_E0 ? 1 : 0;
 	bl_grp_setup_font_draw_func();
 }
 
@@ -602,16 +585,15 @@ uint8_t bl_grp_get_display_mode(void)
 static void bl_grp_fill_g1_color_table(void)
 {
 	uint8_t color_table[32], n, c;
-	uint16_t vram_addr = bl_grp.color_addr;
 
 	c = bl_grp.reg_shadow[7];
 	for (n = 0; n < 32; n++)
 		color_table[n] = c;
 
-	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+	bl_vdp_vram_h = (uint8_t)(bl_grp.color_addr >> 14);
 /*	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;*/
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
-	bl_vdp_vram_l = (uint8_t)vram_addr;
+	bl_vdp_vram_m = (uint8_t)((bl_grp.color_addr >> 8) & 0x3F);
+	bl_vdp_vram_l = (uint8_t)bl_grp.color_addr;
 	bl_copy_to_vram_32(color_table);
 }
 
@@ -751,26 +733,21 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	bl_vdp_cmd_wait();
 }
 
-extern uint16_t clear_size, clear_val;
+extern uint16_t clear_size;
+extern uint8_t clear_val;
 static uint16_t table_fill_size[] = { 960 - 1, 1920 - 1, 2048 - 1, 768 - 1, 768 - 1, 768 - 1 };
 static void bl_grp_clear_screen_fill(void)
 {
-	static uint8_t val = ' ';
-
 	if (bl_grp.screen_mode == GRP_SCR_MC) {
-		addr = bl_grp.pattern_gen_addr;
+		bl_set_vram_addr16(bl_grp.pattern_gen_addr);
+		clear_val = ' ';
 	} else {
-		addr = bl_grp.pattern_name_addr;
-		val = bl_grp.font_bgc;
-		val |= (bl_grp.font_bgc) << 4;
+		bl_set_vram_addr16(bl_grp.pattern_name_addr);
+		clear_val = bl_grp.font_bgc | ((bl_grp.font_bgc) << 4);
 	}
 
-	bl_set_vram_addr16(addr);
-	bl_write_vram(val);			/* First byte */
-
+	bl_write_vram(clear_val);		/* First byte */
 	clear_size = table_fill_size[bl_grp.screen_mode];
-	clear_val = val;
-
 #asm
 		DI
 		DEFB	011H			; LD DE, nn
@@ -899,14 +876,14 @@ void bl_grp_set_scroll_h(uint16_t h)
 
 	bl_grp.scroll_h = h;
 
-	r26 = (h >> 3) & 0x3F;
-	r27 = h & 0x07;
-	if (r27) {
-		r26++;
-		r27 = 8 - r27;
-	}
-
 	if (bl_grp.vdp_ver) {
+		r26 = (h >> 3) & 0x3F;
+		r27 = h & 0x07;
+		if (r27) {
+			r26++;
+			r27 = 8 - r27;
+		}
+
 		bl_grp_update_reg_bit(26, 0xFF, r26);
 		bl_grp_update_reg_bit(27, 0xFF, r27);
 	}
@@ -918,7 +895,7 @@ void bl_grp_set_scroll_v(uint8_t v)
 	bl_grp_update_reg_bit(23, 0xFF, v);
 }
 
-static uint16_t pal_data;
+static uint16_t pal_data, pal_r, pal_g, pal_b;
 void bl_grp_set_palette(uint8_t no, uint8_t r, uint8_t g, uint8_t b)
 {
 	*((uint8_t *)&pal_data + 1) = (no << 4) | g;
@@ -929,7 +906,6 @@ void bl_grp_set_palette(uint8_t no, uint8_t r, uint8_t g, uint8_t b)
 	bl_set_palette_(pal_data);
 }
 
-static uint16_t pal_r, pal_g, pal_b;
 uint16_t bl_grp_get_palette(uint8_t no)
 {
 	pal_data = bl_grp.palette[no];
@@ -947,7 +923,7 @@ void bl_grp_reset_palette(void)
 	bl_grp_update_palette(bl_grp.palette);
 }
 
-uint16_t mute_palette[] = {
+static uint16_t mute_palette[] = {
 	/* pal_no << 12, g << 8, r << 4, b */
 	0x0000, 0x1000, 0x2000, 0x3000, 0x4000, 0x5000, 0x6000, 0x7000,
 	0x8000, 0x9000, 0xA000, 0xB000, 0xC000, 0xD000, 0xE000, 0xF000,
@@ -955,10 +931,7 @@ uint16_t mute_palette[] = {
 };
 void bl_grp_set_palette_mute(uint8_t on)
 {
-	if (on)
-		bl_grp_update_palette(mute_palette);
-	else
-		bl_grp_update_palette(bl_grp.palette);
+	bl_grp_update_palette(on ? mute_palette : bl_grp.palette);
 }
 
 uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no)
@@ -976,28 +949,25 @@ uint16_t bl_grp_get_vramaddr_spr_attr(uint16_t layer)
 	return (bl_grp.sprite_attr_active_addr + (layer << 2));
 }
 
-static uint8_t spr_attr[4];
+static uint8_t spr_attr0[4] = { 0, 0, 0, 0 };
 void bl_grp_clear_sprite(void)
 {
-	static uint16_t vram_addr;
 	uint8_t n;
 
 	n = 212 + 16 + bl_grp.scroll_v;
 	if (n != 217)
 		n--;
 
-	spr_attr[0] = n;
-	spr_attr[1] = 0;
-	spr_attr[2] = 0;
-	spr_attr[3] = 0;
+	spr_attr0[0] = n;
 
-	vram_addr = bl_grp.sprite_attr_active_addr;
-	for (n = 0; n < 32; n++, vram_addr += 4) {
-		bl_set_vram_addr16(vram_addr);
-		bl_copy_to_vram_4(spr_attr);
+	addr = bl_grp.sprite_attr_active_addr;
+	for (n = 0; n < 32; n++, addr += 4) {
+		bl_set_vram_addr16(addr);
+		bl_copy_to_vram_4(spr_attr0);
 	}
 }
 
+static uint8_t spr_attr[4];
 void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no)
 {
 	y += bl_grp.scroll_v;
@@ -1015,30 +985,26 @@ void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t 
 
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size)
 {
-	static uint16_t vram_addr;
+	addr = y * bl_grp.row_byte;
+/*	addr += x >> (bl_grp.bpp_shift);*/
 
-	vram_addr = y * bl_grp.row_byte;
-/*	vram_addr += x >> (bl_grp.bpp_shift);*/
-
-	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+	bl_vdp_vram_h = (uint8_t)(addr >> 14);
 	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
-	bl_vdp_vram_l = (uint8_t)vram_addr;
+	bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
+	bl_vdp_vram_l = (uint8_t)addr;
 	bl_vdp_vram_cnt = size;
 	bl_copy_to_vram_nn(src);
 }
 
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size)
 {
-	static uint16_t vram_addr;
+	addr = y * bl_grp.row_byte;
+/*	addr += x >> (bl_grp.bpp_shift);*/
 
-	vram_addr = y * bl_grp.row_byte;
-/*	vram_addr += x >> (bl_grp.bpp_shift);*/
-
-	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
+	bl_vdp_vram_h = (uint8_t)(addr >> 14);
 	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-	bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
-	bl_vdp_vram_l = (uint8_t)vram_addr;
+	bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
+	bl_vdp_vram_l = (uint8_t)addr;
 	bl_vdp_vram_cnt = size;
 	bl_copy_from_vram_nn(dest);
 }

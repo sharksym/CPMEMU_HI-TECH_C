@@ -44,6 +44,7 @@ void bl_grp_suspend(void);
 void bl_grp_resume(void);
 
 #define GRP_REG_SHADOW_ADDR	0x8300	/* Shadow register in BANKING HELPER */
+#define GRP_REG_SHADOW_HI	083H
 #define bl_grp_get_vdp_shadow(no)	*((uint8_t *)(GRP_REG_SHADOW_ADDR + no))
 
 void bl_grp_set_irq_vblank(uint8_t on);
