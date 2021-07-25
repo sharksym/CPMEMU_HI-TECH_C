@@ -443,6 +443,9 @@ int bl_main(int argc, char *argv[])
 		bl_dbg_pr("\n");
 	}
 #endif
+	/* Disable OPLn Timer */
+	bl_opl_timer_off();
+
 	/* Install ISR */
 	ISRInit();
 
@@ -585,6 +588,24 @@ set_diskerr_cb:
 		LD	C, 064H			; _DEFER
 		JP	_callbdos_ixiy
 
+; bl_opl_timer_off(void);
+		global	_bl_opl_timer_off
+		psect	text
+_bl_opl_timer_off:
+		DI
+		LD	DE, 00418H
+		LD	BC, 080C0H
+		CALL	dis_opl_timer		; OPL C0H
+		CALL	dis_opl_timer		; OPL C2H
+						; OPL C4H
+dis_opl_timer:
+		OUT	(C), D
+		INC	C
+		OUT	(C), E			; R04 = 18H (Disable T1, T2)
+		NOP
+		OUT	(C), B			; Reset IRQ Flag
+		INC	C
+		RET
 #endasm
 
 #ifndef BL_1BANK
