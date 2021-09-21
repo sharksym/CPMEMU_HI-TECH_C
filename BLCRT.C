@@ -275,6 +275,7 @@ extern unsigned short himem_end;
 #endif	/* __Hhimem */
 
 static int16_t free_seg_no;
+static uint8_t seg;
 
 #ifndef BL_1BANK
 struct bl_mem_seg_t {				/* Memory Segment Info. */
@@ -283,7 +284,7 @@ struct bl_mem_seg_t {				/* Memory Segment Info. */
 };
 static struct bl_mem_seg_t tMemSeg;
 static int8_t bl_tsr_mode = 0;
-static uint8_t Page2Old, seg;
+static uint8_t Page2Old;
 static short SegCnt;
 static short SegOvl;
 static char pOvlName[64];
@@ -511,7 +512,6 @@ main_ret:
 	return ret_val;
 }
 
-#ifndef BL_1BANK
 #asm
 ;-------------------------------------------------------------------------------
 ; Clear Himem (9400H ~ )
@@ -531,11 +531,7 @@ _bl_clear_himem:
 		DEC	BC
 		LDIR
 		RET
-#endasm
-#endif
 
-#asm
-;-------------------------------------------------------------------------------
 ;void bl_exit(int n);
 	global	_bl_exit
 	psect	text
