@@ -109,10 +109,10 @@ uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no);
 uint16_t bl_grp_get_vramaddr_spr_col(uint16_t no);
 #define bl_grp_set_sprite_color(no, addr)	\
 {bl_set_vram_addr16(bl_grp_get_vramaddr_spr_col(no)); bl_copy_to_vram_16(addr);}
-uint16_t bl_grp_get_vramaddr_spr_attr(uint16_t layer);
+uint16_t bl_grp_get_vramaddr_spr_attr(uint8_t layer);
 
 void bl_grp_clear_sprite(void);
-void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no);
+void bl_grp_put_sprite(uint8_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no);
 
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size);
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size);

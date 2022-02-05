@@ -944,7 +944,7 @@ uint16_t bl_grp_get_vramaddr_spr_col(uint16_t no)
 	return (bl_grp.sprite_color_active_addr + (no << 4));
 }
 
-uint16_t bl_grp_get_vramaddr_spr_attr(uint16_t layer)
+uint16_t bl_grp_get_vramaddr_spr_attr(uint8_t layer)
 {
 	return (bl_grp.sprite_attr_active_addr + (layer << 2));
 }
@@ -968,7 +968,7 @@ void bl_grp_clear_sprite(void)
 }
 
 static uint8_t spr_attr[4];
-void bl_grp_put_sprite(uint16_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no)
+void bl_grp_put_sprite(uint8_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t no)
 {
 	y += bl_grp.scroll_v;
 	if (y != 217)
