@@ -19,6 +19,10 @@ TOOLCHAIN:
         CP/M 2.2 emulator by Keiji Murakami
         http://hp.vector.co.jp/authors/VA000084/
 
+    Make for Windows:
+        GNU make utility
+        http://gnuwin32.sourceforge.net/packages/make.htm
+
     MSX-DOS, MSX-DOS2 libraries:
         Copyright by Yeongman Seo.
         It is free for any use, private or commercial, strictly as-is.
