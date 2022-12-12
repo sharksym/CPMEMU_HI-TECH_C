@@ -141,7 +141,7 @@ notdos2:
 	jp	0
 
 notdos2_mes:
-	defm	'ERROR: MSX-DOS2 required.'
+	defm	'ERROR: MSX-DOS2 required'
 	defb	0dH,0aH,'$'
 
 	psect	data
@@ -257,7 +257,7 @@ notdos2:
 	jp	0
 
 notdos2_mes:
-	defm	'ERROR: MSX-DOS2 required.'
+	defm	'ERROR: MSX-DOS2 required'
 	defb	0dH,0aH,'$'
 
 	psect	data
@@ -347,7 +347,7 @@ int bl_main(int argc, char *argv[])
 	if (get_msx_version() == MSXTR) {
 		set_cpu_mode_tr(CPU_TR_R800_DRAM);
 	} else {
-		puts("ERROR: MSXturboR required.");
+		puts("ERROR: MSXturboR required");
 		return 0;
 	}
 #endif
