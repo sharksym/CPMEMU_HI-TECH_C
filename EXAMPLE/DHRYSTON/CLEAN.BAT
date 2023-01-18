@@ -1,0 +1,1 @@
+make -fMAKEFILE CFG=DHRYSTON clean
