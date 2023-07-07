@@ -913,7 +913,7 @@ uint16_t bl_grp_get_palette(uint8_t no)
 	pal_g = (pal_data >> 4) & 0x00F0;
 	pal_b = pal_data & 0x000F;
 
-	return (pal_r | pal_g | pal_b);
+	return (pal_r + pal_g + pal_b);
 }
 
 void bl_grp_reset_palette(void)
