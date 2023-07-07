@@ -934,6 +934,28 @@ void bl_grp_set_palette_mute(uint8_t on)
 	bl_grp_update_palette(on ? mute_palette : bl_grp.palette);
 }
 
+void bl_grp_set_palette_gray(uint8_t on)
+{
+	uint16_t gray_palette[17];
+	static uint16_t n, y, v;
+
+	if (on) {
+		for (n = 0; n < 16; n++) {
+			/* Y = 0.299R + 0.587G + 0.114B */
+			v = bl_grp.palette[n];
+			y = ((((v >> 4) & 7) * 299) +
+			     (((v >> 8) & 7) * 587) +
+			     (((v     ) & 7) * 114)) / 1000;
+			/* gray_palette[n] = ((uint16_t)n << 12) | (y << 8) | (y << 4) | y; */
+			gray_palette[n] = ((uint16_t)n << 12) + y * (256 + 16 + 1);
+		}
+		gray_palette[16] = 0xFFFF;
+		bl_grp_update_palette(gray_palette);
+	} else {
+		bl_grp_update_palette(bl_grp.palette);
+	}
+}
+
 uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no)
 {
 	return (bl_grp.sprite_gen_active_addr + (no << 3));

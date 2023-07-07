@@ -7,6 +7,7 @@ void bl_set_palette_(uint16_t palette);
 #define bl_set_palette(pal, r, g, b) \
 bl_set_palette_(((uint16_t)(pal) << 12) | ((uint16_t)(g) << 8) | ((r) << 4) | (b))
 void bl_grp_set_palette_mute(uint8_t on);
+void bl_grp_set_palette_gray(uint8_t on);
 
 extern uint8_t bl_vdp_vram_h, bl_vdp_vram_m, bl_vdp_vram_l;
 extern uint16_t bl_vdp_vram_cnt;
