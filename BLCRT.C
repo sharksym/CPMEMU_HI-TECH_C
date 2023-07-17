@@ -1258,5 +1258,3 @@ _get_seg_end:
 		POP BC
 		RET
 #endasm
-
-;

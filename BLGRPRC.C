@@ -92,14 +92,7 @@ void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy)
 
 	close(fh);
 }
-#if 0
-static uint16_t rc_palette[] = {
-	/* pal_no << 12, g << 8, r << 4, b */
-	0x0000, 0x1000, 0x2611, 0x3733, 0x4117, 0x5327, 0x6151, 0x7617,
-	0x8171, 0x9373, 0xA661, 0xB663, 0xC411, 0xD265, 0xE555, 0xF777,
-	0xFFFF	/* end mark */
-};
-#endif
+
 void bl_grp_load_ge5_pic_pal(char *filename)
 {
 	uint8_t fh;
@@ -172,5 +165,3 @@ void bl_grp_get_ge5_pat_pal(char *filename, uint16_t *palette)
 
 	close(fh);
 }
-
-;

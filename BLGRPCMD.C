@@ -80,11 +80,11 @@ static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 
 	*(uint16_t *)(&pset_cmd[0]) = x;
 #asm
-	global  _bl_vdp_cmd_wait,_bl_vdp_cmd_write
-	di
+	global  _bl_vdp_cmd_write
 	ld hl,_pset_cmd
 	ld bc,00424h		; count = 4, R36 ~ R39
 	call _bl_vdp_cmd_write
+	di
 	inc hl
 	inc hl			; skip 2 data (R44,R45)
 	ld a,(hl)		; command data
@@ -538,5 +538,3 @@ void bl_grp_circle(uint16_t cx, uint16_t cy, uint16_t radius, uint8_t c, uint8_t
 		}
 	}
 }
-
-;

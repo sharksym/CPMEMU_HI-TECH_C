@@ -134,6 +134,7 @@ static char msx_ver;
 
 static void vdp_sync_regs_shadow(void);
 static void vdp_restore_regs(void);
+void bl_vdp_cmd_init(void);
 
 int8_t bl_grp_init(void)
 {
@@ -203,6 +204,8 @@ int8_t bl_grp_init(void)
 
 	/* Initialize palette */
 	memcpy(bl_grp.palette, init_palette, sizeof(init_palette));
+
+	bl_vdp_cmd_init();
 
 	return bl_grp.vdp_ver;
 }
@@ -1030,5 +1033,3 @@ void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size)
 	bl_vdp_vram_cnt = size;
 	bl_copy_from_vram_nn(dest);
 }
-
-;

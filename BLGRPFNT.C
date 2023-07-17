@@ -256,6 +256,7 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 ;void bl_grp_print_str(char *str)
 	global	_bl_grp_print_str
 	global	_font_2048
+	global  _bl_vdp_cmd_wait
 ; for BLOPTIM parser
 global	_bl_write_vram
 
@@ -291,6 +292,8 @@ _bl_grp_print_pattern_lp:
 	jp _bl_grp_print_pattern_lp
 
 _bl_grp_print_bitmap:		; for bitmap graphic
+	call _bl_vdp_cmd_wait	; wait VDP CMD...
+
 	ld a,(_print_kr_mode)
 	and a
 	jp nz, _bl_grp_print_bitmap_k
@@ -500,4 +503,3 @@ void bl_grp_print_back(char count)
 	bl_vdp_vram_l -= addr_delta;
 }
 #endif
-;
