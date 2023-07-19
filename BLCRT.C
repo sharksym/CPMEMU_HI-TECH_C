@@ -980,6 +980,7 @@ _MapperAlloc_a:
 		LD L,0FFH			; return value (Error = FFh)
 		RET
 
+_MapperFree:
 _MapperFree_hl:					; fastcall for BLOPTIM
 		LD A,L				; SegNo
 		LD B,000H

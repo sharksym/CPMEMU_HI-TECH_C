@@ -298,6 +298,7 @@ extern uint8_t update_bits;
 #asm
 ;void bl_grp_update_reg(uint16_t no_mask)
 		GLOBAL _bl_grp_update_reg_hl
+_bl_grp_update_reg:
 _bl_grp_update_reg_hl:			; fastcall for BLOPTIM
 		DI
 					; HL = no_mask
