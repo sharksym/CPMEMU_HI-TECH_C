@@ -267,9 +267,12 @@ nularg:	defb	0
 
 #ifdef __Hhimem
 #asm
-_himem_end:	defw	__Hhimem
+	global	__himem_b, __himem_e
+__himem_b	equ	__Lhimem
+__himem_e	equ	__Hhimem
 #endasm
-extern unsigned short himem_end;
+extern unsigned short _himem_e;
+#define himem_end	&_himem_e
 #else
 #define himem_end	0x9400
 #endif	/* __Hhimem */
