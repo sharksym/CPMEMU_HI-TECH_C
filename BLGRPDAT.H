@@ -1,9 +1,10 @@
 /*
  * BLGRPDAT.H
+ * Total 256bytes (bl_grp, etc)
  */
 
-struct bl_grp_var_t {			/* bl_grp_var can't exceed 256bytes */
-	uint8_t reg_shadow[48];		/* should be first variable */
+struct bl_grp_var_t {			/* bl_grp_var max. 224bytes */
+	uint8_t reg_shadow[48];		/* must be the first variable */
 
 	uint8_t vdp_ver;
 

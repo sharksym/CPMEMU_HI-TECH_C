@@ -125,7 +125,7 @@ static int8_t adj_from_reg[16] = {
 	0, -1, -2, -3, -4, -5, -6, -7, 8, 7, 6, 5, 4, 3, 2, 1
 };
 
-static struct bl_grp_var_t bl_grp_bak;
+static uint8_t bl_grp_bak[256];
 static uint8_t bl_grp_suspended = 0;
 static uint8_t vdp_reg_org[28];
 static uint8_t scrmod_org;
@@ -274,7 +274,7 @@ void bl_grp_suspend(void)
 	bl_grp_suspended = 1;
 
 	bl_free(bl_grp.shared_mem);
-	memcpy(&bl_grp_bak, &bl_grp, sizeof(struct bl_grp_var_t));
+	memcpy(&bl_grp_bak, &bl_grp, sizeof(bl_grp_bak));
 
 	vdp_sync_regs_shadow();
 }
@@ -286,7 +286,7 @@ void bl_grp_resume(void)
 
 	bl_grp_suspended = 0;
 
-	memcpy(&bl_grp, &bl_grp_bak, sizeof(struct bl_grp_var_t));
+	memcpy(&bl_grp, &bl_grp_bak, sizeof(bl_grp_bak));
 	bl_grp.shared_mem = (uint8_t *)bl_malloc(BL_GRP_SHARED_MEM);
 
 	vdp_restore_regs();
