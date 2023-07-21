@@ -981,7 +981,7 @@ _MapperAlloc_a:
 		RET
 
 _MapperFree:
-_MapperFree_hl:					; fastcall for BLOPTIM
+_MapperFree_hl:					; BLOPTIM fastcall
 		LD A,L				; SegNo
 		LD B,000H
 _MapperFree_a:
@@ -1018,22 +1018,22 @@ _MapperGetPage2:
 ;void MapperPutPage2(uint8_t SegNo)
 
 _MapperPutPage0:
-		LD HL,0				; LD HL,(_MapperPUT_P0)
+_MapperPutPage0_hl:				; BLOPTIM fastcall
+		LD DE,0				; (_MapperPUT_P0)
 		JR _MapperPutPageN
 
 _MapperPutPage1:
-		LD HL,0				; LD HL,(_MapperPUT_P1)
+_MapperPutPage1_hl:				; BLOPTIM fastcall
+		LD DE,0				; (_MapperPUT_P1)
 		JR _MapperPutPageN
 
 _MapperPutPage2:
-		LD HL,0				; LD HL,(_MapperPUT_P2)
+_MapperPutPage2_hl:				; BLOPTIM fastcall
+		LD DE,0				; (_MapperPUT_P2)
 ;		JR _MapperPutPageN
 
 _MapperPutPageN:
-		POP BC				; Return Addr
-		POP DE				; E = SegNo
-		PUSH DE
-		PUSH BC
+		EX DE,HL			; E <- SegNo, HL <- PUT_Pn
 
 		LD A,E				; SegNo
 		JP (HL)				; JP PUT_Pn
