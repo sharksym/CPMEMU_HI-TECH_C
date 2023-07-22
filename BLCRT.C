@@ -1107,34 +1107,22 @@ _MakeTsrEnvName_0:
 ; Put memory segment information to env-string
 ;
 ;void put_seg_table(void)
-		GLOBAL _put_seg_table
 _put_seg_table:
-		PUSH BC
-		PUSH DE
-		PUSH HL
-
 		LD HL,_tMemSeg
 		LD DE,09000H
 		LD A,(HL)			; BankMax value
 		INC A
 		RLCA				; info *2 bytes
-
 		JP _put_seg_main
 
 ;-------------------------------------------------------------------------------
 ; Get memory segment information from env-string
 ;
 ;void get_seg_table(void)
-		GLOBAL _get_seg_table
 _get_seg_table:
-		PUSH BC
-		PUSH DE
-		PUSH HL
-
 		LD HL,(_pTsrEnv)
 		LD DE,_tMemSeg
 		LD A,(_mem_seg_size)
-
 		JP _get_seg_main
 
 #endasm
@@ -1147,31 +1135,21 @@ _get_seg_table:
 ; Put lmem segment information to env-string
 ;
 ;void put_lmem_seg_table(struct bl_lmem_t *ptr)
-_put_lmem_seg_table:
-		PUSH BC
-		PUSH DE
-		PUSH HL				; HL = ptr
-
+_put_lmem_seg_table_hl:				; BLOPTIM fastcall
 		LD DE,09000H
 		LD A,(DE)			; segment count
-
 		JP _put_seg_main
 
 ;-------------------------------------------------------------------------------
 ; Get lmem segment information from env-string
 ;
 ;void get_lmem_seg_table(struct bl_lmem_t *ptr)
-_get_lmem_seg_table:
-		PUSH BC
-		PUSH DE
-		PUSH HL				; HL = ptr
-
-		EX DE,HL			; DE = ptr
+_get_lmem_seg_table_hl:				; BLOPTIM fastcall
+		EX DE,HL			; DE <- ptr
 		LD HL,09001H			; Skip Head '*'
 		LD A,(HL)
 		SUB 020H			; segment count
 		DEC HL				; HL = 9000H
-
 		JP _get_seg_main
 
 ;-------------------------------------------------------------------------------
@@ -1205,13 +1183,8 @@ _put_seg_loop:
 		INC DE
 		INC HL
 		DJNZ _put_seg_loop
-
 		XOR A
 		LD (DE),A			; Null-end string
-
-		POP HL
-		POP DE
-		POP BC
 		RET
 
 ;-------------------------------------------------------------------------------
@@ -1227,7 +1200,7 @@ _get_seg_loop:
 		LD A,(HL)
 		INC HL
 		AND A
-		JR Z,_get_seg_end		; end?
+		RET Z				; end?
 		AND 00FH			; Low 4bits
 		LD C,A
 		LD A,(HL)
@@ -1241,9 +1214,5 @@ _get_seg_loop:
 		LD (DE),A
 		INC DE
 		DJNZ _get_seg_loop
-_get_seg_end:
-		POP HL
-		POP DE
-		POP BC
 		RET
 #endasm
