@@ -852,22 +852,17 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 ;void MakeOvlName(void);
 
 		psect	text
-		global	_getenv, _strcpy, _strlen
+		global	_getenv, _strcpy_de_hl, _strlen_hl
 _MakeOvlName:
 		PUSH	IX
-
 		LD	HL, _str_program
 		PUSH	HL
 		CALL	_getenv			; HL <- full path
-		PUSH	HL
-		LD	HL, _pOvlName
-		PUSH	HL
-		CALL	_strcpy
-		CALL	_strlen			; HL <- length
 		POP	BC			; cleanup stack
-		POP	BC
-		POP	BC
-
+		POP	IX
+		LD	DE, _pOvlName
+		CALL	_strcpy_de_hl
+		CALL	_strlen_hl		; HL <- length
 		LD	DE, _pOvlName - 3
 		ADD	HL, DE
 		LD	(HL), 'O'
@@ -875,11 +870,10 @@ _MakeOvlName:
 		LD	(HL), 'V'
 		INC	HL
 		LD	(HL), 'L'
-
-		POP	IX
 		RET
 
-_str_program:	DEFB	'P','R','O','G','R','A','M',0
+_str_program:	DEFM	'PROGRAM'
+		DEFB	0
 #endasm
 #endif
 
@@ -1080,31 +1074,24 @@ _copy_256_p0_to_p2:
 ;void MakeTsrEnvName(void);
 
 		psect	text
-		global	_strcpy, _strlen
+		GLOBAL	_strcpy_de_hl, _strlen_hl
 _MakeTsrEnvName:
-		PUSH	IX
-
 		LD	HL, _pOvlName
 		LD	DE, _pOvlName
 _MakeTsrEnvName_l:
-		LD	A, (HL)
+		LD	A, (DE)
 		AND	A
 		JR	Z, _MakeTsrEnvName_0
 		CP	'\'
-		INC	HL
+		INC	DE
 		JR	NZ, _MakeTsrEnvName_l
-		LD	D, H
-		LD	E, L			; DE <- filename only
+		LD	H, D
+		LD	L, E			; HL <- filename only
 		JR	_MakeTsrEnvName_l
 _MakeTsrEnvName_0:
-		PUSH	DE
-		LD	HL, _pTsrEnvName
-		PUSH	HL
-		CALL	_strcpy
-		CALL	_strlen			; HL <- length
-		POP	BC			; cleanup stack
-		POP	BC
-
+		LD	DE, _pTsrEnvName
+		CALL	_strcpy_de_hl
+		CALL	_strlen_hl		; HL <- length
 		LD	DE, _pTsrEnvName - 4
 		ADD	HL, DE
 		LD	(HL), '_'
@@ -1114,8 +1101,6 @@ _MakeTsrEnvName_0:
 		LD	(HL), 'S'
 		INC	HL
 		LD	(HL), 'R'
-
-		POP IX
 		RET
 
 ;-------------------------------------------------------------------------------
