@@ -277,6 +277,11 @@ extern unsigned short _himem_e;
 #define himem_end	0x9400
 #endif	/* __Hhimem */
 
+extern char seg_env_buf[];
+#asm
+_seg_env_buf	equ	BankCallBin		; Recycling
+#endasm
+
 static int16_t free_seg_no;
 static uint8_t seg;
 
@@ -483,9 +488,9 @@ main_ret:
 	if (bl_tsr_mode) {
 		if (!bl_tsr_env_exist) {		/* TSR ENV not exist? */
 			bl_dbg_pr_x("[BL] Save memory info [%s] ...", pTsrEnvName);
-			*(unsigned char *)0x9000 = mem_seg_size;
-			put_seg_table();		/* tMemSeg to temp heap */
-			setenv(pTsrEnvName, (char *)0x9000);
+			seg_env_buf[0] = mem_seg_size;
+			put_seg_table();		/* tMemSeg to seg_env_buf */
+			setenv(pTsrEnvName, seg_env_buf);
 			bl_dbg_pr("Ok\n");
 		}
 	} else {
@@ -762,9 +767,9 @@ uint8_t bl_lmem_get_seg(struct bl_lmem_t *ptr, uint32_t addr32)
 void bl_lmem_export(struct bl_lmem_t *ptr, char *name)
 {
 	if (ptr->sys_used) {
-		*(unsigned char *)0x9000 = ptr->page_max;
+		seg_env_buf[0] = ptr->page_max;
 		put_lmem_seg_table(ptr);
-		setenv(name, (char *)0x9000);
+		setenv(name, seg_env_buf);
 	}
 }
 
@@ -780,7 +785,7 @@ struct bl_lmem_t *bl_lmem_import(char *name)
 
 	env = getenv(name);
 	if (env[0] == '*') {
-		strcpy((char *)0x9000, env);
+		strcpy(seg_env_buf, env);
 		get_lmem_seg_table(lmem);
 		lmem->page_max = env[1] - 0x20;
 		lmem->sys_used = 1;
@@ -1109,7 +1114,7 @@ _MakeTsrEnvName_0:
 ;void put_seg_table(void)
 _put_seg_table:
 		LD HL,_tMemSeg
-		LD DE,09000H
+		LD DE,_seg_env_buf
 		LD A,(HL)			; BankMax value
 		INC A
 		RLCA				; info *2 bytes
@@ -1136,7 +1141,7 @@ _get_seg_table:
 ;
 ;void put_lmem_seg_table(struct bl_lmem_t *ptr)
 _put_lmem_seg_table_hl:				; BLOPTIM fastcall
-		LD DE,09000H
+		LD DE,_seg_env_buf
 		LD A,(DE)			; segment count
 		JP _put_seg_main
 
@@ -1146,10 +1151,10 @@ _put_lmem_seg_table_hl:				; BLOPTIM fastcall
 ;void get_lmem_seg_table(struct bl_lmem_t *ptr)
 _get_lmem_seg_table_hl:				; BLOPTIM fastcall
 		EX DE,HL			; DE <- ptr
-		LD HL,09001H			; Skip Head '*'
+		LD HL,_seg_env_buf + 1		; Skip Head '*'
 		LD A,(HL)
 		SUB 020H			; segment count
-		DEC HL				; HL = 9000H
+		DEC HL				; HL = _seg_env_buf
 		JP _get_seg_main
 
 ;-------------------------------------------------------------------------------
