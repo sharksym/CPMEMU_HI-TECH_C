@@ -1,0 +1,3 @@
+make -fMAKEFILE CFG=2ASSERTN clean
+make -fMAKEFILE CFG=2ASSERTN
+pause
