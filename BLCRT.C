@@ -278,8 +278,10 @@ extern unsigned short _himem_e;
 #endif	/* __Hhimem */
 
 extern char seg_env_buf[];
+extern char assert_msg[];
 #asm
 _seg_env_buf	equ	BankCallBin		; Recycling
+_assert_msg	equ	09000H
 #endasm
 
 static int16_t free_seg_no;
@@ -483,6 +485,9 @@ main_ret:
 	/* Restore Original ISR */
 	ISRDeinit();
 
+	/* Assert message */
+	puts(assert_msg);
+
 #ifndef BL_1BANK
 #ifdef BL_TSR
 	if (bl_tsr_mode) {
@@ -522,19 +527,19 @@ main_ret:
 
 #asm
 ;-------------------------------------------------------------------------------
-; Clear Himem (9400H ~ )
+; Clear Workmem (9000H ~ 93FFH) and Himem (9400H ~ )
 ;
 ;void	bl_clear_himem(void);
 	global	_bl_clear_himem
 	psect	text
 _bl_clear_himem:
-		LD	BC, __Hhimem - __Lhimem
+		LD	BC, __Hhimem - 09000H
 		LD	A, B
 		OR	C
 		RET	Z
 
-		LD	HL, __Lhimem
-		LD	DE, __Lhimem + 1
+		LD	HL, 09000H
+		LD	DE, 09001H
 		LD	(HL), 0
 		DEC	BC
 		LDIR

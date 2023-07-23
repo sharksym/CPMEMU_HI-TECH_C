@@ -13,9 +13,9 @@
  */
 
 #ifndef	NDEBUG
-void _fassert(int, char *, char *);
+void bl_assert(int, char *, char *);
 void bl_exit(int n);
-#define	assert(exp)	if(!(exp)) {_fassert(__LINE__, __BL_FILE__, "exp");bl_exit(0);}
+#define	assert(exp)	if(!(exp)) {bl_assert(__LINE__, __BL_FILE__, "exp");bl_exit(0);}
 #else
 #define	assert(exp)
 #endif
