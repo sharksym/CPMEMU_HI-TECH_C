@@ -486,7 +486,7 @@ main_ret:
 	ISRDeinit();
 
 	/* Assert message */
-	if (assert_msg)
+	if (*assert_msg)
 		puts(assert_msg);
 
 #ifndef BL_1BANK
