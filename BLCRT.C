@@ -865,12 +865,10 @@ void bl_lmem_copy_from(uint8_t *dest, struct bl_lmem_t *src, uint32_t addr32, ui
 		psect	text
 		global	_getenv, _strcpy_de_hl, _strlen_hl
 _MakeOvlName:
-		PUSH	IX
 		LD	HL, _str_program
 		PUSH	HL
 		CALL	_getenv			; HL <- full path
 		POP	BC			; cleanup stack
-		POP	IX
 		LD	DE, _pOvlName
 		CALL	_strcpy_de_hl
 		CALL	_strlen_hl		; HL <- length
@@ -910,7 +908,6 @@ _BankCallInit_P0a:
 ;uint8_t MapperInit(void)
 
 _MapperInit:
-		PUSH IY
 		PUSH IX
 
 		LD A,000H
@@ -948,7 +945,6 @@ _MapperInit:
 ;		ADD HL,DE			; GET_P3
 
 		POP IX
-		POP IY
 
 		LD L,C				; return value (Free segment number)
 		RET
