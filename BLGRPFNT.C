@@ -30,16 +30,20 @@ void bl_grp_setup_font_draw_func(void)
 }
 
 #else
-
 uint8_t font_2048[] = {				/* w8 x h8 x 256 or w8 x h16 x 128 */
 #include "font_e.h"
 };
 
 #ifdef BLGRPFNT_KR
+#asm
+	psect	text
+#endasm
 uint8_t font_kr[] = {				/* w16 x h16 x 8x4x4 */
 #include "font_kr.h"
 };
-
+#asm
+	psect	data
+#endasm
 uint16_t ks2kssm[2350]={
 #include "ks2kssm.h"
 };
@@ -91,6 +95,7 @@ void bl_grp_set_font(uint8_t *font)
 	font_asc = font;
 }
 
+#ifdef BLGRPFNT_LD
 void bl_grp_load_font(char *filename)
 {
 	uint8_t fh;
@@ -104,9 +109,9 @@ void bl_grp_load_font(char *filename)
 	close(fh);
 }
 
+#ifdef BLGRPFNT_KR
 void bl_grp_load_font_kr(char *filename)
 {
-#ifdef BLGRPFNT_KR
 	uint8_t fh;
 
 	fh = open(filename, O_RDONLY);
@@ -116,10 +121,9 @@ void bl_grp_load_font_kr(char *filename)
 	read(fh, font_kr, 11520);
 
 	close(fh);
-#else
-	filename = filename;
-#endif
 }
+#endif
+#endif
 
 static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
 {
