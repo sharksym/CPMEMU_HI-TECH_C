@@ -69,6 +69,7 @@ void bl_grp_set_display_mode(uint8_t mode);
 uint8_t bl_grp_get_palette0_on(void);
 uint8_t bl_grp_get_line_212(void);
 uint8_t bl_grp_get_display_mode(void);
+uint8_t bl_grp_get_interlace_on(void);
 
 void bl_grp_set_color_text_fg(uint8_t color);
 void bl_grp_set_color_text_bg(uint8_t color);

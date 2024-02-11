@@ -586,6 +586,11 @@ uint8_t bl_grp_get_display_mode(void)
 	return bl_grp.display_mode;
 }
 
+uint8_t bl_grp_get_interlace_on(void)
+{
+	return bl_grp.interlace_on;
+}
+
 static void bl_grp_fill_g1_color_table(void)
 {
 	uint8_t color_table[32], n, c;
