@@ -47,9 +47,15 @@ int8_t bl_is_tsr_on(void);
 #define BL_RANDOM_MASK	0xFFFF
 uint16_t bl_random(void);
 
-/* Shared heap */
+#ifdef BL_DISABLE
+#define	bl_free		free
+#define	bl_malloc	malloc
+void free(void *);
+void *malloc(uint16_t);
+#else	/* Shared heap */
 void *bl_calloc(uint16_t num, uint16_t size);
 void bl_free(void *ptr);
 void *bl_malloc(uint16_t size);
 void *bl_realloc(void *ptr, uint16_t size);
 void *bl_get_memtop(void);
+#endif
