@@ -4,18 +4,6 @@
 void bl_enable_bios_timi(void);
 void bl_disable_bios_timi(void);
 
-/* Mouse handler */
-struct bl_mouse_t {
-	uint8_t move_x;
-	uint8_t move_y;
-	uint8_t butn_a;			/* 1: pressed, 0: released */
-	uint8_t butn_b;
-};
-
-void bl_enable_mouse_poll(uint8_t port);		/* port 1 or 2 */
-void bl_disable_mouse_poll(void);
-void bl_mouse_get_data(struct bl_mouse_t *mouse);
-
 /* IRQ requests */
 #define IRQ_EXT0	0
 #define IRQ_VDP_HBLK	1
