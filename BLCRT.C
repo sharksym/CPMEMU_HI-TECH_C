@@ -11,14 +11,62 @@
  *
  *********************************************************************/
 
+#ifdef BL_ROM
+
+#asm
+;-------------------------------------------------------------------------------
+; Startup code for ROM loader
+;
+	psect	text,global,pure
+	psect	data,global
+	psect	bss,global
+#endasm
+
+#if BL_ROM == 32
+#asm
+	psect	text
+	defs	4000h		;offset for page1
+#endasm
+#endif
+
+#asm
+	psect	text
+	defs	100h
+	defm	'ROM '		;ID
+	defw	start
+
+	global	start, _main, __Hbss, __Lbss, _gcBdosMode
+
+start:	ld	de,__Lbss	;Start of BSS segment
+	or	a		;clear carry
+	ld	hl,__Hbss
+	sbc	hl,de		;size of uninitialized data area
+	ld	c,l
+	ld	b,h
+	dec	bc
+	ld	l,e
+	ld	h,d
+	inc	de
+	ld	(hl),0
+	ldir			;clear memory
+
+	; Force to MSX-DOS1 mode
+;	ld	a,1		; 0:CP/M, 1:MSX-DOS1, 2:MSX-DOS2
+;	ld	(_gcBdosMode),a
+
+	jp	_main
+	end	start
+#endasm
+#else	/* BL_ROM */
+
 #ifdef BL_DISABLE
 
 #ifdef BL_DOS1
 
 #asm
-
-; For CP/M, MSX-DOS1, MSX-DOS2
-
+;-------------------------------------------------------------------------------
+; Startup code for CP/M, MSX-DOS1, MSX-DOS2
+;
 	psect	text,global,pure
 	psect	data,global
 	psect	bss,global
@@ -78,7 +126,6 @@ nularg:	defb	0
 #else	/* BL_DOS1 */
 
 #asm
-
 ;-------------------------------------------------------------------------------
 ; Startup code for MSX-DOS2 Only
 ;
@@ -149,7 +196,7 @@ nularg:	defb	0
 
 #endasm
 
-#endif
+#endif	/* BL_DOS1 */
 
 #else	/* BL_DISABLE */
 
@@ -1223,3 +1270,7 @@ _get_seg_loop:
 		DJNZ _get_seg_loop
 		RET
 #endasm
+
+#endif	/* BL_DISABLE */
+
+#endif	/* BL_ROM */
