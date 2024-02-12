@@ -1,0 +1,3 @@
+make -fMAKEFILE CFG=0HANGUL clean
+make -fMAKEFILE CFG=0HANGUL
+pause
