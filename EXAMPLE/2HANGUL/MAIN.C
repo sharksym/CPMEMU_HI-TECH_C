@@ -12,7 +12,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys.h>
 #include <io.h>
 #include <msxbdos.h>
 #include <blstd.h>
