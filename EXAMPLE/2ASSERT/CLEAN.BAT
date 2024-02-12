@@ -1,2 +1,1 @@
 make -fMAKEFILE CFG=2ASSERT clean
-make -fMAKEFILE CFG=2ASSERTN clean
