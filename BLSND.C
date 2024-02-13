@@ -16,13 +16,30 @@ struct bl_snd_var_t {
 	uint8_t enable;
 	uint8_t state;
 	uint8_t command;
-
-	uint8_t vars[15][32];
 };
 
-struct bl_snd_var_t bl_snd = {
-	0, BL_SND_STAT_IDLE, BL_BGM_CMD_NONE,
-};
+#ifdef BLBGM_T		/* Tiny version (PSG only) */
+#define bl_snd			bl_sndt
+#define bl_bgm_init		bl_bgmt_init
+#define bl_bgm_deinit		bl_bgmt_deinit
+#define bl_bgm_cmd		bl_bgmt_cmd
+#define bl_bgm_enqueue		bl_bgmt_enqueue
+#define bl_bgm_get_avail	bl_bgmt_get_avail
+#define bl_bgm_get_pos		bl_bgmt_get_pos
+#define bl_bgm_init_bgm		bl_bgmt_init_bgm
+#define bl_bgm_play_bgm		bl_bgmt_play_bgm
+#define bl_bgm_stop_bgm		bl_bgmt_stop_bgm
+#define bl_bgm_init_ovl		bl_bgmt_init_ovl
+#define bl_bgm_play_ovl		bl_bgmt_play_ovl
+#define bl_bgm_stop_ovl		bl_bgmt_stop_ovl
+#define bl_bgm_isr		bl_bgmt_isr
+
+#define _bl_bgm_get_pos		_bl_bgmt_get_pos
+#define _bl_bgm_get_avail	_bl_bgmt_get_avail
+#define _bl_bgm_cmd		_bl_bgmt_cmd
+#endif
+
+extern struct bl_snd_var_t bl_snd;
 
 void bl_bgm_init(uint8_t mode);
 void bl_bgm_deinit(void);
@@ -96,32 +113,27 @@ _bl_snd_bgm_get_avail:
 	GLOBAL	_bl_snd_bgm_play
 _bl_snd_bgm_play:
 	LD	HL, BL_BGM_CMD_PLAY
+call_bl_bgm_cmd:
 	PUSH	HL
-	JR	_call_bl_bgm_cmd
+	GLOBAL	_bl_bgm_cmd
+	CALL	_bl_bgm_cmd
+	POP	BC
+	RET
 
 	GLOBAL	_bl_snd_bgm_stop
 _bl_snd_bgm_stop:
 	LD	HL, BL_BGM_CMD_STOP
-	PUSH	HL
-	JR	_call_bl_bgm_cmd
+	JR	call_bl_bgm_cmd
 
 	GLOBAL	_bl_snd_bgm_pause
 _bl_snd_bgm_pause:
 	LD	HL, BL_BGM_CMD_PAUSE
-	PUSH	HL
-	JR	_call_bl_bgm_cmd
+	JR	call_bl_bgm_cmd
 
 	GLOBAL	_bl_snd_bgm_resume
 _bl_snd_bgm_resume:
 	LD	HL, BL_BGM_CMD_RESUME
-	PUSH	HL
-	JR	_call_bl_bgm_cmd
-
-	GLOBAL	_bl_bgm_cmd
-_call_bl_bgm_cmd:
-	CALL	_bl_bgm_cmd
-	POP	BC
-	RET
+	JR	call_bl_bgm_cmd
 #endasm
 #else
 uint16_t bl_snd_bgm_get_pos(uint8_t ch)
