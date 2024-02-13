@@ -3,8 +3,6 @@
  */
 
 #include <stddef.h>
-/*#include <stdio.h>*/
-#include <string.h>
 #include <io.h>
 #include <cpumode.h>
 #include <msxbdos.h>
@@ -26,7 +24,7 @@
 #define DISP_IL_E0	0x0C	/* bit mask for interlaced two field */
 #define SCROLL_MODE	0x03	/* bit mask for scroll mode */
 
-static uint8_t scrmode[] = {
+static static uint8_t scrmode[] = {
 	0,	/* T1 */
 	0,	/* T2 */
 	3,	/* MC */
@@ -39,7 +37,7 @@ static uint8_t scrmode[] = {
 	8	/* G7 */
 };
 
-uint8_t mode_0_1[][2] = {
+static uint8_t mode_0_1[][2] = {
 	{ 0x00, 0x10 },	/* T1 */
 	{ 0x04, 0x10 },	/* T2 */
 	{ 0x00, 0x08 },	/* MC */
@@ -52,7 +50,7 @@ uint8_t mode_0_1[][2] = {
 	{ 0x0E, 0x00 }	/* G7 */
 };
 
-uint16_t table_addr[][7] = {
+static uint16_t table_addr[][7] = {
 /*      pat_name, color, pat_gen,spr_attr,spr_gen, row, bpp_shift */
 	{ 0x0000, 0x0000, 0x0800, 0x0000, 0x0000,    40,   3 },	/* T1 */
 	{ 0x0000, 0x0800, 0x1000, 0x0000, 0x0000,    80,   3 },	/* T2 */
@@ -66,22 +64,22 @@ uint16_t table_addr[][7] = {
 	{ 0x0000, 0x0000, 0x0000, 0xFA00, 0xF000,   256,   0 }	/* G7 */
 };
 
-uint16_t table_pattern_name_fix[] = {
+static uint16_t table_pattern_name_fix[] = {
 	/* T1      T2      MC      G1      G2      G3      G4      G5      G6      G7 */
 	0x0000, 0x0C00, 0x0000, 0x0000, 0x0000, 0x0000, 0x7C00, 0x7C00, 0x7C00, 0x7C00
 };
 
-uint16_t table_color_fix[] = {
+static uint16_t table_color_fix[] = {
 	/* T1      T2      MC      G1      G2      G3      G4      G5      G6      G7 */
 	0x0000, 0x001F, 0x0000, 0x0000, 0x1FC0, 0x1FC0, 0x0000, 0x0000, 0x0000, 0x0000
 };
 
-uint16_t table_sprite_attr_fix[] = {
+static uint16_t table_sprite_attr_fix[] = {
 	/* T1      T2      MC      G1      G2      G3      G4      G5      G6      G7 */
 	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0380, 0x0380, 0x0380, 0x0380
 };
 
-uint16_t table_sprite_attr_page[][8] = {
+static uint16_t table_sprite_attr_page[][8] = {
 /*	  page 0, page 1, page 2, page 3, page 4, page 5, page 6, page 7 */
 	{ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 },	/* T1 */
 	{ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 },	/* T2 */
@@ -95,7 +93,7 @@ uint16_t table_sprite_attr_page[][8] = {
 	{ 0xFA00, 0xEE00, 0xEA00, 0xE600, 0xE200, 0xDE00, 0xDA00, 0xD600 }	/* G7 */
 };
 
-uint16_t table_sprite_gen_page[][8] = {
+static uint16_t table_sprite_gen_page[][8] = {
 /*	  page 0, page 1, page 2, page 3, page 4, page 5, page 6, page 7 */
 	{ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 },	/* T1 */
 	{ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 },	/* T2 */
@@ -109,7 +107,7 @@ uint16_t table_sprite_gen_page[][8] = {
 	{ 0xF000, 0xE800, 0xE000, 0xD800, 0xD000, 0xC800, 0xC000, 0xB800 }	/* G7 */
 };
 
-uint16_t init_palette[] = {
+static uint16_t init_palette[] = {
 	/* pal_no << 12, g << 8, r << 4, b */
 	0x0000, 0x1000, 0x2611, 0x3733, 0x4117, 0x5327, 0x6151, 0x7627,
 	0x8171, 0x9373, 0xA661, 0xB664, 0xC411, 0xD265, 0xE555, 0xF777,
@@ -335,7 +333,7 @@ void bl_grp_set_irq_hblank_line(uint8_t line)
 	bl_grp_update_reg_bit(19, 0xFF, line);
 }
 
-void bl_grp_set_pattern_name_addr(uint16_t addr_)
+static void bl_grp_set_pattern_name_addr(uint16_t addr_)
 {
 	addr = addr_;
 	bl_grp.pattern_name_addr = addr;
@@ -343,7 +341,7 @@ void bl_grp_set_pattern_name_addr(uint16_t addr_)
 	bl_grp_update_reg_bit( 2, 0x3F, (uint8_t)(addr >> 10));
 }
 
-void bl_grp_set_color_addr(uint16_t addr_)
+static void bl_grp_set_color_addr(uint16_t addr_)
 {
 	addr = addr_;
 	bl_grp.color_addr = addr;
@@ -352,14 +350,14 @@ void bl_grp_set_color_addr(uint16_t addr_)
 	bl_grp_update_reg_bit(10, 0x03, (uint8_t)(addr >> 14));
 }
 
-void bl_grp_set_pattern_gen_addr(uint16_t addr_)
+static void bl_grp_set_pattern_gen_addr(uint16_t addr_)
 {
 	addr = addr_;
 	bl_grp.pattern_gen_addr = addr;
 	bl_grp_update_reg_bit( 4, 0x1F, (uint8_t)(addr >> 11));
 }
 
-void bl_grp_set_sprite_attr_view_addr(uint16_t addr_)
+static void bl_grp_set_sprite_attr_view_addr(uint16_t addr_)
 {
 	addr = addr_;
 	bl_grp.sprite_attr_view_addr = addr;
@@ -369,26 +367,26 @@ void bl_grp_set_sprite_attr_view_addr(uint16_t addr_)
 	bl_grp_update_reg_bit(11, 0x01, (uint8_t)(addr >> 15));
 }
 
-void bl_grp_set_sprite_attr_active_addr(uint16_t addr_)
+static void bl_grp_set_sprite_attr_active_addr(uint16_t addr_)
 {
 	addr = addr_;
 	bl_grp.sprite_attr_active_addr = addr;
 	bl_grp.sprite_color_active_addr = addr - 0x200;
 }
 
-void bl_grp_set_sprite_gen_view_addr(uint16_t addr_)
+static void bl_grp_set_sprite_gen_view_addr(uint16_t addr_)
 {
 	addr = addr_;
 	bl_grp.sprite_gen_view_addr = addr;
 	bl_grp_update_reg_bit( 6, 0x1F, (uint8_t)(addr >> 11));
 }
 
-void bl_grp_set_sprite_gen_active_addr(uint16_t addr)
+static void bl_grp_set_sprite_gen_active_addr(uint16_t addr)
 {
 	bl_grp.sprite_gen_active_addr = addr;
 }
 
-void bl_grp_setup_mc_pattern(void)
+static void bl_grp_setup_mc_pattern(void)
 {
 	uint8_t row_data[32], n, m, data_begin;
 
@@ -742,27 +740,27 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	bl_vdp_cmd_wait();
 }
 
-extern uint16_t clear_size;
-extern uint8_t clear_val;
+extern uint16_t grp_clear_size;
+extern uint8_t grp_clear_val;
 static uint16_t table_fill_size[] = { 960 - 1, 1920 - 1, 2048 - 1, 768 - 1, 768 - 1, 768 - 1 };
 static void bl_grp_clear_screen_fill(void)
 {
 	if (bl_grp.screen_mode == GRP_SCR_MC) {
 		bl_set_vram_addr16(bl_grp.pattern_gen_addr);
-		clear_val = ' ';
+		grp_clear_val = ' ';
 	} else {
 		bl_set_vram_addr16(bl_grp.pattern_name_addr);
-		clear_val = bl_grp.font_bgc | ((bl_grp.font_bgc) << 4);
+		grp_clear_val = bl_grp.font_bgc | ((bl_grp.font_bgc) << 4);
 	}
 
-	bl_write_vram(clear_val);		/* First byte */
-	clear_size = table_fill_size[bl_grp.screen_mode];
+	bl_write_vram(grp_clear_val);		/* First byte */
+	grp_clear_size = table_fill_size[bl_grp.screen_mode];
 #asm
 		DI
 		DEFB	011H			; LD DE, nn
-_clear_size:	DEFW	00000H
+_grp_clear_size:DEFW	00000H
 		DEFB	021H			; LD HL, nn
-_clear_val:	DEFW	00000H
+_grp_clear_val:	DEFW	00000H
 
 		LD	C, 098H
 clear_screen_fill_lp:

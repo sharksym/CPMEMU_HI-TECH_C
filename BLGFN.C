@@ -3,8 +3,6 @@
  */
 
 #include <stddef.h>
-#include <stdio.h>
-/*#include <string.h>*/
 #include <io.h>
 #include <msxbdos.h>
 #include <blstd.h>
@@ -49,7 +47,7 @@ uint16_t ks2kssm[2350]={
 };
 #endif
 
-void draw_font_null(uint8_t *font)
+static void draw_font_null(uint8_t *font)
 {
 }
 
