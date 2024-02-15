@@ -13,15 +13,6 @@
 
 #ifdef BL_ROM
 
-#asm
-;-------------------------------------------------------------------------------
-; Startup code for ROM loader
-;
-	psect	text,global,pure
-	psect	data,global
-	psect	bss,global
-#endasm
-
 #if BL_ROM == 32
 #asm
 	psect	text
@@ -30,6 +21,9 @@
 #endif
 
 #asm
+;-------------------------------------------------------------------------------
+; Startup code for ROM loader
+;
 	psect	text
 	defs	100h
 	defm	'ROM '		;ID
@@ -67,10 +61,6 @@ start:	ld	de,__Lbss	;Start of BSS segment
 ;-------------------------------------------------------------------------------
 ; Startup code for CP/M, MSX-DOS1, MSX-DOS2
 ;
-	psect	text,global,pure
-	psect	data,global
-	psect	bss,global
-
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 
@@ -129,10 +119,6 @@ nularg:	defb	0
 ;-------------------------------------------------------------------------------
 ; Startup code for MSX-DOS2 Only
 ;
-	psect	text,global,pure
-	psect	data,global
-	psect	bss,global
-
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 
@@ -230,10 +216,6 @@ nularg:	defb	0
 ;-------------------------------------------------------------------------------
 ; Startup code for MSX-DOS2 Only
 ;
-	psect	text,global,pure
-	psect	data,global
-	psect	bss,global
-
 	psect	text
 	defs	100h		;Base of CP/M's TPA
 

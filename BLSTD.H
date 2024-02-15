@@ -1,11 +1,5 @@
 /* Standard Banking Library (BLSTD.H)*/
 
-#asm
-psect	text,global
-psect	data,global
-psect	bss,global
-#endasm
-
 typedef char int8_t;
 typedef short int16_t;
 typedef long int32_t;
