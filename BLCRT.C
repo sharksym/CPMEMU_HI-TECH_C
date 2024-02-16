@@ -45,28 +45,6 @@ start:	ld	de,__Lbss	;Start of BSS segment
 	ldir			;clear memory
 
 	jp	_main
-
-	global	_bl_rom_read_page3
-
-_bl_rom_read_page3:
-	pop	hl		; ret-addr
-	pop	hl		; rom_addr
-	pop	de		; dest_addr
-	pop	bc		; bytes
-
-	push	bc
-	push	de
-	push	hl
-	dec	sp
-	dec	sp
-
-	jp	08020H
-
-	global	_bl_ram_slotid, _bl_rom_slotid
-
-_bl_ram_slotid	equ	08012H
-_bl_rom_slotid	equ	08013H
-
 #endasm
 #else	/* BL_ROM */
 
