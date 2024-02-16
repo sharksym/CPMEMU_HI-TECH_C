@@ -118,9 +118,14 @@ void bl_grp_put_sprite(uint8_t layer, uint8_t x, uint8_t y, uint8_t c, uint8_t n
 void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size);
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size);
 
+#ifdef BL_ROM
+void bl_grp_romload_vram_16k(uint16_t rom_addr);
+void bl_grp_romload_ge5_pic(uint16_t rom_addr, uint16_t dx, uint16_t dy);
+void bl_grp_romload_ge5_pat(uint16_t rom_addr, uint16_t dx, uint16_t dy);
+#else
 void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy);
 void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy);
 void bl_grp_load_ge5_pic_pal(char *filename);
 void bl_grp_load_ge5_pat_pal(char *filename);
 void bl_grp_get_ge5_pat_pal(char *filename, uint16_t *palette);
-
+#endif
