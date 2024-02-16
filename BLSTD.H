@@ -53,3 +53,10 @@ void *bl_malloc(uint16_t size);
 void *bl_realloc(void *ptr, uint16_t size);
 void *bl_get_memtop(void);
 #endif
+
+#ifdef BL_ROM
+extern uint8_t bl_ram_slotid;
+extern uint8_t bl_rom_slotid;
+
+void bl_rom_read_page3(uint16_t rom_addr, uint16_t dest_addr, uint16_t bytes);
+#endif

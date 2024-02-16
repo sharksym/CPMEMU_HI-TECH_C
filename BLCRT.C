@@ -44,12 +44,29 @@ start:	ld	de,__Lbss	;Start of BSS segment
 	ld	(hl),0
 	ldir			;clear memory
 
-	; Force to MSX-DOS1 mode
-;	ld	a,1		; 0:CP/M, 1:MSX-DOS1, 2:MSX-DOS2
-;	ld	(_gcBdosMode),a
-
 	jp	_main
-	end	start
+
+	global	_bl_rom_read_page3
+
+_bl_rom_read_page3:
+	pop	hl		; ret-addr
+	pop	hl		; rom_addr
+	pop	de		; dest_addr
+	pop	bc		; bytes
+
+	push	bc
+	push	de
+	push	hl
+	dec	sp
+	dec	sp
+
+	jp	08020H
+
+	global	_bl_ram_slotid, _bl_rom_slotid
+
+_bl_ram_slotid	equ	08012H
+_bl_rom_slotid	equ	08013H
+
 #endasm
 #else	/* BL_ROM */
 
@@ -109,7 +126,6 @@ start:	ld	hl,(6)		;base address of fdos
 
 	psect	data
 nularg:	defb	0
-	end	start
 
 #endasm
 
