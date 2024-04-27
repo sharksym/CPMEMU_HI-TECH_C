@@ -123,8 +123,10 @@ static int8_t adj_from_reg[16] = {
 	0, -1, -2, -3, -4, -5, -6, -7, 8, 7, 6, 5, 4, 3, 2, 1
 };
 
+#ifndef BL_ROM
 static uint8_t bl_grp_bak[256];
 static uint8_t bl_grp_suspended = 0;
+#endif
 static uint8_t vdp_reg_org[28];
 static uint8_t scrmod_org;
 static uint16_t addr;
@@ -134,6 +136,9 @@ static void vdp_sync_regs_shadow(void);
 static void vdp_restore_regs(void);
 void bl_vdp_cmd_init(void);
 
+#ifdef BL_ROM
+uint8_t shared_mem[BL_GRP_SHARED_MEM];
+#endif
 int8_t bl_grp_init(void)
 {
 	/* MSX2/2+/tR only */
@@ -142,10 +147,13 @@ int8_t bl_grp_init(void)
 		return -1;
 
 	memset(&bl_grp, 0x00, sizeof(struct bl_grp_var_t));
+#ifdef BL_ROM
+	bl_grp.shared_mem = shared_mem;
+#else
 	bl_grp.shared_mem = (uint8_t *)bl_malloc(BL_GRP_SHARED_MEM);
 	if (bl_grp.shared_mem == NULL)			/* not enough memory? */
 		return -1;
-
+#endif
 	/* VDP version */
 	bl_grp.vdp_ver = bl_read_vdp(1) & 0x04 ? GRP_VER_9958 : GRP_VER_9938;
 
@@ -216,8 +224,9 @@ void bl_grp_deinit(void)
 	memcpy(bl_grp.reg_shadow, vdp_reg_org, sizeof(vdp_reg_org));
 	vdp_restore_regs();
 	vdp_sync_regs_shadow();
-
+#ifndef BL_ROM
 	bl_free(bl_grp.shared_mem);
+#endif
 #asm
 	PUSH	IX
 	PUSH	IY
@@ -264,6 +273,7 @@ static void vdp_restore_regs(void)
 	}
 }
 
+#ifndef BL_ROM
 void bl_grp_suspend(void)
 {
 	if (bl_grp_suspended)
@@ -289,6 +299,7 @@ void bl_grp_resume(void)
 
 	vdp_restore_regs();
 }
+#endif
 
 extern uint8_t update_bits;
 #define bl_grp_update_reg_bit(no, mask, bits)	\

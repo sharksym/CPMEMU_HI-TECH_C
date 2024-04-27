@@ -67,6 +67,11 @@ struct bl_grp_var_t {			/* bl_grp_var max. 224bytes */
 	uint8_t *shared_mem;
 };
 
-#define BL_GRP_SHARED_MEM	(2048)	/* min. 2Kbytes shared memory */
+/* Shared memory: Minimum 128 bytes */
+#ifdef BL_ROM
+#define BL_GRP_SHARED_MEM	(128)
+#else
+#define BL_GRP_SHARED_MEM	(2048)
+#endif
 
 extern struct bl_grp_var_t bl_grp;

@@ -22,7 +22,7 @@ void bl_grp_romload_vram_16k(uint16_t rom_addr)
 {
 	uint16_t n, max;
 
-	max = 16 / (BL_GRP_SHARED_MEM / 1024);
+	max = 0x4000 / BL_GRP_SHARED_MEM;
 
 	bl_vdp_cmd_wait();
 
@@ -47,7 +47,7 @@ void bl_grp_romload_ge5_pic(uint16_t rom_addr, uint16_t dx, uint16_t dy)
 	/* Max. 16KB */
 	vram_offset = (dx / 2) + (dy * 128);
 	buf_lines = BL_GRP_SHARED_MEM / 128;
-	buf_bytes = buf_lines * 128;
+	buf_bytes = BL_GRP_SHARED_MEM;
 
 	bl_vdp_cmd_wait();
 
@@ -57,15 +57,17 @@ void bl_grp_romload_ge5_pic(uint16_t rom_addr, uint16_t dx, uint16_t dy)
 			buf_bytes = buf_lines * 128;
 		}
 		bl_rom_read_page3(rom_addr, (uint16_t)bl_grp.shared_mem, buf_bytes);
-		rom_addr += buf_bytes;
-		/*read(fh, bl_grp.shared_mem, buf_bytes);*/
+		rom_addr += BL_GRP_SHARED_MEM;
 
 		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
 		bl_vdp_vram_l = (uint8_t)vram_addr;
 		bl_vdp_vram_cnt = buf_bytes;
 		bl_copy_to_vram_nn(bl_grp.shared_mem);
+
+		if (y + buf_lines >= 212)
+			break;
 	}
 }
 
@@ -76,7 +78,7 @@ void bl_grp_romload_ge5_pat(uint16_t rom_addr, uint16_t dx, uint16_t dy)
 
 	vram_offset = (dx / 2) + (dy * 128);
 	buf_lines = BL_GRP_SHARED_MEM / 64;
-	buf_bytes = buf_lines * 64;
+	buf_bytes = BL_GRP_SHARED_MEM;
 
 	bl_vdp_cmd_wait();
 
@@ -86,18 +88,20 @@ void bl_grp_romload_ge5_pat(uint16_t rom_addr, uint16_t dx, uint16_t dy)
 			buf_bytes = buf_lines * 64;
 		}
 		bl_rom_read_page3(rom_addr, (uint16_t)bl_grp.shared_mem, buf_bytes);
-		rom_addr += buf_bytes;
-		/*read(fh, bl_grp.shared_mem, buf_bytes);*/
+		rom_addr += BL_GRP_SHARED_MEM;
 
 		vram_addr = y * 128 + vram_offset;
-		for (n = 0; n < buf_lines; n++, vram_addr += 128, rom_addr += buf_bytes) {
+		for (n = 0; n < buf_lines; n++, vram_addr += 128) {
 			bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 			bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-			bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+			bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
 			bl_vdp_vram_l = (uint8_t)vram_addr;
 			bl_vdp_vram_cnt = 64;
 			bl_copy_to_vram_nn(&bl_grp.shared_mem[64 * n]);
 		}
+
+		if (y + buf_lines >= 212)
+			break;
 	}
 }
 
@@ -118,7 +122,7 @@ void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy)
 
 	vram_offset = (dx / 2) + (dy * 128);
 	buf_lines = BL_GRP_SHARED_MEM / 128;
-	buf_bytes = buf_lines * 128;
+	buf_bytes = BL_GRP_SHARED_MEM;
 
 	bl_vdp_cmd_wait();
 
@@ -131,10 +135,13 @@ void bl_grp_load_ge5_pic(char *filename, uint16_t dx, uint16_t dy)
 
 		bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 		bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+		bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
 		bl_vdp_vram_l = (uint8_t)vram_addr;
 		bl_vdp_vram_cnt = buf_bytes;
 		bl_copy_to_vram_nn(bl_grp.shared_mem);
+
+		if (y + buf_lines >= 212)
+			break;
 	}
 
 	close(fh);
@@ -157,7 +164,7 @@ void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy)
 	vram_offset = (dx / 2) + (dy * 128);
 	pat_row_bytes = width / 2;
 	buf_lines = BL_GRP_SHARED_MEM / pat_row_bytes;
-	buf_bytes = buf_lines * pat_row_bytes;
+	buf_bytes = BL_GRP_SHARED_MEM;
 
 	bl_vdp_cmd_wait();
 
@@ -172,11 +179,14 @@ void bl_grp_load_ge5_pat(char *filename, uint16_t dx, uint16_t dy)
 		for (n = 0; n < buf_lines; n++, vram_addr += 128) {
 			bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 			bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
-			bl_vdp_vram_m = (uint8_t)((vram_addr >> 8)& 0x3F);
+			bl_vdp_vram_m = (uint8_t)((vram_addr >> 8) & 0x3F);
 			bl_vdp_vram_l = (uint8_t)vram_addr;
 			bl_vdp_vram_cnt = pat_row_bytes;
 			bl_copy_to_vram_nn(&bl_grp.shared_mem[pat_row_bytes * n]);
 		}
+
+		if (y + buf_lines >= 212)
+			break;
 	}
 
 	close(fh);
