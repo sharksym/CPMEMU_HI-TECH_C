@@ -1,0 +1,11 @@
+A:zsid $EXEC.COM
+ s1bb
+0
+0
+0
+.
+ g0
+save 5 $.COM
+ren $$EXEC.COM=$EXEC.COM
+ren $EXEC.COM=$.COM
+exit

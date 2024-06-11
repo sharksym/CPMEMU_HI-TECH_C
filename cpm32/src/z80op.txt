@@ -1,0 +1,1536 @@
+00     8080   NOP
+01     8080   LD BC,imm
+02     8080   LD (BC),A
+03     8080   INC BC
+04     8080   INC B
+05     8080   DEC B
+06     8080   LD B,imm
+07     8080   RLCA
+08     z80    EX AF,AF'
+09     8080   ADD HL,BC
+0A     8080   LD A,(BC)
+0B     8080   DEC BC
+0C     8080   INC C
+0D     8080   DEC C
+0E     8080   LD C,imm
+0F     8080   RRCA
+10     z80    DJNZ rel
+11     8080   LD DE,imm
+12     8080   LD (DE),A
+13     8080   INC DE
+14     8080   INC D
+15     8080   DEC D
+16     8080   LD D,imm
+17     8080   RLA
+18     z80    JR rel
+19     8080   ADD HL,DE
+1A     8080   LD A,(DE)
+1B     8080   DEC DE
+1C     8080   INC E
+1D     8080   DEC E
+1E     8080   LD E,imm
+1F     8080   RRA
+20     z80    JR NZ,rel
+21     8080   LD HL,imm
+22     8080   LD (abs),HL
+23     8080   INC HL
+24     8080   INC H
+25     8080   DEC H
+26     8080   LD H,imm
+27     8080   DAA
+28     z80    JR Z,rel
+29     8080   ADD HL,HL
+2A     8080   LD HL,(abs)
+2B     8080   DEC HL
+2C     8080   INC L
+2D     8080   DEC L
+2E     8080   LD L,imm
+2F     8080   CPL
+30     z80    JR NC,rel
+31     8080   LD SP,imm
+32     8080   LD (abs),A
+33     8080   INC SP
+34     8080   INC (HL)
+35     8080   DEC (HL)
+36     8080   LD (HL),imm
+37     8080   SCF
+38     z80    JR C,rel
+39     8080   ADD HL,SP
+3A     8080   LD A,(abs)
+3B     8080   DEC SP
+3C     8080   INC A
+3D     8080   DEC A
+3E     8080   LD A,imm
+3F     8080   CCF
+40     8080   LD B,B
+41     8080   LD B,C
+42     8080   LD B,D
+43     8080   LD B,E
+44     8080   LD B,H
+45     8080   LD B,L
+46     8080   LD B,(HL)
+47     8080   LD B,A
+48     8080   LD C,B
+49     8080   LD C,C
+4A     8080   LD C,D
+4B     8080   LD C,E
+4C     8080   LD C,H
+4D     8080   LD C,L
+4E     8080   LD C,(HL)
+4F     8080   LD C,A
+50     8080   LD D,B
+51     8080   LD D,C
+52     8080   LD D,D
+53     8080   LD D,E
+54     8080   LD D,H
+55     8080   LD D,L
+56     8080   LD D,(HL)
+57     8080   LD D,A
+58     8080   LD E,B
+59     8080   LD E,C
+5A     8080   LD E,D
+5B     8080   LD E,E
+5C     8080   LD E,H
+5D     8080   LD E,L
+5E     8080   LD E,(HL)
+5F     8080   LD E,A
+60     8080   LD H,B
+61     8080   LD H,C
+62     8080   LD H,D
+63     8080   LD H,E
+64     8080   LD H,H
+65     8080   LD H,L
+66     8080   LD H,(HL)
+67     8080   LD H,A
+68     8080   LD L,B
+69     8080   LD L,C
+6A     8080   LD L,D
+6B     8080   LD L,E
+6C     8080   LD L,H
+6D     8080   LD L,L
+6E     8080   LD L,(HL)
+6F     8080   LD L,A
+70     8080   LD (HL),B
+71     8080   LD (HL),C
+72     8080   LD (HL),D
+73     8080   LD (HL),E
+74     8080   LD (HL),H
+75     8080   LD (HL),L
+76     8080   HALT
+77     8080   LD (HL),A
+78     8080   LD A,B
+79     8080   LD A,C
+7A     8080   LD A,D
+7B     8080   LD A,E
+7C     8080   LD A,H
+7D     8080   LD A,L
+7E     8080   LD A,(HL)
+7F     8080   LD A,A
+80     8080   ADD A,B
+81     8080   ADD A,C
+82     8080   ADD A,D
+83     8080   ADD A,E
+84     8080   ADD A,H
+85     8080   ADD A,L
+86     8080   ADD A,(HL)
+87     8080   ADD A,A
+88     8080   ADC A,B
+89     8080   ADC A,C
+8A     8080   ADC A,D
+8B     8080   ADC A,E
+8C     8080   ADC A,H
+8D     8080   ADC A,L
+8E     8080   ADC A,(HL)
+8F     8080   ADC A,A
+90     8080   SUB A,B
+91     8080   SUB A,C
+92     8080   SUB A,D
+93     8080   SUB A,E
+94     8080   SUB A,H
+95     8080   SUB A,L
+96     8080   SUB A,(HL)
+97     8080   SUB A,A
+98     8080   SBC A,B
+99     8080   SBC A,C
+9A     8080   SBC A,D
+9B     8080   SBC A,E
+9C     8080   SBC A,H
+9D     8080   SBC A,L
+9E     8080   SBC A,(HL)
+9F     8080   SBC A,A
+A0     8080   AND A,B
+A1     8080   AND A,C
+A2     8080   AND A,D
+A3     8080   AND A,E
+A4     8080   AND A,H
+A5     8080   AND A,L
+A6     8080   AND A,(HL)
+A7     8080   AND A,A
+A8     8080   XOR A,B
+A9     8080   XOR A,C
+AA     8080   XOR A,D
+AB     8080   XOR A,E
+AC     8080   XOR A,H
+AD     8080   XOR A,L
+AE     8080   XOR A,(HL)
+AF     8080   XOR A,A
+B0     8080   OR A,B
+B1     8080   OR A,C
+B2     8080   OR A,D
+B3     8080   OR A,E
+B4     8080   OR A,H
+B5     8080   OR A,L
+B6     8080   OR A,(HL)
+B7     8080   OR A,A
+B8     8080   CP A,B
+B9     8080   CP A,C
+BA     8080   CP A,D
+BB     8080   CP A,E
+BC     8080   CP A,H
+BD     8080   CP A,L
+BE     8080   CP A,(HL)
+BF     8080   CP A,A
+C0     8080   RET NZ
+C1     8080   POP BC
+C2     8080   JP NZ,add
+C3     8080   JP add
+C4     8080   CALL NZ,add
+C5     8080   PUSH BC
+C6     8080   ADD A,imm
+C7     8080   RST 00h
+C8     8080   RET Z
+C9     8080   RET
+CA     8080   JP Z,add
+CB     z80    prebyte CB
+CC     8080   CALL Z,add
+CD     8080   CALL add
+CE     8080   ADC A,imm
+CF     8080   RST 08h
+D0     8080   RET NC
+D1     8080   POP DE
+D2     8080   JP NC,add
+D3     8080   OUT (io),A
+D4     8080   CALL NC,add
+D5     8080   PUSH DE
+D6     8080   SUB A,imm
+D7     8080   RST 10h
+D8     8080   RET C
+D9     z80    EXX
+DA     8080   JP C,add
+DB     8080   IN A,(io)
+DC     8080   CALL C,add
+DD     z80    prebyte DD
+DE     8080   SBC A,imm
+DF     8080   RST 18h
+E0     8080   RET PO
+E1     8080   POP HL
+E2     8080   JP PO,add
+E3     8080   EX (SP),HL
+E4     8080   CALL PO,add
+E5     8080   PUSH HL
+E6     8080   AND A,imm
+E7     8080   RST 20h
+E8     8080   RET PE
+E9     8080   JP (HL)
+EA     8080   JP PE,add
+EB     8080   EX DE,HL
+EC     8080   CALL PE,add
+ED     z80    prebyte ED
+EE     8080   XOR A,imm
+EF     8080   RST 28h
+F0     8080   RET PL
+F1     8080   POP AF
+F2     8080   JP PL,add
+F3     8080   DI
+F4     8080   CALL PL,add
+F5     8080   PUSH AF
+F6     8080   OR A,imm
+F7     8080   RST 30h
+F8     8080   RET MI
+F9     8080   LD SP,HL
+FA     8080   JP MI,add
+FB     8080   EI
+FC     8080   CALL MI,add
+FD     z80    prebyte FD
+FE     8080   CP A,imm
+FF     8080   RST 38h
+CB00   z80    RLC B
+CB01   z80    RLC C
+CB02   z80    RLC D
+CB03   z80    RLC E
+CB04   z80    RLC H
+CB05   z80    RLC L
+CB06   z80    RLC (HL)
+CB07   z80    RLC A
+CB08   z80    RRC B
+CB09   z80    RRC C
+CB0A   z80    RRC D
+CB0B   z80    RRC E
+CB0C   z80    RRC H
+CB0D   z80    RRC L
+CB0E   z80    RRC (HL)
+CB0F   z80    RRC A
+CB10   z80    RL B
+CB11   z80    RL C
+CB12   z80    RL D
+CB13   z80    RL E
+CB14   z80    RL H
+CB15   z80    RL L
+CB16   z80    RL (HL)
+CB17   z80    RL A
+CB18   z80    RR B
+CB19   z80    RR C
+CB1A   z80    RR D
+CB1B   z80    RR E
+CB1C   z80    RR H
+CB1D   z80    RR L
+CB1E   z80    RR (HL)
+CB1F   z80    RR A
+CB20   z80    SLA B
+CB21   z80    SLA C
+CB22   z80    SLA D
+CB23   z80    SLA E
+CB24   z80    SLA H
+CB25   z80    SLA L
+CB26   z80    SLA (HL)
+CB27   z80    SLA A
+CB28   z80    SRA B
+CB29   z80    SRA C
+CB2A   z80    SRA D
+CB2B   z80    SRA E
+CB2C   z80    SRA H
+CB2D   z80    SRA L
+CB2E   z80    SRA (HL)
+CB2F   z80    SRA A
+CB30   z80u   SL1 B
+CB31   z80u   SL1 C
+CB32   z80u   SL1 D
+CB33   z80u   SL1 E
+CB34   z80u   SL1 H
+CB35   z80u   SL1 L
+CB36   z80u   SL1 (HL)
+CB37   z80u   SL1 A
+CB38   z80    SRL B
+CB39   z80    SRL C
+CB3A   z80    SRL D
+CB3B   z80    SRL E
+CB3C   z80    SRL H
+CB3D   z80    SRL L
+CB3E   z80    SRL (HL)
+CB3F   z80    SRL A
+CB40   z80    BIT B,0
+CB41   z80    BIT C,0
+CB42   z80    BIT D,0
+CB43   z80    BIT E,0
+CB44   z80    BIT H,0
+CB45   z80    BIT L,0
+CB46   z80    BIT (HL),0
+CB47   z80    BIT A,0
+CB48   z80    BIT B,1
+CB49   z80    BIT C,1
+CB4A   z80    BIT D,1
+CB4B   z80    BIT E,1
+CB4C   z80    BIT H,1
+CB4D   z80    BIT L,1
+CB4E   z80    BIT (HL),1
+CB4F   z80    BIT A,1
+CB50   z80    BIT B,2
+CB51   z80    BIT C,2
+CB52   z80    BIT D,2
+CB53   z80    BIT E,2
+CB54   z80    BIT H,2
+CB55   z80    BIT L,2
+CB56   z80    BIT (HL),2
+CB57   z80    BIT A,2
+CB58   z80    BIT B,3
+CB59   z80    BIT C,3
+CB5A   z80    BIT D,3
+CB5B   z80    BIT E,3
+CB5C   z80    BIT H,3
+CB5D   z80    BIT L,3
+CB5E   z80    BIT (HL),3
+CB5F   z80    BIT A,3
+CB60   z80    BIT B,4
+CB61   z80    BIT C,4
+CB62   z80    BIT D,4
+CB63   z80    BIT E,4
+CB64   z80    BIT H,4
+CB65   z80    BIT L,4
+CB66   z80    BIT (HL),4
+CB67   z80    BIT A,4
+CB68   z80    BIT B,5
+CB69   z80    BIT C,5
+CB6A   z80    BIT D,5
+CB6B   z80    BIT E,5
+CB6C   z80    BIT H,5
+CB6D   z80    BIT L,5
+CB6E   z80    BIT (HL),5
+CB6F   z80    BIT A,5
+CB70   z80    BIT B,6
+CB71   z80    BIT C,6
+CB72   z80    BIT D,6
+CB73   z80    BIT E,6
+CB74   z80    BIT H,6
+CB75   z80    BIT L,6
+CB76   z80    BIT (HL),6
+CB77   z80    BIT A,6
+CB78   z80    BIT B,7
+CB79   z80    BIT C,7
+CB7A   z80    BIT D,7
+CB7B   z80    BIT E,7
+CB7C   z80    BIT H,7
+CB7D   z80    BIT L,7
+CB7E   z80    BIT (HL),7
+CB7F   z80    BIT A,7
+CB80   z80    RES B,0
+CB81   z80    RES C,0
+CB82   z80    RES D,0
+CB83   z80    RES E,0
+CB84   z80    RES H,0
+CB85   z80    RES L,0
+CB86   z80    RES (HL),0
+CB87   z80    RES A,0
+CB88   z80    RES B,1
+CB89   z80    RES C,1
+CB8A   z80    RES D,1
+CB8B   z80    RES E,1
+CB8C   z80    RES H,1
+CB8D   z80    RES L,1
+CB8E   z80    RES (HL),1
+CB8F   z80    RES A,1
+CB90   z80    RES B,2
+CB91   z80    RES C,2
+CB92   z80    RES D,2
+CB93   z80    RES E,2
+CB94   z80    RES H,2
+CB95   z80    RES L,2
+CB96   z80    RES (HL),2
+CB97   z80    RES A,2
+CB98   z80    RES B,3
+CB99   z80    RES C,3
+CB9A   z80    RES D,3
+CB9B   z80    RES E,3
+CB9C   z80    RES H,3
+CB9D   z80    RES L,3
+CB9E   z80    RES (HL),3
+CB9F   z80    RES A,3
+CBA0   z80    RES B,4
+CBA1   z80    RES C,4
+CBA2   z80    RES D,4
+CBA3   z80    RES E,4
+CBA4   z80    RES H,4
+CBA5   z80    RES L,4
+CBA6   z80    RES (HL),4
+CBA7   z80    RES A,4
+CBA8   z80    RES B,5
+CBA9   z80    RES C,5
+CBAA   z80    RES D,5
+CBAB   z80    RES E,5
+CBAC   z80    RES H,5
+CBAD   z80    RES L,5
+CBAE   z80    RES (HL),5
+CBAF   z80    RES A,5
+CBB0   z80    RES B,6
+CBB1   z80    RES C,6
+CBB2   z80    RES D,6
+CBB3   z80    RES E,6
+CBB4   z80    RES H,6
+CBB5   z80    RES L,6
+CBB6   z80    RES (HL),6
+CBB7   z80    RES A,6
+CBB8   z80    RES B,7
+CBB9   z80    RES C,7
+CBBA   z80    RES D,7
+CBBB   z80    RES E,7
+CBBC   z80    RES H,7
+CBBD   z80    RES L,7
+CBBE   z80    RES (HL),7
+CBBF   z80    RES A,7
+CBC0   z80    SET B,0
+CBC1   z80    SET C,0
+CBC2   z80    SET D,0
+CBC3   z80    SET E,0
+CBC4   z80    SET H,0
+CBC5   z80    SET L,0
+CBC6   z80    SET (HL),0
+CBC7   z80    SET A,0
+CBC8   z80    SET B,1
+CBC9   z80    SET C,1
+CBCA   z80    SET D,1
+CBCB   z80    SET E,1
+CBCC   z80    SET H,1
+CBCD   z80    SET L,1
+CBCE   z80    SET (HL),1
+CBCF   z80    SET A,1
+CBD0   z80    SET B,2
+CBD1   z80    SET C,2
+CBD2   z80    SET D,2
+CBD3   z80    SET E,2
+CBD4   z80    SET H,2
+CBD5   z80    SET L,2
+CBD6   z80    SET (HL),2
+CBD7   z80    SET A,2
+CBD8   z80    SET B,3
+CBD9   z80    SET C,3
+CBDA   z80    SET D,3
+CBDB   z80    SET E,3
+CBDC   z80    SET H,3
+CBDD   z80    SET L,3
+CBDE   z80    SET (HL),3
+CBDF   z80    SET A,3
+CBE0   z80    SET B,4
+CBE1   z80    SET C,4
+CBE2   z80    SET D,4
+CBE3   z80    SET E,4
+CBE4   z80    SET H,4
+CBE5   z80    SET L,4
+CBE6   z80    SET (HL),4
+CBE7   z80    SET A,4
+CBE8   z80    SET B,5
+CBE9   z80    SET C,5
+CBEA   z80    SET D,5
+CBEB   z80    SET E,5
+CBEC   z80    SET H,5
+CBED   z80    SET L,5
+CBEE   z80    SET (HL),5
+CBEF   z80    SET A,5
+CBF0   z80    SET B,6
+CBF1   z80    SET C,6
+CBF2   z80    SET D,6
+CBF3   z80    SET E,6
+CBF4   z80    SET H,6
+CBF5   z80    SET L,6
+CBF6   z80    SET (HL),6
+CBF7   z80    SET A,6
+CBF8   z80    SET B,7
+CBF9   z80    SET C,7
+CBFA   z80    SET D,7
+CBFB   z80    SET E,7
+CBFC   z80    SET H,7
+CBFD   z80    SET L,7
+CBFE   z80    SET (HL),7
+CBFF   z80    SET A,7
+ED00   64180  IN0 B,(io)
+ED01   64180  OUT0 (io),B
+ED02   -      -
+ED03   -      -
+ED04   64180  TST A,B
+ED05   -      -
+ED06   -      -
+ED07   -      -
+ED08   64180  IN0 C,(io)
+ED09   64180  OUT0 (io),C
+ED0A   -      -
+ED0B   -      -
+ED0C   64180  TST A,C
+ED0D   -      -
+ED0E   -      -
+ED0F   -      -
+ED10   64180  IN0 D,(io)
+ED11   64180  OUT0 (io),D
+ED12   -      -
+ED13   -      -
+ED14   64180  TST A,D
+ED15   -      -
+ED16   -      -
+ED17   -      -
+ED18   64180  IN0 E,(io)
+ED19   64180  OUT0 (io),E
+ED1A   -      -
+ED1B   -      -
+ED1C   64180  TST A,E
+ED1D   -      -
+ED1E   -      -
+ED1F   -      -
+ED20   64180  IN0 H,(io)
+ED21   64180  OUT0 (io),H
+ED22   -      -
+ED23   -      -
+ED24   64180  TST A,H
+ED25   -      -
+ED26   -      -
+ED27   -      -
+ED28   64180  IN0 L,(io)
+ED29   64180  OUT0 (io),L
+ED2A   -      -
+ED2B   -      -
+ED2C   64180  TST A,L
+ED2D   -      -
+ED2E   -      -
+ED2F   -      -
+ED30   64180  IN0 F,(io)
+ED31   -      -
+ED32   -      -
+ED33   -      -
+ED34   64180  TST A,(HL)
+ED35   -      -
+ED36   -      -
+ED37   -      -
+ED38   64180  IN0 A,(io)
+ED39   64180  OUT0 (io),A
+ED3A   -      -
+ED3B   -      -
+ED3C   64180  TST A,A
+ED3D   -      -
+ED3E   -      -
+ED3F   -      -
+ED40   z80    IN B,(C)
+ED41   z80    OUT (C),B
+ED42   z80    SBC HL,BC
+ED43   z80    LD (abs),BC
+ED44   z80    NEG A
+ED45   z80    RETN
+ED46   z80    IM0
+ED47   z80    LD I,A
+ED48   z80    IN C,(C)
+ED49   z80    OUT (C),C
+ED4A   z80    ADC HL,BC
+ED4B   z80    LD BC,(abs)
+ED4C   64180  MLT BC
+ED4D   z80    RETI
+ED4E   -      -
+ED4F   z80    LD R,A
+ED50   z80    IN D,(C)
+ED51   z80    OUT (C),D
+ED52   z80    SBC HL,DE
+ED53   z80    LD (abs),DE
+ED54   -      -
+ED55   -      -
+ED56   z80    IM1
+ED57   z80    LD A,I
+ED58   z80    IN E,(C)
+ED59   z80    OUT (C),E
+ED5A   z80    ADC HL,DE
+ED5B   z80    LD DE,(abs)
+ED5C   64180  MLT DE
+ED5D   -      -
+ED5E   z80    IM2
+ED5F   z80    LD A,R
+ED60   z80    IN H,(C)
+ED61   z80    OUT (C),H
+ED62   z80    SBC HL,HL
+ED63   z80    LD (abs),HL
+ED64   64180  TST A,imm
+ED65   -      -
+ED66   -      -
+ED67   z80    RRD
+ED68   z80    IN L,(C)
+ED69   z80    OUT (C),L
+ED6A   z80    ADC HL,HL
+ED6B   z80    LD HL,(abs)
+ED6C   64180  MLT HL
+ED6D   -      -
+ED6E   -      -
+ED6F   z80    RLD
+ED70   z80    IN F,(C)
+ED71   z80    OUT (C),0
+ED72   z80    SBC HL,SP
+ED73   z80    LD (abs),SP
+ED74   64180  TSTIO (C),imm
+ED75   -      -
+ED76   64180  SLP
+ED77   -      -
+ED78   z80    IN A,(C)
+ED79   z80    OUT (C),A
+ED7A   z80    ADC HL,SP
+ED7B   z80    LD SP,(abs)
+ED7C   64180  MLT SP
+ED7D   -      -
+ED7E   -      -
+ED7F   -      -
+ED80   -      -
+ED81   -      -
+ED82   -      -
+ED83   z80    OTIM
+ED84   -      -
+ED85   -      -
+ED86   -      -
+ED87   -      -
+ED88   -      -
+ED89   -      -
+ED8A   -      -
+ED8B   z80    OTDM
+ED8C   -      -
+ED8D   -      -
+ED8E   -      -
+ED8F   -      -
+ED90   -      -
+ED91   -      -
+ED92   -      -
+ED93   64180  OTIMR
+ED94   -      -
+ED95   -      -
+ED96   -      -
+ED97   -      -
+ED98   -      -
+ED99   -      -
+ED9A   -      -
+ED9B   64180  OTDMR
+ED9C   -      -
+ED9D   -      -
+ED9E   -      -
+ED9F   -      -
+EDA0   z80    LDI
+EDA1   z80    CPI
+EDA2   z80    INI
+EDA3   z80    OUTI
+EDA4   -      -
+EDA5   -      -
+EDA6   -      -
+EDA7   -      -
+EDA8   z80    LDD
+EDA9   z80    CPD
+EDAA   z80    IND
+EDAB   z80    OUTD
+EDAC   -      -
+EDAD   -      -
+EDAE   -      -
+EDAF   -      -
+EDB0   z80    LDIR
+EDB1   z80    CPIR
+EDB2   z80    INIR
+EDB3   z80    OTIR
+EDB4   -      -
+EDB5   -      -
+EDB6   -      -
+EDB7   -      -
+EDB8   z80    LDDR
+EDB9   z80    CPDR
+EDBA   z80    INDR
+EDBB   z80    OTDR
+EDBC   -      -
+EDBD   -      -
+EDBE   -      -
+EDBF   -      -
+EDC0   -      -
+EDC1   -      -
+EDC2   -      -
+EDC3   -      -
+EDC4   -      -
+EDC5   -      -
+EDC6   -      -
+EDC7   -      -
+EDC8   -      -
+EDC9   -      -
+EDCA   -      -
+EDCB   -      -
+EDCC   -      -
+EDCD   -      -
+EDCE   -      -
+EDCF   -      -
+EDD0   -      -
+EDD1   -      -
+EDD2   -      -
+EDD3   -      -
+EDD4   -      -
+EDD5   -      -
+EDD6   -      -
+EDD7   -      -
+EDD8   -      -
+EDD9   -      -
+EDDA   -      -
+EDDB   -      -
+EDDC   -      -
+EDDD   -      -
+EDDE   -      -
+EDDF   -      -
+EDE0   -      -
+EDE1   -      -
+EDE2   -      -
+EDE3   -      -
+EDE4   -      -
+EDE5   -      -
+EDE6   -      -
+EDE7   -      -
+EDE8   -      -
+EDE9   -      -
+EDEA   -      -
+EDEB   -      -
+EDEC   -      -
+EDED   v30    CALLN v
+EDEE   -      -
+EDEF   -      -
+EDF0   -      -
+EDF1   -      -
+EDF2   -      -
+EDF3   -      -
+EDF4   -      -
+EDF5   -      -
+EDF6   -      -
+EDF7   -      -
+EDF8   -      -
+EDF9   -      -
+EDFA   -      -
+EDFB   -      -
+EDFC   -      -
+EDFD   v30    RETEM
+EDFE   -      -
+EDFF   -      -
+DD00   -      -
+DD01   -      -
+DD02   -      -
+DD03   -      -
+DD04   -      -
+DD05   -      -
+DD06   -      -
+DD07   -      -
+DD08   -      -
+DD09   z80    ADD IX,BC
+DD0A   -      -
+DD0B   -      -
+DD0C   -      -
+DD0D   -      -
+DD0E   -      -
+DD0F   -      -
+DD10   -      -
+DD11   -      -
+DD12   -      -
+DD13   -      -
+DD14   -      -
+DD15   -      -
+DD16   -      -
+DD17   -      -
+DD18   -      -
+DD19   z80    ADD IX,DE
+DD1A   -      -
+DD1B   -      -
+DD1C   -      -
+DD1D   -      -
+DD1E   -      -
+DD1F   -      -
+DD20   -      -
+DD21   z80    LD IX,imm
+DD22   z80    LD (abs),IX
+DD23   z80    INC IX
+DD24   z80u   INC IXH
+DD25   z80u   DEC IXH
+DD26   z80u   LD IXH,imm
+DD27   -      -
+DD28   -      -
+DD29   z80    ADD IX,IX
+DD2A   z80    LD IX,(abs)
+DD2B   z80    DEC IX
+DD2C   z80u   INC IXL
+DD2D   z80u   DEC IXL
+DD2E   z80u   LD IXL,imm
+DD2F   -      -
+DD30   -      -
+DD31   -      -
+DD32   -      -
+DD33   -      -
+DD34   z80    INC (IX+d)
+DD35   z80    DEC (IX+d)
+DD36   z80    LD (IX+d),imm
+DD37   -      -
+DD38   -      -
+DD39   z80    ADD IX,SP
+DD3A   -      -
+DD3B   -      -
+DD3C   -      -
+DD3D   -      -
+DD3E   -      -
+DD3F   -      -
+DD40   -      -
+DD41   -      -
+DD42   -      -
+DD43   -      -
+DD44   z80u   LD B,IXH
+DD45   z80u   LD B,IXL
+DD46   z80    LD B,(IX+d)
+DD47   -      -
+DD48   -      -
+DD49   -      -
+DD4A   -      -
+DD4B   -      -
+DD4C   z80u   LD C,IXH
+DD4D   z80u   LD C,IXL
+DD4E   z80    LD C,(IX+d)
+DD4F   -      -
+DD50   -      -
+DD51   -      -
+DD52   -      -
+DD53   -      -
+DD54   z80u   LD D,IXH
+DD55   z80u   LD D,IXL
+DD56   z80    LD D,(IX+d)
+DD57   -      -
+DD58   -      -
+DD59   -      -
+DD5A   -      -
+DD5B   -      -
+DD5C   z80u   LD E,IXH
+DD5D   z80u   LD E,IXL
+DD5E   z80    LD E,(IX+d)
+DD5F   -      -
+DD60   z80u   LD IXH,B
+DD61   z80u   LD IXH,C
+DD62   z80u   LD IXH,D
+DD63   z80u   LD IXH,E
+DD64   z80u   LD IXH,IXH
+DD65   z80u   LD IXH,IXL
+DD66   z80    LD H,(IX+d)
+DD67   z80u   LD IXH,A
+DD68   z80u   LD IXL,B
+DD69   z80u   LD IXL,C
+DD6A   z80u   LD IXL,D
+DD6B   z80u   LD IXL,E
+DD6C   z80u   LD IXL,IXH
+DD6D   z80u   LD IXL,IXL
+DD6E   z80    LD L,(IX+d)
+DD6F   z80u   LD IXL,A
+DD70   z80    LD (IX+d),B
+DD71   z80    LD (IX+d),C
+DD72   z80    LD (IX+d),D
+DD73   z80    LD (IX+d),E
+DD74   z80    LD (IX+d),H
+DD75   z80    LD (IX+d),L
+DD76   -      -
+DD77   z80    LD (IX+d),A
+DD78   -      -
+DD79   -      -
+DD7A   -      -
+DD7B   -      -
+DD7C   z80u   LD A,IXH
+DD7D   z80u   LD A,IXL
+DD7E   z80    LD A,(IX+d)
+DD7F   -      -
+DD80   -      -
+DD81   -      -
+DD82   -      -
+DD83   -      -
+DD84   z80u   ADD A,IXH
+DD85   z80u   ADD A,IXL
+DD86   z80    ADD A,(IX+d)
+DD87   -      -
+DD88   -      -
+DD89   -      -
+DD8A   -      -
+DD8B   -      -
+DD8C   z80u   ADC A,IXH
+DD8D   z80u   ADC A,IXL
+DD8E   z80    ADC A,(IX+d)
+DD8F   -      -
+DD90   -      -
+DD91   -      -
+DD92   -      -
+DD93   -      -
+DD94   z80u   SUB A,IXH
+DD95   z80u   SUB A,IXL
+DD96   z80    SUB A,(IX+d)
+DD97   -      -
+DD98   -      -
+DD99   -      -
+DD9A   -      -
+DD9B   -      -
+DD9C   z80u   SBC A,IXH
+DD9D   z80u   SBC A,IXL
+DD9E   z80    SBC A,(IX+d)
+DD9F   -      -
+DDA0   -      -
+DDA1   -      -
+DDA2   -      -
+DDA3   -      -
+DDA4   z80u   AND A,IXH
+DDA5   z80u   AND A,IXL
+DDA6   z80    AND A,(IX+d)
+DDA7   -      -
+DDA8   -      -
+DDA9   -      -
+DDAA   -      -
+DDAB   -      -
+DDAC   z80u   XOR A,IXH
+DDAD   z80u   XOR A,IXL
+DDAE   z80    XOR A,(IX+d)
+DDAF   -      -
+DDB0   -      -
+DDB1   -      -
+DDB2   -      -
+DDB3   -      -
+DDB4   z80u   OR A,IXH
+DDB5   z80u   OR A,IXL
+DDB6   z80    OR A,(IX+d)
+DDB7   -      -
+DDB8   -      -
+DDB9   -      -
+DDBA   -      -
+DDBB   -      -
+DDBC   z80u   CP A,IXH
+DDBD   z80u   CP A,IXL
+DDBE   z80    CP A,(IX+d)
+DDBF   -      -
+DDC0   -      -
+DDC1   -      -
+DDC2   -      -
+DDC3   -      -
+DDC4   -      -
+DDC5   -      -
+DDC6   -      -
+DDC7   -      -
+DDC8   -      -
+DDC9   -      -
+DDCA   -      -
+DDCB   z80    prebyte CB
+DDCC   -      -
+DDCD   -      -
+DDCE   -      -
+DDCF   -      -
+DDD0   -      -
+DDD1   -      -
+DDD2   -      -
+DDD3   -      -
+DDD4   -      -
+DDD5   -      -
+DDD6   -      -
+DDD7   -      -
+DDD8   -      -
+DDD9   -      -
+DDDA   -      -
+DDDB   -      -
+DDDC   -      -
+DDDD   -      -
+DDDE   -      -
+DDDF   -      -
+DDE0   -      -
+DDE1   z80    POP IX
+DDE2   -      -
+DDE3   z80    EX (SP),IX
+DDE4   -      -
+DDE5   z80    PUSH IX
+DDE6   -      -
+DDE7   -      -
+DDE8   -      -
+DDE9   z80    JP (IX)
+DDEA   -      -
+DDEB   z80    EX DE,IX
+DDEC   -      -
+DDED   -      -
+DDEE   -      -
+DDEF   -      -
+DDF0   -      -
+DDF1   -      -
+DDF2   -      -
+DDF3   -      -
+DDF4   -      -
+DDF5   -      -
+DDF6   -      -
+DDF7   -      -
+DDF8   -      -
+DDF9   z80    LD SP,IX
+DDFA   -      -
+DDFB   -      -
+DDFC   -      -
+DDFD   -      -
+DDFE   -      -
+DDFF   -      -
+FD00   -      -
+FD01   -      -
+FD02   -      -
+FD03   -      -
+FD04   -      -
+FD05   -      -
+FD06   -      -
+FD07   -      -
+FD08   -      -
+FD09   z80    ADD IY,BC
+FD0A   -      -
+FD0B   -      -
+FD0C   -      -
+FD0D   -      -
+FD0E   -      -
+FD0F   -      -
+FD10   -      -
+FD11   -      -
+FD12   -      -
+FD13   -      -
+FD14   -      -
+FD15   -      -
+FD16   -      -
+FD17   -      -
+FD18   -      -
+FD19   z80    ADD IY,DE
+FD1A   -      -
+FD1B   -      -
+FD1C   -      -
+FD1D   -      -
+FD1E   -      -
+FD1F   -      -
+FD20   -      -
+FD21   z80    LD IY,imm
+FD22   z80    LD (abs),IY
+FD23   z80    INC IY
+FD24   z80u   INC IYH
+FD25   z80u   DEC IYH
+FD26   z80u   LD IYH,imm
+FD27   -      -
+FD28   -      -
+FD29   z80    ADD IY,IY
+FD2A   z80    LD IY,(abs)
+FD2B   z80    DEC IY
+FD2C   z80u   INC IYL
+FD2D   z80u   DEC IYL
+FD2E   z80u   LD IYL,imm
+FD2F   -      -
+FD30   -      -
+FD31   -      -
+FD32   -      -
+FD33   -      -
+FD34   z80    INC (IY+d)
+FD35   z80    DEC (IY+d)
+FD36   z80    LD (IY+d),imm
+FD37   -      -
+FD38   -      -
+FD39   z80    ADD IY,SP
+FD3A   -      -
+FD3B   -      -
+FD3C   -      -
+FD3D   -      -
+FD3E   -      -
+FD3F   -      -
+FD40   -      -
+FD41   -      -
+FD42   -      -
+FD43   -      -
+FD44   z80u   LD B,IYH
+FD45   z80u   LD B,IYL
+FD46   z80    LD B,(IY+d)
+FD47   -      -
+FD48   -      -
+FD49   -      -
+FD4A   -      -
+FD4B   -      -
+FD4C   z80u   LD C,IYH
+FD4D   z80u   LD C,IYL
+FD4E   z80    LD C,(IY+d)
+FD4F   -      -
+FD50   -      -
+FD51   -      -
+FD52   -      -
+FD53   -      -
+FD54   z80u   LD D,IYH
+FD55   z80u   LD D,IYL
+FD56   z80    LD D,(IY+d)
+FD57   -      -
+FD58   -      -
+FD59   -      -
+FD5A   -      -
+FD5B   -      -
+FD5C   z80u   LD E,IYH
+FD5D   z80u   LD E,IYL
+FD5E   z80    LD E,(IY+d)
+FD5F   -      -
+FD60   z80u   LD IYH,B
+FD61   z80u   LD IYH,C
+FD62   z80u   LD IYH,D
+FD63   z80u   LD IYH,E
+FD64   z80u   LD IYH,IYH
+FD65   z80u   LD IYH,IYL
+FD66   z80    LD H,(IY+d)
+FD67   z80u   LD IYH,A
+FD68   z80u   LD IYL,B
+FD69   z80u   LD IYL,C
+FD6A   z80u   LD IYL,D
+FD6B   z80u   LD IYL,E
+FD6C   z80u   LD IYL,IYH
+FD6D   z80u   LD IYL,IYL
+FD6E   z80    LD L,(IY+d)
+FD6F   z80u   LD IYL,A
+FD70   z80    LD (IY+d),B
+FD71   z80    LD (IY+d),C
+FD72   z80    LD (IY+d),D
+FD73   z80    LD (IY+d),E
+FD74   z80    LD (IY+d),H
+FD75   z80    LD (IY+d),L
+FD76   -      -
+FD77   z80    LD (IY+d),A
+FD78   -      -
+FD79   -      -
+FD7A   -      -
+FD7B   -      -
+FD7C   z80u   LD A,IYH
+FD7D   z80u   LD A,IYL
+FD7E   z80    LD A,(IY+d)
+FD7F   -      -
+FD80   -      -
+FD81   -      -
+FD82   -      -
+FD83   -      -
+FD84   z80u   ADD A,IYH
+FD85   z80u   ADD A,IYL
+FD86   z80    ADD A,(IY+d)
+FD87   -      -
+FD88   -      -
+FD89   -      -
+FD8A   -      -
+FD8B   -      -
+FD8C   z80u   ADC A,IYH
+FD8D   z80u   ADC A,IYL
+FD8E   z80    ADC A,(IY+d)
+FD8F   -      -
+FD90   -      -
+FD91   -      -
+FD92   -      -
+FD93   -      -
+FD94   z80u   SUB A,IYH
+FD95   z80u   SUB A,IYL
+FD96   z80    SUB A,(IY+d)
+FD97   -      -
+FD98   -      -
+FD99   -      -
+FD9A   -      -
+FD9B   -      -
+FD9C   z80u   SBC A,IYH
+FD9D   z80u   SBC A,IYL
+FD9E   z80    SBC A,(IY+d)
+FD9F   -      -
+FDA0   -      -
+FDA1   -      -
+FDA2   -      -
+FDA3   -      -
+FDA4   z80u   AND A,IYH
+FDA5   z80u   AND A,IYL
+FDA6   z80    AND A,(IY+d)
+FDA7   -      -
+FDA8   -      -
+FDA9   -      -
+FDAA   -      -
+FDAB   -      -
+FDAC   z80u   XOR A,IYH
+FDAD   z80u   XOR A,IYL
+FDAE   z80    XOR A,(IY+d)
+FDAF   -      -
+FDB0   -      -
+FDB1   -      -
+FDB2   -      -
+FDB3   -      -
+FDB4   z80u   OR A,IYH
+FDB5   z80u   OR A,IYL
+FDB6   z80    OR A,(IY+d)
+FDB7   -      -
+FDB8   -      -
+FDB9   -      -
+FDBA   -      -
+FDBB   -      -
+FDBC   z80u   CP A,IYH
+FDBD   z80u   CP A,IYL
+FDBE   z80    CP A,(IY+d)
+FDBF   -      -
+FDC0   -      -
+FDC1   -      -
+FDC2   -      -
+FDC3   -      -
+FDC4   -      -
+FDC5   -      -
+FDC6   -      -
+FDC7   -      -
+FDC8   -      -
+FDC9   -      -
+FDCA   -      -
+FDCB   z80    prebyte CB
+FDCC   -      -
+FDCD   -      -
+FDCE   -      -
+FDCF   -      -
+FDD0   -      -
+FDD1   -      -
+FDD2   -      -
+FDD3   -      -
+FDD4   -      -
+FDD5   -      -
+FDD6   -      -
+FDD7   -      -
+FDD8   -      -
+FDD9   -      -
+FDDA   -      -
+FDDB   -      -
+FDDC   -      -
+FDDD   -      -
+FDDE   -      -
+FDDF   -      -
+FDE0   -      -
+FDE1   z80    POP IY
+FDE2   -      -
+FDE3   z80    EX (SP),IY
+FDE4   -      -
+FDE5   z80    PUSH IY
+FDE6   -      -
+FDE7   -      -
+FDE8   -      -
+FDE9   z80    JP (IY)
+FDEA   -      -
+FDEB   z80    EX DE,IY
+FDEC   -      -
+FDED   -      -
+FDEE   -      -
+FDEF   -      -
+FDF0   -      -
+FDF1   -      -
+FDF2   -      -
+FDF3   -      -
+FDF4   -      -
+FDF5   -      -
+FDF6   -      -
+FDF7   -      -
+FDF8   -      -
+FDF9   z80    LD SP,IY
+FDFA   -      -
+FDFB   -      -
+FDFC   -      -
+FDFD   -      -
+FDFE   -      -
+FDFF   -      -
+DDCB00 -      -
+DDCB01 -      -
+DDCB02 -      -
+DDCB03 -      -
+DDCB04 -      -
+DDCB05 -      -
+DDCB06 z80    RLC (IX+d)
+DDCB07 -      -
+DDCB08 -      -
+DDCB09 -      -
+DDCB0A -      -
+DDCB0B -      -
+DDCB0C -      -
+DDCB0D -      -
+DDCB0E z80    RRC (IX+d)
+DDCB0F -      -
+DDCB10 -      -
+DDCB11 -      -
+DDCB12 -      -
+DDCB13 -      -
+DDCB14 -      -
+DDCB15 -      -
+DDCB16 z80    RL (IX+d)
+DDCB17 -      -
+DDCB18 -      -
+DDCB19 -      -
+DDCB1A -      -
+DDCB1B -      -
+DDCB1C -      -
+DDCB1D -      -
+DDCB1E z80    RR (IX+d)
+DDCB1F -      -
+DDCB20 -      -
+DDCB21 -      -
+DDCB22 -      -
+DDCB23 -      -
+DDCB24 -      -
+DDCB25 -      -
+DDCB26 z80    SLA (IX+d)
+DDCB27 -      -
+DDCB28 -      -
+DDCB29 -      -
+DDCB2A -      -
+DDCB2B -      -
+DDCB2C -      -
+DDCB2D -      -
+DDCB2E z80    SRA (IX+d)
+DDCB2F -      -
+DDCB30 -      -
+DDCB31 -      -
+DDCB32 -      -
+DDCB33 -      -
+DDCB34 -      -
+DDCB35 -      -
+DDCB36 z80    SL1 (IX+d)
+DDCB37 -      -
+DDCB38 -      -
+DDCB39 -      -
+DDCB3A -      -
+DDCB3B -      -
+DDCB3C -      -
+DDCB3D -      -
+DDCB3E z80    SRL (IX+d)
+DDCB3F -      -
+DDCB40 -      -
+DDCB41 -      -
+DDCB42 -      -
+DDCB43 -      -
+DDCB44 -      -
+DDCB45 -      -
+DDCB46 z80    BIT (IX+d),0
+DDCB47 -      -
+DDCB48 -      -
+DDCB49 -      -
+DDCB4A -      -
+DDCB4B -      -
+DDCB4C -      -
+DDCB4D -      -
+DDCB4E z80    BIT (IX+d),1
+DDCB4F -      -
+DDCB50 -      -
+DDCB51 -      -
+DDCB52 -      -
+DDCB53 -      -
+DDCB54 -      -
+DDCB55 -      -
+DDCB56 z80    BIT (IX+d),2
+DDCB57 -      -
+DDCB58 -      -
+DDCB59 -      -
+DDCB5A -      -
+DDCB5B -      -
+DDCB5C -      -
+DDCB5D -      -
+DDCB5E z80    BIT (IX+d),3
+DDCB5F -      -
+DDCB60 -      -
+DDCB61 -      -
+DDCB62 -      -
+DDCB63 -      -
+DDCB64 -      -
+DDCB65 -      -
+DDCB66 z80    BIT (IX+d),4
+DDCB67 -      -
+DDCB68 -      -
+DDCB69 -      -
+DDCB6A -      -
+DDCB6B -      -
+DDCB6C -      -
+DDCB6D -      -
+DDCB6E z80    BIT (IX+d),5
+DDCB6F -      -
+DDCB70 -      -
+DDCB71 -      -
+DDCB72 -      -
+DDCB73 -      -
+DDCB74 -      -
+DDCB75 -      -
+DDCB76 z80    BIT (IX+d),6
+DDCB77 -      -
+DDCB78 -      -
+DDCB79 -      -
+DDCB7A -      -
+DDCB7B -      -
+DDCB7C -      -
+DDCB7D -      -
+DDCB7E z80    BIT (IX+d),7
+DDCB7F -      -
+DDCB80 -      -
+DDCB81 -      -
+DDCB82 -      -
+DDCB83 -      -
+DDCB84 -      -
+DDCB85 -      -
+DDCB86 z80    RES (IX+d),0
+DDCB87 -      -
+DDCB88 -      -
+DDCB89 -      -
+DDCB8A -      -
+DDCB8B -      -
+DDCB8C -      -
+DDCB8D -      -
+DDCB8E z80    RES (IX+d),1
+DDCB8F -      -
+DDCB90 -      -
+DDCB91 -      -
+DDCB92 -      -
+DDCB93 -      -
+DDCB94 -      -
+DDCB95 -      -
+DDCB96 z80    RES (IX+d),2
+DDCB97 -      -
+DDCB98 -      -
+DDCB99 -      -
+DDCB9A -      -
+DDCB9B -      -
+DDCB9C -      -
+DDCB9D -      -
+DDCB9E z80    RES (IX+d),3
+DDCB9F -      -
+DDCBA0 -      -
+DDCBA1 -      -
+DDCBA2 -      -
+DDCBA3 -      -
+DDCBA4 -      -
+DDCBA5 -      -
+DDCBA6 z80    RES (IX+d),4
+DDCBA7 -      -
+DDCBA8 -      -
+DDCBA9 -      -
+DDCBAA -      -
+DDCBAB -      -
+DDCBAC -      -
+DDCBAD -      -
+DDCBAE z80    RES (IX+d),5
+DDCBAF -      -
+DDCBB0 -      -
+DDCBB1 -      -
+DDCBB2 -      -
+DDCBB3 -      -
+DDCBB4 -      -
+DDCBB5 -      -
+DDCBB6 z80    RES (IX+d),6
+DDCBB7 -      -
+DDCBB8 -      -
+DDCBB9 -      -
+DDCBBA -      -
+DDCBBB -      -
+DDCBBC -      -
+DDCBBD -      -
+DDCBBE z80    RES (IX+d),7
+DDCBBF -      -
+DDCBC0 -      -
+DDCBC1 -      -
+DDCBC2 -      -
+DDCBC3 -      -
+DDCBC4 -      -
+DDCBC5 -      -
+DDCBC6 z80    SET (IX+d),0
+DDCBC7 -      -
+DDCBC8 -      -
+DDCBC9 -      -
+DDCBCA -      -
+DDCBCB -      -
+DDCBCC -      -
+DDCBCD -      -
+DDCBCE z80    SET (IX+d),1
+DDCBCF -      -
+DDCBD0 -      -
+DDCBD1 -      -
+DDCBD2 -      -
+DDCBD3 -      -
+DDCBD4 -      -
+DDCBD5 -      -
+DDCBD6 z80    SET (IX+d),2
+DDCBD7 -      -
+DDCBD8 -      -
+DDCBD9 -      -
+DDCBDA -      -
+DDCBDB -      -
+DDCBDC -      -
+DDCBDD -      -
+DDCBDE z80    SET (IX+d),3
+DDCBDF -      -
+DDCBE0 -      -
+DDCBE1 -      -
+DDCBE2 -      -
+DDCBE3 -      -
+DDCBE4 -      -
+DDCBE5 -      -
+DDCBE6 z80    SET (IX+d),4
+DDCBE7 -      -
+DDCBE8 -      -
+DDCBE9 -      -
+DDCBEA -      -
+DDCBEB -      -
+DDCBEC -      -
+DDCBED -      -
+DDCBEE z80    SET (IX+d),5
+DDCBEF -      -
+DDCBF0 -      -
+DDCBF1 -      -
+DDCBF2 -      -
+DDCBF3 -      -
+DDCBF4 -      -
+DDCBF5 -      -
+DDCBF6 z80    SET (IX+d),6
+DDCBF7 -      -
+DDCBF8 -      -
+DDCBF9 -      -
+DDCBFA -      -
+DDCBFB -      -
+DDCBFC -      -
+DDCBFD -      -
+DDCBFE z80    SET (IX+d),7
+DDCBFF -      -
