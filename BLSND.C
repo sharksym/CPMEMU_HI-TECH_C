@@ -37,6 +37,9 @@ struct bl_snd_var_t {
 #define _bl_bgm_get_pos		_bl_bgmt_get_pos
 #define _bl_bgm_get_avail	_bl_bgmt_get_avail
 #define _bl_bgm_cmd		_bl_bgmt_cmd
+uint8_t BLBGM_Tiny;
+#else
+uint8_t BLBGM_Normal;
 #endif
 
 extern struct bl_snd_var_t bl_snd;
