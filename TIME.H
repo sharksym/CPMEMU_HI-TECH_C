@@ -22,10 +22,7 @@ struct tm {
 #define	_TIME
 #endif	_TIME
 
-#define CLK_TCK 50				/* for 50Hz interrupt frequency */
 #define JIFFY (*(unsigned short *)0xfc9e)	/* clock tick counter */
-#define jtimerset(s) (JIFFY=(0-(s * 5)))	/* set timer in 100ms slices */
-#define jtimeup() (JIFFY==0)
 
 extern int	time_zone;	/* minutes WESTWARD of Greenwich */
 				/* this value defaults to 0 since with
