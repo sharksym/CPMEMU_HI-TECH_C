@@ -47,10 +47,6 @@ uint16_t ks2kssm[2350]={
 };
 #endif
 
-static void draw_font_null(uint8_t *font)
-{
-}
-
 uint8_t print_kr_mode = 0;
 uint8_t font_text_mode;
 uint8_t font_width_byte;
@@ -59,32 +55,78 @@ extern uint8_t font_h16;
 extern uint8_t *font_asc;
 extern void (*font_func)(uint8_t *font);
 
+void draw_font_null(uint8_t *font);
+#asm
+	psect	text
+_draw_font_null:
+	ret
+#endasm
 void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	/* non-interlace mode */
 	{
 		draw_font_null,			/* T1 */
 		draw_font_null,			/* T2 */
+#ifdef NO_BLGRPFNT_MC
+		draw_font_null,			/* MC */
+#else
 		bl_draw_font_mc,		/* MC */
+#endif
 		draw_font_null,			/* G1 */
 		draw_font_null,			/* G2 */
 		draw_font_null,			/* G3 */
+#ifdef NO_BLGRPFNT_G4
+		draw_font_null,			/* G4 */
+#else
 		bl_draw_font_g4,		/* G4 */
+#endif
+#ifdef NO_BLGRPFNT_G5
+		draw_font_null,			/* G5 */
+#else
 		bl_draw_font_g5,		/* G5 */
+#endif
+#ifdef NO_BLGRPFNT_G6
+		draw_font_null,			/* G6 */
+#else
 		bl_draw_font_g6,		/* G6 */
+#endif
+#ifdef NO_BLGRPFNT_G7
+		draw_font_null,			/* G7 */
+#else
 		bl_draw_font_g7			/* G7 */
+#endif
 	},
 	/* interlace mode */
 	{
 		draw_font_null,			/* T1 */
 		draw_font_null,			/* T2 */
+#ifdef NO_BLGRPFNT_MC
+		draw_font_null,			/* MC */
+#else
 		bl_draw_font_mc,		/* MC */
+#endif
 		draw_font_null,			/* G1 */
 		draw_font_null,			/* G2 */
 		draw_font_null,			/* G3 */
+#ifdef NO_BLGRPFNT_G4
+		draw_font_null,			/* G4 */
+#else
 		bl_draw_font_g4i,		/* G4 */
+#endif
+#ifdef NO_BLGRPFNT_G5
+		draw_font_null,			/* G5 */
+#else
 		bl_draw_font_g5i,		/* G5 */
+#endif
+#ifdef NO_BLGRPFNT_G6
+		draw_font_null,			/* G6 */
+#else
 		bl_draw_font_g6i,		/* G6 */
+#endif
+#ifdef NO_BLGRPFNT_G7
+		draw_font_null,			/* G7 */
+#else
 		bl_draw_font_g7i		/* G7 */
+#endif
 	}
 };
 
