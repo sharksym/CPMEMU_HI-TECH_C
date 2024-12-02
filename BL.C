@@ -8,11 +8,15 @@
  *********************************************************************/
 
 #asm
-;	global	bldata, blbss
+	global	_bl_data, _bl_bss
 
+;uint8_t bl_data = 0;
 	psect	data
-bldata:	defb	0
+_bl_data:
+	defb	0
 
+;uint8_t bl_bss;
 	psect	bss
-blbss:	defs	1
+_bl_bss:
+	defs	1
 #endasm
