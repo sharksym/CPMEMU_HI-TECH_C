@@ -58,6 +58,13 @@ src-bank00 :=     \
 
 
 ###
+#   Common area
+#
+src-common :=     \
+    BL.C          \
+
+
+###
 #   Banking Library source files
 #
 include $(CPMDIR)\BLSRC.CFG
@@ -91,6 +98,12 @@ ifeq ($(app-mode),0)
     PSECT_CFG := $(PSECT_CFG),bss=$(psect-bss)
   else
     PSECT_CFG := $(PSECT_CFG),bss
+  endif
+  ifeq ($(rom-mode),1)
+    CFLAGS += -DBL_ROM=32
+  endif
+  ifeq ($(rom-mode),2)
+    CFLAGS += -DBL_ROM=48
   endif
 else
     PSECT_CFG := ,data,bss
