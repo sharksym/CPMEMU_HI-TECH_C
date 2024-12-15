@@ -7,6 +7,8 @@
  *
  *********************************************************************/
 
+#include <blstd.h>
+
 #asm
 	global	_bl_data, _bl_bss
 
@@ -20,3 +22,14 @@ _bl_data:
 _bl_bss:
 	defs	1
 #endasm
+
+#ifdef BL_DISABLE
+#else
+#asm
+	global	_bl_comm
+;uint8_t bl_comm;
+	psect	comm
+_bl_comm:
+	defs	1
+#endasm
+#endif

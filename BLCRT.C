@@ -287,19 +287,6 @@ notdos2_mes:
 nularg:	defb	0
 #endasm
 
-
-#ifdef __Hhimem
-#asm
-	global	__himem_b, __himem_e
-__himem_b	equ	__Lhimem
-__himem_e	equ	__Hhimem
-#endasm
-extern unsigned short _himem_e;
-#define himem_end	&_himem_e
-#else
-#define himem_end	0x9400
-#endif	/* __Hhimem */
-
 extern char seg_env_buf[];
 extern char assert_msg[];
 #asm
@@ -335,8 +322,7 @@ void get_seg_table(void);
 
 extern uint8_t bl_abort;
 
-void	bl_clear_himem(void);
-void    brk(void *addr);
+void	bl_init_himem(void);
 long    _fsize(int fd);
 
 uint8_t MapperInit(void);
@@ -370,11 +356,7 @@ int     main(int argc, char *argv[]);		/* main() */
 static int ret_val;
 int bl_main(int argc, char *argv[])
 {
-	/* Clear himem(0x9400 ~) as Zero */
-	bl_clear_himem();
-
-	/* Set DATA end to himem_end(over 0x9400) */
-	brk((void *)himem_end);
+	bl_init_himem();			/* Init himem */
 
 #ifdef R800ONLY
 	if (get_msx_version() == MSXTR) {
@@ -551,22 +533,25 @@ main_ret:
 
 #asm
 ;-------------------------------------------------------------------------------
-; Clear Workmem (9000H ~ 93FFH) and Himem (9400H ~ )
+; Workmem (9000H ~ 93FFH), Comm (9400H ~ )
 ;
-;void	bl_clear_himem(void);
-	global	_bl_clear_himem
+;void bl_init_himem(void);
+	global	_bl_init_himem
+	global	__Hcomm, _brk
 	psect	text
-_bl_clear_himem:
-		LD	BC, __Hhimem - 09000H
-		LD	A, B
-		OR	C
-		RET	Z
-
-		LD	HL, 09000H
+_bl_init_himem:
+		LD	HL, __Hcomm
+		PUSH	HL			; for brk()
 		LD	DE, 09001H
+		XOR	A
+		SBC	HL, DE
+		LD	B, H
+		LD	C, L
+		LD	HL, 09000H
 		LD	(HL), 0
-		DEC	BC
 		LDIR
+		CALL	_brk
+		POP	HL
 		RET
 
 ;void bl_exit(int n);
