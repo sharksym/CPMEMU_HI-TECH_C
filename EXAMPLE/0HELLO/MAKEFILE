@@ -106,7 +106,7 @@ ifeq ($(app-mode),0)
     CFLAGS += -DBL_ROM=48
   endif
 else
-    PSECT_CFG := ,data,bss
+    PSECT_CFG := ,data,bss,comm=9400H
 endif
 
 #   App mode1: DOS2 COM for one bank (bank00)
@@ -130,13 +130,6 @@ ifeq ($(app-mode),2)
   ifneq ($(bank-max),)
     CFLAGS += -DBL_BMAX=$(bank-max)
   endif
-  ifneq ($(himem-size),)
-    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H+$(himem-size)
-  else
-    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H
-  endif
-else
-    CFLAGS += -D__Lhimem=9400H -D__Hhimem=9400H
 endif
 
 #   C library selection
@@ -174,12 +167,14 @@ CFLAGS += $(cflag)
 #   Banking Tools
 #
 #BLMKRULE := $(CPMDIR)\CPM $(CPMDIR)\BLMKRULE
+#BLCOMM   := $(CPMDIR)\CPM $(CPMDIR)\BLCOMM
 #BLLIST   := $(CPMDIR)\CPM $(CPMDIR)\BLLIST
 #BLEXTREF := $(CPMDIR)\CPM $(CPMDIR)\BLEXTREF
 #BLCALLER := $(CPMDIR)\CPM $(CPMDIR)\BLCALLER
 #BLMERGE  := $(CPMDIR)\CPM $(CPMDIR)\BLMERGE
 #BLOPTIM  := $(CPMDIR)\CPM $(CPMDIR)\BLOPTIM
 BLMKRULE := $(CPMDIR)\BLMKRULE.EXE
+BLCOMM   := $(CPMDIR)\BLCOMM.EXE
 BLLIST   := $(CPMDIR)\BLLIST.EXE
 BLEXTREF := $(CPMDIR)\BLEXTREF.EXE
 BLCALLER := $(CPMDIR)\BLCALLER.EXE
