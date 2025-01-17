@@ -258,8 +258,12 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 	bl_draw_font_bgc = bl_grp.font_bgc = bg;
 
 	/* pre-calculation for G4,G6 */
+#ifndef NO_BLGRPFNT_G4
 	bl_draw_font_g4c();
+#endif
+#ifndef NO_BLGRPFNT_G6
 	bl_draw_font_g6c();
+#endif
 }
 
 void bl_grp_set_print_kr(uint8_t on)
