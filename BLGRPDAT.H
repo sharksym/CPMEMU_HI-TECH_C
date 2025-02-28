@@ -19,6 +19,7 @@ struct bl_grp_var_t {			/* bl_grp_var max. 224bytes */
 	uint8_t line_212;
 	uint8_t display_mode;
 	uint8_t interlace_on;
+	uint8_t vsync_50hz;
 
 	uint8_t color_text_fg;
 	uint8_t color_text_bg;

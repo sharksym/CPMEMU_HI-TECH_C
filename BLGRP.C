@@ -22,6 +22,7 @@
 #define SPR_MODE	0x03	/* bit mask for sprite mode */
 #define DISP_MODE	0x0E	/* bit mask for display timing mode */
 #define DISP_IL_E0	0x0C	/* bit mask for interlaced two field */
+#define DISP_PAL	0x02	/* bit mask for pal 50Hz */
 #define SCROLL_MODE	0x03	/* bit mask for scroll mode */
 
 static static uint8_t scrmode[] = {
@@ -188,8 +189,9 @@ int8_t bl_grp_init(void)
 	bl_grp.text_width   = 40;
 	bl_grp.palette0_on  = 0;
 	bl_grp.line_212     = 1;
-	bl_grp.display_mode = bl_grp.reg_shadow[9] & DISP_MODE;
+	bl_grp.display_mode = (bl_grp.reg_shadow[9] & DISP_MODE);
 	bl_grp.interlace_on = (bl_grp.reg_shadow[9] & DISP_IL_E0) == DISP_IL_E0 ? 1 : 0;
+	bl_grp.vsync_50hz   = (bl_grp.reg_shadow[9] & DISP_PAL) ? 1 : 0;
 
 	bl_grp.color_text_fg = WORK_FORCOL;
 	bl_grp.color_text_bg = WORK_BAKCOL;
@@ -577,7 +579,18 @@ void bl_grp_set_display_mode(uint8_t mode)
 
 	bl_grp_update_reg_bit(9, DISP_MODE, bl_grp.display_mode);
 	bl_grp.interlace_on = (bl_grp.display_mode & DISP_IL_E0) == DISP_IL_E0 ? 1 : 0;
+	bl_grp.vsync_50hz   = (bl_grp.display_mode & DISP_PAL) ? 1 : 0;
 	bl_grp_setup_font_draw_func();
+}
+
+void bl_grp_set_vsync_50hz(uint8_t on)
+{
+	if (on)
+		bl_grp.display_mode |= DISP_PAL;
+	else
+		bl_grp.display_mode &= ~DISP_PAL;
+
+	bl_grp_update_reg_bit(9, DISP_MODE, bl_grp.display_mode);
 }
 
 uint8_t bl_grp_get_palette0_on(void)
@@ -593,6 +606,11 @@ uint8_t bl_grp_get_line_212(void)
 uint8_t bl_grp_get_display_mode(void)
 {
 	return bl_grp.display_mode;
+}
+
+uint8_t bl_grp_get_vsync_50hz(void)
+{
+	return bl_grp.vsync_50hz;
 }
 
 uint8_t bl_grp_get_interlace_on(void)
