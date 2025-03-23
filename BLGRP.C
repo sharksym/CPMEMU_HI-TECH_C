@@ -981,7 +981,7 @@ void bl_grp_set_palette_gray(uint8_t on)
 			v = bl_grp.palette[n];
 			y = ((((v >> 4) & 7) * 299) +
 			     (((v >> 8) & 7) * 587) +
-			     (((v     ) & 7) * 114)) / 1000;
+			     (((v     ) & 7) * 114) + 500) / 1000;
 			/* gray_palette[n] = ((uint16_t)n << 12) | (y << 8) | (y << 4) | y; */
 			gray_palette[n] = ((uint16_t)n << 12) + y * (256 + 16 + 1);
 		}
