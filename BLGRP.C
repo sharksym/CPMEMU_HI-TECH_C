@@ -970,23 +970,28 @@ void bl_grp_set_palette_mute(uint8_t on)
 	bl_grp_update_palette(on ? mute_palette : bl_grp.palette);
 }
 
-void bl_grp_set_palette_gray(uint8_t on)
+void bl_grp_set_palette_mono(uint8_t mode)
 {
-	uint16_t gray_palette[17];
-	static uint16_t n, y, v;
+	uint16_t mono_palette[17];
+	static uint16_t m, n, y, v;
 
-	if (on) {
+	if (mode) {
+		switch (mode) {
+		case 1: m =  16;		break;	/* R */
+		case 2: m = 256;		break;	/* G */
+		case 3: m =   1;		break;	/* B */
+		default:m = 256 + 16 + 1;	break;	/* White */
+		}
 		for (n = 0; n < 16; n++) {
 			/* Y = 0.299R + 0.587G + 0.114B */
 			v = bl_grp.palette[n];
 			y = ((((v >> 4) & 7) * 299) +
 			     (((v >> 8) & 7) * 587) +
 			     (((v     ) & 7) * 114) + 500) / 1000;
-			/* gray_palette[n] = ((uint16_t)n << 12) | (y << 8) | (y << 4) | y; */
-			gray_palette[n] = ((uint16_t)n << 12) + y * (256 + 16 + 1);
+			mono_palette[n] = ((uint16_t)n << 12) + y * m;
 		}
-		gray_palette[16] = 0xFFFF;
-		bl_grp_update_palette(gray_palette);
+		mono_palette[16] = 0xFFFF;
+		bl_grp_update_palette(mono_palette);
 	} else {
 		bl_grp_update_palette(bl_grp.palette);
 	}
