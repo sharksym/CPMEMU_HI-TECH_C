@@ -973,14 +973,15 @@ void bl_grp_set_palette_mute(uint8_t on)
 void bl_grp_set_palette_mono(uint8_t mode)
 {
 	uint16_t mono_palette[17];
-	static uint16_t m, n, y, v;
+	static uint16_t m, k, n, y, v;
 
 	if (mode) {
+		k = 0;
 		switch (mode) {
-		case 1: m =  16;		break;	/* R */
-		case 2: m = 256;		break;	/* G */
-		case 3: m =   1;		break;	/* B */
-		default:m = 256 + 16 + 1;	break;	/* White */
+		case 1: m =  16; k = 256;	break;	/* 1. Amber */
+		case 2: m = 256;		break;	/* 2. Green */
+		case 3: m =   1; k =  16;	break;	/* 3. Red-Blue */
+		default:m = 256 + 16 + 1;	break;	/* 4. White */
 		}
 		for (n = 0; n < 16; n++) {
 			/* Y = 0.299R + 0.587G + 0.114B */
@@ -988,7 +989,7 @@ void bl_grp_set_palette_mono(uint8_t mode)
 			y = ((((v >> 4) & 7) * 299) +
 			     (((v >> 8) & 7) * 587) +
 			     (((v     ) & 7) * 114) + 500) / 1000;
-			mono_palette[n] = ((uint16_t)n << 12) + y * m;
+			mono_palette[n] = ((uint16_t)n << 12) + y * m + (y >> 1) * k;
 		}
 		mono_palette[16] = 0xFFFF;
 		bl_grp_update_palette(mono_palette);
