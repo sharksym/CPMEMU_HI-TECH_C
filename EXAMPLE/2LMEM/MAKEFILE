@@ -3,66 +3,48 @@
 #
 #CPMDIR = C:\Emul\CPMEMU_HI-TECH_C
 CPMDIR = ..\..
+WINDIR = $(CPMDIR)\windows
 
 ###
 #   CP/M program EXEcutor for Win32 by Keiji Murakami
 #   http://hp.vector.co.jp/authors/VA000084/
-#CPMEMU = C:\Emul\CPMEMU_HI-TECH_C\cpm32\cpm.exe -w0
-CPMEMU = ..\..\cpm32\cpm.exe -w0
+CPMEMU = $(CPMDIR)\cpm32\cpm.exe -w0
 
+###
+#   Banking Tools
+#
+BLMKRULE := $(CPMDIR)\BLMKRULE.EXE
+BLCOMM   := $(CPMDIR)\BLCOMM.EXE
+BLLIST   := $(CPMDIR)\BLLIST.EXE
+BLEXTREF := $(CPMDIR)\BLEXTREF.EXE
+BLCALLER := $(CPMDIR)\BLCALLER.EXE
+BLMERGE  := $(CPMDIR)\BLMERGE.EXE
+BLOPTIM  := $(CPMDIR)\BLOPTIM.EXE
 
 ###
 #   Temporary work path
 #
 WORKDIR = .
 
-
-###
-#   Drive mapping for CP/M executor
-#   A: HI-TECH C package path
-#   B: Current path
-#   C: Work path
-#   D: Work path
-CPM_A = A:
-CPM_B = B:
-CPM_C = C:
-CPM_D = D:
-CPM_LIB = A:
-
-
 ###
 #   Flags
 #
 SHELL = cmd.exe
-#CFLAGS := -DANSI -DCPM -DHI_TECH_C -Dz80
 CFLAGS := -DANSI -DCPM
 MKFLAGS :=
 LIBOUT :=
-
-
-###
-#   HI-TECH C compiler
-#
-CPP  := $(CPMEMU) $(CPMDIR)\CPP
-P1   := $(CPMEMU) $(CPMDIR)\P1
-CGEN := $(CPMEMU) $(CPMDIR)\CGEN
-ZAS  := $(CPMEMU) $(CPMDIR)\ZAS
-LINK := $(CPMEMU) $(CPMDIR)\LINK
-
 
 ###
 #   Startup code
 #
 src-bank00 :=     \
-    BLCRT.C       \
-
+    BLCRT.C
 
 ###
 #   Common area
 #
 src-common :=     \
-    BL.C          \
-
+    BL.C
 
 ###
 #   Banking Library source files
@@ -70,12 +52,44 @@ src-common :=     \
 include $(CPMDIR)\BLSRC.CFG
 BLSRC-CP := $(foreach file, $(src-bl), $(patsubst %.AS,%.ACP, $(patsubst %.C,%.CCP,$(file))))
 
-
 ###
 #   Target CFG file
 #
 include $(CFG).CFG
 
+###
+#   HI-TECH C compiler
+#   0: CP/M version with CP/M EXEcutor
+#   1: Windows x64 version
+#
+#   Drive mapping
+#   CPM_A: HI-TECH C package path
+#   CPM_B: Current path
+#   CPM_C: Work path
+#   CPM_D: Work path
+ifeq ($(tool-mode),0)
+  CPP  := $(CPMEMU) $(CPMDIR)\CPP
+  P1   := $(CPMEMU) $(CPMDIR)\P1
+  CGEN := $(CPMEMU) $(CPMDIR)\CGEN
+  ZAS  := $(CPMEMU) $(CPMDIR)\ZAS
+  LINK := $(CPMEMU) $(CPMDIR)\LINK
+  CPM_A = A:
+  CPM_B = B:
+  CPM_C = C:
+  CPM_D = D:
+  CPM_LIB = A:
+else
+  CPP  := $(WINDIR)\cpp.exe
+  P1   := $(WINDIR)\p1.exe
+  CGEN := $(WINDIR)\cgen.exe
+  ZAS  := $(WINDIR)\zas.exe
+  LINK := $(WINDIR)\link.exe
+  CPM_A = $(CPMDIR)\\
+  CPM_B = .\\
+  CPM_C = $(WORKDIR)\\
+  CPM_D = $(WORKDIR)\\
+  CPM_LIB = $(CPMDIR)\\
+endif
 
 ###
 #   Definitions
@@ -162,25 +176,6 @@ endif
 
 #   cflags from CFG
 CFLAGS += $(cflag)
-
-###
-#   Banking Tools
-#
-#BLMKRULE := $(CPMDIR)\CPM $(CPMDIR)\BLMKRULE
-#BLCOMM   := $(CPMDIR)\CPM $(CPMDIR)\BLCOMM
-#BLLIST   := $(CPMDIR)\CPM $(CPMDIR)\BLLIST
-#BLEXTREF := $(CPMDIR)\CPM $(CPMDIR)\BLEXTREF
-#BLCALLER := $(CPMDIR)\CPM $(CPMDIR)\BLCALLER
-#BLMERGE  := $(CPMDIR)\CPM $(CPMDIR)\BLMERGE
-#BLOPTIM  := $(CPMDIR)\CPM $(CPMDIR)\BLOPTIM
-BLMKRULE := $(CPMDIR)\BLMKRULE.EXE
-BLCOMM   := $(CPMDIR)\BLCOMM.EXE
-BLLIST   := $(CPMDIR)\BLLIST.EXE
-BLEXTREF := $(CPMDIR)\BLEXTREF.EXE
-BLCALLER := $(CPMDIR)\BLCALLER.EXE
-BLMERGE  := $(CPMDIR)\BLMERGE.EXE
-BLOPTIM  := $(CPMDIR)\BLOPTIM.EXE
-
 
 ###
 #   Rules
