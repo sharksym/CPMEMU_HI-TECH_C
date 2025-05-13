@@ -15,6 +15,10 @@ TOOLCHAIN:
     HI-TECH Z80 CP/M C compiler V3.09:
         Copyright by HI-TECH Software.
 
+    Recompiled tools:
+        x64 build used.
+        https://github.com/ogdenpm/hitech
+
     CP/M program EXEcutor for Win32:
         CP/M 2.2 emulator by Keiji Murakami
         http://hp.vector.co.jp/authors/VA000084/
