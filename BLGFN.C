@@ -42,7 +42,7 @@ uint8_t font_kr[] = {				/* w16 x h16 x 8x4x4 */
 #asm
 	psect	data
 #endasm
-uint16_t ks2kssm[2350]={
+uint16_t ks2kssm[]={
 #include "ks2kssm.h"
 };
 #endif
