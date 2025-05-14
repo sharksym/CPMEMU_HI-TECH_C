@@ -397,8 +397,36 @@ _bl_grp_copy_font_l:
 
 _bl_grp_draw_k1:
 	push de			; backup str
+	cp 008H			; BackSpace
+	jr z, _bl_grp_draw_k_bs
 	ld l,a
 	call _bl_grp_draw_w8
+	pop de			; restore str
+	inc de			; str++
+	jp _bl_grp_print_bitmap_k
+
+_bl_grp_draw_k_bs:
+	ld bc,(_font_width_byte)
+	ld b,0
+
+	ld hl,(_vram_faddr)
+	xor a
+	sbc hl,bc
+	ld (_vram_faddr),hl
+	ld (faddr + 1),hl
+	ld hl,(_bl_vdp_vram_l)
+	xor a
+	sbc hl,bc
+	ld (_bl_vdp_vram_l),hl
+	ld (vram_l + 1),hl
+
+	ld l,020H
+	call _bl_grp_draw_w8
+
+faddr:	ld hl, 0
+	ld (_vram_faddr),hl
+vram_l:	ld hl, 0
+	ld (_bl_vdp_vram_l),hl
 	pop de			; restore str
 	inc de			; str++
 	jp _bl_grp_print_bitmap_k
@@ -524,6 +552,14 @@ _font_func:			; void *font_func;
 	defw _draw_font_null
 #endasm
 
+void bl_grp_print_asc(char asc)
+{
+	if (asc == '\b')
+		bl_grp_print_backspace();
+	else
+		bl_grp_print_chr(asc);
+}
+
 void bl_grp_print_cursor(void)
 {
 	uint16_t vram_faddr_bak = vram_faddr;
@@ -537,7 +573,10 @@ void bl_grp_print_cursor(void)
 
 void bl_grp_print_backspace(void)
 {
-	uint8_t addr_delta = font_width_byte << 1;
+	uint8_t addr_delta = font_width_byte;
+
+	vram_faddr -= addr_delta;
+	bl_vdp_vram_l -= addr_delta;
 
 	bl_grp_print_chr(0x20);
 

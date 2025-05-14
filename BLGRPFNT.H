@@ -14,6 +14,7 @@ void bl_grp_print(uint16_t x, uint16_t y, char *str);
 void bl_grp_print_pos(uint16_t x, uint16_t y);
 void bl_grp_print_str(char *str);
 void bl_grp_print_chr(char chr);
+void bl_grp_print_asc(char asc);
 void bl_grp_print_cursor(void);
 void bl_grp_print_backspace(void);
 void bl_grp_print_back(char count);
