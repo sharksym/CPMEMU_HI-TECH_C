@@ -109,3 +109,26 @@ extern char key_pressed(unsigned short keycode);
 extern char key_clicked(unsigned short keycode);
 extern unsigned short key_get_code(void);
 
+
+/* key_getch */
+
+#define KEY_CH_F1       0x01
+#define KEY_CH_F2       0x02
+#define KEY_CH_F3       0x03
+#define KEY_CH_F4       0x04
+#define KEY_CH_F5       0x05
+#define KEY_CH_HOME     0x0B
+#define KEY_CH_STOP     0x0E
+#define KEY_CH_GRAPH    0x0F
+#define KEY_CH_INS      0x12
+#define KEY_CH_KANA     0x14
+#define KEY_CH_CAPS     0x16
+#define KEY_CH_SELECT   0x18
+#define KEY_CH_ESC      0x1B
+#define KEY_CH_RIGHT    0x1C
+#define KEY_CH_LEFT     0x1D
+#define KEY_CH_UP       0x1E
+#define KEY_CH_DOWN     0x1F
+#define KEY_CH_DEL      0x7F
+
+extern char key_getch(void);
