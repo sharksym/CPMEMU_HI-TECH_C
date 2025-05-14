@@ -47,7 +47,7 @@ uint16_t ks2kssm[2350]={
 };
 #endif
 
-uint8_t print_kr_mode = 0;
+uint8_t print_kr_mode = 0;			/* 0:English, 1:KS, 2:KSSM */
 uint8_t font_text_mode;
 uint8_t font_width_byte;
 uint8_t font_work[64];
@@ -266,9 +266,9 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 #endif
 }
 
-void bl_grp_set_print_kr(uint8_t on)
+void bl_grp_set_print_kr(uint8_t mode)
 {
-	print_kr_mode = on ? 0x01 : 0x00;
+	print_kr_mode = mode;
 }
 
 static uint16_t vram_faddr;
@@ -430,8 +430,10 @@ void bl_grp_make_font_k(uint16_t k_code)
 	uint8_t cho, jung, jong;
 	uint8_t n;
 
-	/* Convert KS to KSSM */
-	code = ks2kssm[(((k_code >> 8) & 0xFF) - 0xB0) * 94 + (uint8_t)k_code - 0xA1];
+	if (print_kr_mode == 1)			/* 1: Convert KS to KSSM */
+		code = ks2kssm[(((k_code >> 8) & 0xFF) - 0xB0) * 94 + (uint8_t)k_code - 0xA1];
+	else					/* 2: KSSM */
+		code = k_code;
 
 	cho  = table_cho_[(code >> 10) & 0x001F];
 	jung = table_jung[(code >> 5) & 0x001F];

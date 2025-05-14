@@ -8,7 +8,7 @@ void bl_grp_load_font_kr(char *filename);
 void bl_grp_setup_text_font(void);
 void bl_grp_set_font_size(uint8_t w, uint8_t h);
 void bl_grp_set_font_color(uint8_t fg, uint8_t bg);
-void bl_grp_set_print_kr(uint8_t on);
+void bl_grp_set_print_kr(uint8_t mode);
 
 void bl_grp_print(uint16_t x, uint16_t y, char *str);
 void bl_grp_print_pos(uint16_t x, uint16_t y);
