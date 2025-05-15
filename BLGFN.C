@@ -266,6 +266,11 @@ void bl_grp_set_font_color(uint8_t fg, uint8_t bg)
 #endif
 }
 
+void bl_grp_set_font_invert(void)
+{
+	bl_grp_set_font_color(bl_grp.font_bgc, bl_grp.font_fgc);
+}
+
 void bl_grp_set_print_kr(uint8_t mode)
 {
 	print_kr_mode = mode;
@@ -560,15 +565,27 @@ void bl_grp_print_asc(char asc)
 		bl_grp_print_chr(asc);
 }
 
-void bl_grp_print_cursor(void)
+void bl_grp_print_cursor(char chr)
 {
 	uint16_t vram_faddr_bak = vram_faddr;
 	uint8_t bl_vdp_vram_l_bak = bl_vdp_vram_l;
 
-	bl_grp_print_chr(0xDB);
+	bl_grp_print_chr(chr);
 
 	vram_faddr = vram_faddr_bak;
 	bl_vdp_vram_l = bl_vdp_vram_l_bak;
+}
+
+void bl_grp_print_cursor_draw(void)
+{
+	bl_grp_set_font_invert();
+	bl_grp_print_cursor(' ');
+	bl_grp_set_font_invert();
+}
+
+void bl_grp_print_cursor_erase(void)
+{
+	bl_grp_print_cursor(' ');
 }
 
 void bl_grp_print_backspace(void)
