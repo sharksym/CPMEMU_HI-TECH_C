@@ -1,0 +1,3 @@
+make -fMAKEFILE CFG=2HANIME clean
+make -fMAKEFILE CFG=2HANIME
+pause
