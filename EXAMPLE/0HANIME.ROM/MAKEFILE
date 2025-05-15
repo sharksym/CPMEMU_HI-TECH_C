@@ -1,0 +1,232 @@
+###
+#   HI-TECH C package path
+#
+#CPMDIR = C:\Emul\CPMEMU_HI-TECH_C
+CPMDIR = ..\..
+WINDIR = $(CPMDIR)\windows
+
+###
+#   CP/M program EXEcutor for Win32 by Keiji Murakami
+#   http://hp.vector.co.jp/authors/VA000084/
+CPMEMU = $(CPMDIR)\cpm32\cpm.exe -w0
+
+###
+#   Banking Tools
+#
+BLMKRULE := $(CPMDIR)\BLMKRULE.EXE
+BLCOMM   := $(CPMDIR)\BLCOMM.EXE
+BLLIST   := $(CPMDIR)\BLLIST.EXE
+BLEXTREF := $(CPMDIR)\BLEXTREF.EXE
+BLCALLER := $(CPMDIR)\BLCALLER.EXE
+BLMERGE  := $(CPMDIR)\BLMERGE.EXE
+BLOPTIM  := $(CPMDIR)\BLOPTIM.EXE
+
+###
+#   Temporary work path
+#
+WORKDIR = .
+
+###
+#   Flags
+#
+SHELL = cmd.exe
+CFLAGS := -DANSI -DCPM
+MKFLAGS :=
+LIBOUT :=
+
+###
+#   Startup code
+#
+src-bank00 :=     \
+    BLCRT.C
+
+###
+#   Common area
+#
+src-common :=     \
+    BL.C
+
+###
+#   Banking Library source files
+#
+include $(CPMDIR)\BLSRC.CFG
+BLSRC-CP := $(foreach file, $(src-bl), $(patsubst %.AS,%.ACP, $(patsubst %.C,%.CCP,$(file))))
+
+###
+#   Target CFG file
+#
+include $(CFG).CFG
+
+###
+#   HI-TECH C compiler
+#   0: CP/M version with CP/M EXEcutor
+#   1: Windows x64 version
+#
+#   Drive mapping
+#   CPM_A: HI-TECH C package path
+#   CPM_B: Current path
+#   CPM_C: Work path
+#   CPM_D: Work path
+ifeq ($(tool-mode),0)
+  CPP  := $(CPMEMU) $(CPMDIR)\CPP
+  P1   := $(CPMEMU) $(CPMDIR)\P1
+  CGEN := $(CPMEMU) $(CPMDIR)\CGEN
+  ZAS  := $(CPMEMU) $(CPMDIR)\ZAS
+  LINK := $(CPMEMU) $(CPMDIR)\LINK
+  CPM_A = A:
+  CPM_B = B:
+  CPM_C = C:
+  CPM_D = D:
+  CPM_LIB = A:
+else
+  CPP  := $(WINDIR)\cpp.exe
+  P1   := $(WINDIR)\p1.exe
+  CGEN := $(WINDIR)\cgen.exe
+  ZAS  := $(WINDIR)\zas.exe
+  LINK := $(WINDIR)\link.exe
+  CPM_A = $(CPMDIR)\\
+  CPM_B = .\\
+  CPM_C = $(WORKDIR)\\
+  CPM_D = $(WORKDIR)\\
+  CPM_LIB = $(CPMDIR)\\
+endif
+
+###
+#   Definitions
+#
+
+#   Output files path
+OUTDIR := $(target).OUT
+RELEASEDIR := RELEASE
+
+#   App mode0: DOS1/DOS2 compatible COM (No banking helper)
+PSECT_CFG :=
+ifeq ($(app-mode),0)
+  CFLAGS += -DBL_DISABLE -DBL_DOS1
+  ifneq ($(psect-data),)
+    PSECT_CFG := ,data=$(psect-data)
+  else
+    PSECT_CFG := ,data
+  endif
+  ifneq ($(psect-bss),)
+    PSECT_CFG := $(PSECT_CFG),bss=$(psect-bss)
+  else
+    PSECT_CFG := $(PSECT_CFG),bss
+  endif
+  ifeq ($(rom-mode),1)
+    CFLAGS += -DBL_ROM=32
+  endif
+  ifeq ($(rom-mode),2)
+    CFLAGS += -DBL_ROM=48
+  endif
+else
+    PSECT_CFG := ,data,bss,comm=9400H
+endif
+
+#   App mode1: DOS2 COM for one bank (bank00)
+ifeq ($(app-mode),1)
+  CFLAGS += -DDOS2ONLY -DBL_1BANK
+endif
+
+#   App mode2: DOS2 COM/OVL for multi-bank
+#   lib-r800: App can run on MSXturboR only
+#   TSR mode: App stays in DOS2 system segment memory
+#   bank-max: App can load partial of OVL
+#   himem: Reserved memory over 9400H for sharing page2 area
+ifeq ($(app-mode),2)
+  CFLAGS += -DDOS2ONLY
+  ifeq ($(lib-r800),1)
+    CFLAGS += -DR800ONLY
+  endif
+  ifeq ($(tsr-mode),1)
+    CFLAGS += -DBL_TSR
+  endif
+  ifneq ($(bank-max),)
+    CFLAGS += -DBL_BMAX=$(bank-max)
+  endif
+endif
+
+#   C library selection
+ifeq ($(app-mode),0)
+  ifeq ($(lib-float),1)
+    LIBC := $(CPM_LIB)LIBFMSX.LIB
+  else
+    LIBC := $(CPM_LIB)LIBCMSX.LIB
+  endif
+else
+  ifeq ($(lib-r800),1)
+    ifeq ($(lib-float),1)
+      LIBC := $(CPM_LIB)LIBFMSXT.LIB
+    else
+      LIBC := $(CPM_LIB)LIBCMSXT.LIB
+    endif
+  else
+    ifeq ($(lib-float),1)
+      LIBC := $(CPM_LIB)LIBFMSX2.LIB
+    else
+      LIBC := $(CPM_LIB)LIBCMSX2.LIB
+    endif
+  endif
+endif
+
+#   OPTIM switch
+ifeq ($(dis-optim),1)
+  MKFLAGS += /O0
+endif
+
+#   cflags from CFG
+CFLAGS += $(cflag)
+
+###
+#   Rules
+#
+.PHONY: all
+all: prepare_rules blsrc_cp build_job blsrc_rm
+
+clean: prepare_rules cleanup_job
+
+release: all release_job clean
+
+prepare_rules:
+	@echo * Generate Rules *
+	@$(BLMKRULE) $(CFG).CFG $(WORKDIR)\$(CFG).MK $(MKFLAGS)
+
+build_job:
+	@echo * Build *
+	@make -f$(WORKDIR)\$(CFG).MK CFG=$(CFG) CPMC=$(WORKDIR) CPMD=$(WORKDIR) build
+
+release_job:
+	@echo * Prepare for Release *
+	@if exist $(RELEASEDIR) ( @echo off ) else ( @mkdir $(RELEASEDIR) )
+	@copy /y $(OUTDIR)\*.* $(RELEASEDIR)\
+
+pre_job:
+	@echo * Pre-Job *
+	$(pre-job)
+
+post_job:
+	@echo * Post-Job *
+	$(post-job)
+
+end_job:
+	@echo * End-Job *
+	$(end-job)
+
+cleanup_job:
+	@echo * Cleanup *
+	@make -f$(WORKDIR)\$(CFG).MK CFG=$(CFG) CPMC=$(WORKDIR) CPMD=$(WORKDIR) cleanup
+	@del $(WORKDIR)\$(CFG).MK > NUL
+
+###
+#   Copy/Remove Banking Library source files
+#
+blsrc_cp: $(BLSRC-CP)
+
+blsrc_rm: $(BLSRC-RM)
+	@del $(src-bl) > NUL
+
+%.CCP:
+	@copy $(CPMDIR)\$(basename $@).C .\ > NUL
+
+%.ACP:
+	@copy $(CPMDIR)\$(basename $@).AS .\ > NUL
