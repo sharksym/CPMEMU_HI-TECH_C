@@ -106,7 +106,9 @@
 #define KEY_RUN         0x0B02
 
 extern char key_pressed(unsigned short keycode);
+extern char key_pressed_r(unsigned short keycode);
 extern char key_clicked(unsigned short keycode);
+extern void key_wait_r(void);
 extern unsigned short key_get_code(void);
 
 
