@@ -121,7 +121,7 @@ void bl_grp_write_vram(uint8_t *src, uint16_t y, uint16_t size);
 void bl_grp_read_vram(uint8_t *dest, uint16_t y, uint16_t size);
 
 #ifdef BL_ROM
-void bl_grp_romload_vram_16k(uint16_t rom_addr);
+void bl_grp_romload_vram_16k(uint16_t rom_addr, uint16_t vram_begin);
 void bl_grp_romload_ge5_pic(uint16_t rom_addr, uint16_t dx, uint16_t dy);
 void bl_grp_romload_ge5_pat(uint16_t rom_addr, uint16_t dx, uint16_t dy);
 #else

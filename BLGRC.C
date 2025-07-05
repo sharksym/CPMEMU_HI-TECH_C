@@ -18,7 +18,7 @@
 
 static uint16_t vram_addr;
 static uint16_t vram_offset;
-void bl_grp_romload_vram_16k(uint16_t rom_addr)
+void bl_grp_romload_vram_16k(uint16_t rom_addr, uint16_t vram_begin)
 {
 	uint16_t n, max;
 
@@ -26,6 +26,7 @@ void bl_grp_romload_vram_16k(uint16_t rom_addr)
 
 	bl_vdp_cmd_wait();
 
+	vram_addr = vram_begin;
 	bl_vdp_vram_h = (uint8_t)(vram_addr >> 14);
 	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
 
