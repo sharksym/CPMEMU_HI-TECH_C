@@ -57,6 +57,15 @@ void *bl_get_memtop(void);
 #ifdef BL_ROM
 extern uint8_t bl_ram_slotid;
 extern uint8_t bl_rom_slotid;
+extern uint8_t bl_machine_type;
+
+extern uint8_t bl_rom_bios_2BH;
+extern uint8_t bl_rom_bios_2CH;
+extern uint8_t bl_rom_bios_2DH;
+extern uint8_t bl_rom_bios_2EH;
+extern uint8_t bl_rom_bios_2FH;
 
 void bl_rom_read_page3(uint16_t rom_addr, uint16_t dest_addr, uint16_t bytes);
+void bl_rom_call_page1(void);
+void bl_rom_call_page3(void);
 #endif
