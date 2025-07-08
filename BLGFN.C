@@ -517,10 +517,19 @@ void bl_grp_make_font_k(uint16_t k_code)
 	}
 }
 #else
+#ifdef BL_ROMFNT_KR
+#asm
+	global	_bl_grp_make_font_k, _bl_rom_call_page1
+_bl_grp_make_font_k:			; HL <- k_code
+	ld de, _font_work		; DE = font_work
+	jp _bl_rom_call_page1
+#endasm
+#else
 void bl_grp_make_font_k(uint16_t k_code)
 {
 	k_code = k_code;
 }
+#endif
 #endif
 
 void bl_grp_print(uint16_t x, uint16_t y, char *str)
