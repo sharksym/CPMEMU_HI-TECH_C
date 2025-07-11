@@ -109,9 +109,9 @@ uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no);
 {bl_set_vram_addr16(bl_grp_get_vramaddr_spr_gen(no)); bl_copy_to_vram_8(addr);}
 #define bl_grp_set_sprite_pattern_16x16(no, addr)	\
 {bl_set_vram_addr16(bl_grp_get_vramaddr_spr_gen(no<<2)); bl_copy_to_vram_32(addr);}
-uint16_t bl_grp_get_vramaddr_spr_col(uint16_t no);
-#define bl_grp_set_sprite_color(no, addr)	\
-{bl_set_vram_addr16(bl_grp_get_vramaddr_spr_col(no)); bl_copy_to_vram_16(addr);}
+uint16_t bl_grp_get_vramaddr_spr_col(uint16_t layer);
+#define bl_grp_set_sprite_color(layer, addr)	\
+{bl_set_vram_addr16(bl_grp_get_vramaddr_spr_col(layer)); bl_copy_to_vram_16(addr);}
 uint16_t bl_grp_get_vramaddr_spr_attr(uint8_t layer);
 
 void bl_grp_clear_sprite(void);

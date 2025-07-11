@@ -1003,9 +1003,9 @@ uint16_t bl_grp_get_vramaddr_spr_gen(uint16_t no)
 	return (bl_grp.sprite_gen_active_addr + (no << 3));
 }
 
-uint16_t bl_grp_get_vramaddr_spr_col(uint16_t no)
+uint16_t bl_grp_get_vramaddr_spr_col(uint16_t layer)
 {
-	return (bl_grp.sprite_color_active_addr + (no << 4));
+	return (bl_grp.sprite_color_active_addr + (layer << 4));
 }
 
 uint16_t bl_grp_get_vramaddr_spr_attr(uint8_t layer)
