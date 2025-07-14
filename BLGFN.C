@@ -517,7 +517,7 @@ void bl_grp_make_font_k(uint16_t k_code)
 	}
 }
 #else
-#ifdef BL_ROMFNT_KR
+#ifdef BLGRPFNT_ROM
 #asm
 	global	_bl_grp_make_font_k, _bl_rom_call_page1
 _bl_grp_make_font_k:			; HL <- k_code
