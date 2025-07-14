@@ -69,10 +69,15 @@ void bl_snd_init(uint8_t mode)
 		return;
 
 	bl_bgm_init(mode);
-
+#ifdef BLBGM_HBLK
+	bl_request_irq(IRQ_VDP_HBLK, bl_bgm_isr);
+	bl_enable_irq(IRQ_VDP_HBLK);
+	bl_grp_set_irq_hblank_line(BLBGM_HBLK);
+	bl_grp_set_irq_hblank(1);
+#else
 	bl_request_irq(IRQ_SND_CYCL, bl_bgm_isr);
 	bl_enable_irq(IRQ_SND_CYCL);
-
+#endif
 	bl_snd.enable = 1;
 }
 
@@ -82,10 +87,14 @@ void bl_snd_deinit(void)
 		return;
 
 	bl_snd.enable = 0;
-
+#ifdef BLBGM_HBLK
+	bl_grp_set_irq_hblank(0);
+	bl_disable_irq(IRQ_VDP_HBLK);
+	bl_free_irq(IRQ_VDP_HBLK);
+#else
 	bl_disable_irq(IRQ_SND_CYCL);
 	bl_free_irq(IRQ_SND_CYCL);
-
+#endif
 	bl_bgm_deinit();
 }
 
