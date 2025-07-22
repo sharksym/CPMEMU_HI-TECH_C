@@ -59,7 +59,7 @@ extern uint8_t bl_ram_slotid;
 extern uint8_t bl_rom_slotid;
 extern uint8_t bl_machine_type;
 
-void bl_rom_read_page3(uint16_t rom_addr, uint16_t dest_addr, uint16_t bytes);
+void bl_rom_memcpy(void *dest, void *src, uint16_t size);
 void bl_rom_call_page1(void);
 void bl_rom_call_page3(void);
 #endif
