@@ -131,7 +131,7 @@ static uint8_t bl_grp_suspended = 0;
 static uint8_t vdp_reg_org[28];
 static uint8_t scrmod_org;
 static uint16_t addr;
-static char msx_ver;
+static unsigned char msx_ver;
 
 static void vdp_sync_regs_shadow(void);
 static void vdp_restore_regs(void);
