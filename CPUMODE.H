@@ -13,8 +13,8 @@
 #define CPU_WX_3_58MHz      0
 #define CPU_WX_5_37MHz      1
 
-extern char get_msx_version(void);
-extern void set_cpu_mode_tr(char mode);
-extern char get_cpu_mode_tr(void);
-extern void set_cpu_mode_wx(char mode);
+extern unsigned char get_msx_version(void);
+extern void set_cpu_mode_tr(unsigned char mode);
+extern unsigned char get_cpu_mode_tr(void);
+extern void set_cpu_mode_wx(unsigned char mode);
 
