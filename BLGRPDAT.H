@@ -70,7 +70,7 @@ struct bl_grp_var_t {			/* bl_grp_var max. 224bytes */
 
 /* Shared memory: Minimum 128 bytes */
 #ifdef BL_ROM
-#define BL_GRP_SHARED_MEM	(128)
+#define BL_GRP_SHARED_MEM	(256)
 #else
 #define BL_GRP_SHARED_MEM	(2048)
 #endif

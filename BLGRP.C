@@ -138,7 +138,7 @@ static void vdp_restore_regs(void);
 void bl_vdp_cmd_init(void);
 
 #ifdef BL_ROM
-uint8_t shared_mem[BL_GRP_SHARED_MEM];
+extern uint8_t bl_rom_shared_mem[BL_GRP_SHARED_MEM];
 #endif
 int8_t bl_grp_init(void)
 {
@@ -149,7 +149,7 @@ int8_t bl_grp_init(void)
 
 	memset(&bl_grp, 0x00, sizeof(struct bl_grp_var_t));
 #ifdef BL_ROM
-	bl_grp.shared_mem = shared_mem;
+	bl_grp.shared_mem = bl_rom_shared_mem;
 #else
 	bl_grp.shared_mem = (uint8_t *)bl_malloc(BL_GRP_SHARED_MEM);
 	if (bl_grp.shared_mem == NULL)			/* not enough memory? */
