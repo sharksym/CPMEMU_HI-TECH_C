@@ -519,10 +519,14 @@ void bl_grp_make_font_k(uint16_t k_code)
 #else
 #ifdef BLGRPFNT_ROM
 #asm
-	global	_bl_grp_make_font_k, _bl_rom_call_page1
+	global	_bl_grp_make_font_k, _bl_rom_call_ix
 _bl_grp_make_font_k:			; HL <- k_code
 	ld de, _font_work		; DE = font_work
-	jp _bl_rom_call_page1
+	push ix
+	ld ix, BLGRPFNT_ROM		; IX = func addr
+	call _bl_rom_call_ix
+	pop ix
+	ret
 #endasm
 #else
 void bl_grp_make_font_k(uint16_t k_code)
