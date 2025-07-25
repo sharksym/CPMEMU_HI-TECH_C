@@ -28,7 +28,7 @@ void bl_grp_setup_font_draw_func(void)
 }
 
 #else
-uint8_t font_2048[] = {				/* w8 x h8 x 256 or w8 x h16 x 128 */
+uint8_t font_e[] = {				/* w8 x h8 or w8 x h16 */
 #include "font_e.h"
 };
 
@@ -144,7 +144,7 @@ void bl_grp_load_font(char *filename)
 	if (fh == 0xFF)
 		return;
 
-	read(fh, font_2048, 2048);
+	read(fh, font_e, 2048 * 3);
 
 	close(fh);
 }
@@ -165,33 +165,27 @@ void bl_grp_load_font_kr(char *filename)
 #endif
 #endif
 
-static void bl_grp_copy_font_to_pattern_gen(uint16_t addr)
+static void bl_grp_copy_font_to_pattern_gen(uint16_t size)
 {
-	bl_vdp_vram_h = (uint8_t)(addr >> 14);
-/*	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;*/
-	bl_vdp_vram_m = (uint8_t)((addr >> 8) & 0x3F);
-	bl_vdp_vram_l = (uint8_t)addr;
-	bl_vdp_vram_cnt = 2048;
-	bl_copy_to_vram_nn(font_2048);
+	bl_vdp_vram_h = (uint8_t)(bl_grp.pattern_gen_addr >> 14);
+	bl_vdp_vram_h |= bl_grp.active_page_a16_a14;
+	bl_vdp_vram_m = (uint8_t)((bl_grp.pattern_gen_addr >> 8) & 0x3F);
+	bl_vdp_vram_l = (uint8_t)bl_grp.pattern_gen_addr;
+	bl_vdp_vram_cnt = size;
+	bl_copy_to_vram_nn(font_e);
 }
 
 void bl_grp_setup_text_font(void)
 {
-	uint16_t vram_addr = bl_grp.pattern_gen_addr;
-
 	switch (bl_grp.screen_mode) {
 	case GRP_SCR_T1:		/* only for Pattern based mode */
 	case GRP_SCR_T2:
 	case GRP_SCR_G1:
-		bl_grp_copy_font_to_pattern_gen(vram_addr);
+		bl_grp_copy_font_to_pattern_gen(2048);
 		break;
 	case GRP_SCR_G2:
 	case GRP_SCR_G3:
-		bl_grp_copy_font_to_pattern_gen(vram_addr);
-		vram_addr += 2048;
-		bl_grp_copy_font_to_pattern_gen(vram_addr);
-		vram_addr += 2048;
-		bl_grp_copy_font_to_pattern_gen(vram_addr);
+		bl_grp_copy_font_to_pattern_gen(2048 * 3);
 		break;
 	default:
 		break;
@@ -308,7 +302,7 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 #asm
 ;void bl_grp_print_str(char *str)
 	global	_bl_grp_print_str
-	global	_font_2048
+	global	_font_e
 	global  _bl_vdp_cmd_wait
 ; for BLOPTIM parser
 global	_bl_write_vram
@@ -560,9 +554,9 @@ _bl_grp_draw_w8:		; draw font (l = code)
 _font_h16:			; uint8_t font_h16; 'add hl,hl' or 'nop'
 	add hl,hl		; font idx = (uint16_t)(*str) * 16
 
-	defb 001h		; ld bc,_font_2048
+	defb 001h		; ld bc,_font_e
 _font_asc:			; uint8_t *font_asc;
-	defw _font_2048
+	defw _font_e
 	add hl,bc		; hl = font addr
 _font_jp_func:
 	defb 0c3h		; jp (_font_draw_func)
