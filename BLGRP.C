@@ -190,7 +190,11 @@ int8_t bl_grp_init(void)
 	bl_grp.palette0_on  = 0;
 	bl_grp.line_212     = 1;
 	bl_grp.display_mode = (bl_grp.reg_shadow[9] & DISP_MODE);
+#ifdef NO_BLGRP_IL
+	bl_grp.interlace_on = 0;
+#else
 	bl_grp.interlace_on = (bl_grp.reg_shadow[9] & DISP_IL_E0) == DISP_IL_E0 ? 1 : 0;
+#endif
 	bl_grp.vsync_50hz   = (bl_grp.reg_shadow[9] & DISP_PAL) ? 1 : 0;
 
 	bl_grp.color_text_fg = WORK_FORCOL;
@@ -578,7 +582,11 @@ void bl_grp_set_display_mode(uint8_t mode)
 	bl_grp.display_mode = mode;
 
 	bl_grp_update_reg_bit(9, DISP_MODE, bl_grp.display_mode);
+#ifdef NO_BLGRP_IL
+	bl_grp.interlace_on = 0;
+#else
 	bl_grp.interlace_on = (bl_grp.display_mode & DISP_IL_E0) == DISP_IL_E0 ? 1 : 0;
+#endif
 	bl_grp.vsync_50hz   = (bl_grp.display_mode & DISP_PAL) ? 1 : 0;
 	bl_grp_setup_font_draw_func();
 }
@@ -615,7 +623,11 @@ uint8_t bl_grp_get_vsync_50hz(void)
 
 uint8_t bl_grp_get_interlace_on(void)
 {
+#ifdef NO_BLGRP_IL
+	return 0;
+#else
 	return bl_grp.interlace_on;
+#endif
 }
 
 static void bl_grp_fill_g1_color_table(void)
@@ -699,6 +711,9 @@ void bl_grp_set_width(uint8_t width)
 
 void bl_grp_set_view(uint8_t page)
 {
+#ifdef NO_BLGRP_IL
+	bl_grp.view_page = page;
+#else
 	if (bl_grp.interlace_on) {
 		page &= 0x02;
 		bl_grp.view_page = page;
@@ -706,15 +721,17 @@ void bl_grp_set_view(uint8_t page)
 	} else {
 		bl_grp.view_page = page;
 	}
+#endif
 	page <<= 5;
 	bl_grp_update_reg_bit(2, 0x60, page);
 }
 
 void bl_grp_set_active(uint8_t page)
 {
+#ifndef NO_BLGRP_IL
 	if (bl_grp.interlace_on)
 		page &= 0x02;				/* page 0 or 2 */
-
+#endif
 	bl_grp.active_page = page;
 	if (bl_grp.screen_mode < GRP_SCR_G6)
 		bl_grp.active_page_a16_a14 = page << 1;	/* 32Kbytes */
@@ -740,13 +757,16 @@ void bl_grp_erase(uint8_t page, uint8_t c)
 	static uint16_t n, block;
 	uint16_t lines;
 
+#ifdef NO_BLGRP_IL
+	lines = 256;
+#else
 	if (bl_grp.interlace_on) {
 		page &= 0x02;				/* page 0 or 2 */
 		lines = 512;				/* erase double page */
 	} else {
 		lines = 256;
 	}
-
+#endif
 	if (bl_grp.screen_mode < GRP_SCR_G4) {		/* page size = 16kbytes */
 		block = 1;
 		bl_vdp_vram_h = page;
@@ -830,6 +850,16 @@ void bl_grp_clear_screen(void)
 	}
 
 	page = bl_grp.active_page;
+#ifdef NO_BLGRP_IL
+	*(uint16_t *)(&hmmv_cmd[0]) = 0;
+	hmmv_cmd[2] = 0;
+	hmmv_cmd[3] = page;
+	*(uint16_t *)(&hmmv_cmd[4]) = bl_grp.width;
+	*(uint16_t *)(&hmmv_cmd[6]) = bl_grp.height;	/* 192, 212 */
+	hmmv_cmd[8] = val;
+
+	bl_vdp_cmd_hmmv(hmmv_cmd);
+#else
 	if (bl_grp.interlace_on)
 		page &= 0x02;				/* page 0 or 2 */
 
@@ -843,7 +873,7 @@ void bl_grp_clear_screen(void)
 
 		bl_vdp_cmd_hmmv(hmmv_cmd);
 	} while (bl_grp.interlace_on && (page & 0x01));
-
+#endif
 	bl_vdp_cmd_wait();
 }
 

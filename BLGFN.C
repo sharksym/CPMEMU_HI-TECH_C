@@ -61,6 +61,40 @@ void draw_font_null(uint8_t *font);
 _draw_font_null:
 	ret
 #endasm
+#ifdef NO_BLGRP_IL
+void (*font_draw_func_table[10])(uint8_t *font) = {
+		draw_font_null,			/* T1 */
+		draw_font_null,			/* T2 */
+#ifdef NO_BLGRPFNT_MC
+		draw_font_null,			/* MC */
+#else
+		bl_draw_font_mc,		/* MC */
+#endif
+		draw_font_null,			/* G1 */
+		draw_font_null,			/* G2 */
+		draw_font_null,			/* G3 */
+#ifdef NO_BLGRPFNT_G4
+		draw_font_null,			/* G4 */
+#else
+		bl_draw_font_g4,		/* G4 */
+#endif
+#ifdef NO_BLGRPFNT_G5
+		draw_font_null,			/* G5 */
+#else
+		bl_draw_font_g5,		/* G5 */
+#endif
+#ifdef NO_BLGRPFNT_G6
+		draw_font_null,			/* G6 */
+#else
+		bl_draw_font_g6,		/* G6 */
+#endif
+#ifdef NO_BLGRPFNT_G7
+		draw_font_null,			/* G7 */
+#else
+		bl_draw_font_g7			/* G7 */
+#endif
+};
+#else
 void (*font_draw_func_table[2][10])(uint8_t *font) = {
 	/* non-interlace mode */
 	{
@@ -129,7 +163,7 @@ void (*font_draw_func_table[2][10])(uint8_t *font) = {
 #endif
 	}
 };
-
+#endif
 void bl_grp_set_font(uint8_t *font)
 {
 	font_asc = font;
@@ -206,8 +240,11 @@ void bl_grp_setup_font_draw_func(void)
 		font_text_mode = 0;
 		break;
 	}
-
+#ifdef NO_BLGRP_IL
+	font_func = font_draw_func_table[bl_grp.screen_mode];
+#else
 	font_func = font_draw_func_table[bl_grp.interlace_on][bl_grp.screen_mode];
+#endif
 }
 
 void bl_grp_set_font_size(uint8_t w, uint8_t h)
@@ -284,9 +321,10 @@ void bl_grp_print_pos(uint16_t x, uint16_t y)
 			vram_faddr += y & 0x07;
 			vram_faddr += (x & 0xFE) << 2;		/* (x / 2) * 8 */
 		} else {
+#ifndef NO_BLGRP_IL
 			if (bl_grp.interlace_on)
 				y >>= 1;
-
+#endif
 			vram_faddr = y * bl_grp.row_byte;
 			vram_faddr += x >> (bl_grp.bpp_shift);
 		}

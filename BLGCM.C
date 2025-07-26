@@ -48,6 +48,9 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 		bl_write_vram(data);
 	} else {
 		pset_cmd[3] = bl_grp.active_page;
+#ifdef NO_BLGRP_IL
+		pset_cmd[2] = (uint8_t)y;
+#else
 		if (bl_grp.interlace_on) {
 			pset_cmd[2] = (uint8_t)(y >> 1);
 			if ((uint8_t)y & 0x01)		/* for odd page */
@@ -55,7 +58,7 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 		} else {
 			pset_cmd[2] = (uint8_t)y;
 		}
-
+#endif
 		*(uint16_t *)(&pset_cmd[0]) = x;
 		pset_cmd[4] = c;
 		pset_cmd[6] = 0x50 | op;
@@ -68,6 +71,9 @@ void bl_grp_put_pixel(uint16_t x, uint16_t y, uint8_t c, uint8_t op)
 static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 {
 	pset_cmd[3] = bl_grp.active_page;
+#ifdef NO_BLGRP_IL
+	pset_cmd[2] = (uint8_t)y;
+#else
 	if (bl_grp.interlace_on) {
 		pset_cmd[2] = (uint8_t)(y >> 1);
 		if ((uint8_t)y & 0x01)			/* for odd page */
@@ -75,7 +81,7 @@ static void bl_grp_put_pixel_ext(uint16_t x, uint16_t y)
 	} else {
 		pset_cmd[2] = (uint8_t)y;
 	}
-
+#endif
 	*(uint16_t *)(&pset_cmd[0]) = x;
 #asm
 	global  _bl_vdp_cmd_write
@@ -268,8 +274,10 @@ static uint8_t line_cmd[11] = {
 };
 void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op)
 {
-	uint16_t line_w, line_h;
+#ifndef NO_BLGRP_IL
 	uint8_t sy0, sy1, dy0, dy1;
+#endif
+	uint16_t line_w, line_h;
 	static int16_t deltax, deltay;
 	static int16_t step, inc;
 
@@ -308,6 +316,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 		return;
 	}
 
+#ifndef NO_BLGRP_IL
 	if (bl_grp.interlace_on) {
 		deltax = dx > sx ? dx - sx : sx - dx;
 		deltay = dy > sy ? dy - sy : sy - dy;
@@ -383,6 +392,7 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 			bl_grp_put_pixel_ext(x, y);
 		}
 	} else {
+#endif
 		*(uint16_t *)(&line_cmd[0]) = sx;
 		line_cmd[2] = (uint8_t)sy;
 		line_cmd[3] = bl_grp.active_page;
@@ -415,7 +425,9 @@ void bl_grp_line(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, 
 		line_cmd[10] = 0x70 | op;
 
 		bl_vdp_cmd_line(line_cmd);
+#ifndef NO_BLGRP_IL
 	}
+#endif
 }
 
 void bl_grp_box(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t c, uint8_t op)
@@ -442,9 +454,10 @@ void bl_grp_boxfill(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_t 
 	}
 
 	tmp = dy - sy;
+#ifndef NO_BLGRP_IL
 	if (bl_grp.interlace_on)
 		tmp >>= 1;
-
+#endif
 	if (dx - sx > tmp) {
 		for ( ; sy <= dy; sy++)
 			bl_grp_line(sx, sy, dx, sy, c, op);
@@ -479,6 +492,11 @@ void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_
 	*(uint16_t *)(&hmmv_cmd[4]) = width;
 	hmmv_cmd[8] = c;
 
+#ifdef NO_BLGRP_IL
+	hmmv_cmd[2] = (uint8_t)(sy);
+	*(uint16_t *)(&hmmv_cmd[6]) = height;
+	bl_vdp_cmd_hmmv(hmmv_cmd);
+#else
 	if (bl_grp.interlace_on) {
 		hmmv_cmd[2] = (uint8_t)(sy >> 1);
 		*(uint16_t *)(&hmmv_cmd[6]) = height >> 1;
@@ -490,6 +508,7 @@ void bl_grp_boxfill_h(uint16_t sx, uint16_t sy, uint16_t dx, uint16_t dy, uint8_
 		*(uint16_t *)(&hmmv_cmd[6]) = height;
 		bl_vdp_cmd_hmmv(hmmv_cmd);
 	}
+#endif
 }
 
 #define bl_grp_cirle4point(cx, cy, x, y)		\
